@@ -1118,6 +1118,11 @@ static char *pluralize(const char *str) {
         suffix = "es";
         break;
       }
+      if (!strcasecmp(rel + 1, "luff")) {
+        found = PLURAL_SUFFIX;
+        suffix = "s";
+        break;
+      }
       if (!strcasecmp(rel + 1, "onus")) {
         found = PLURAL_SUFFIX;
         suffix = "es";
@@ -1125,6 +1130,11 @@ static char *pluralize(const char *str) {
       break;
     case 'C':
     case 'c':
+      if (!strcasecmp(rel + 1, "haff")) {
+        found = PLURAL_SUFFIX;
+        suffix = "s";
+        break;
+      }
       if (!strcasecmp(rel + 1, "hild")) {
         found = PLURAL_SUFFIX;
         suffix = "ren";
@@ -1241,6 +1251,10 @@ static char *pluralize(const char *str) {
         found = PLURAL_SAME;
         break;
       }
+      if (!strcasecmp(rel + 1, "arquis")) {
+        found = PLURAL_SUFFIX;
+        suffix = "es";
+      }
       if (!strcasecmp(rel + 1, "oose")) {
         found = PLURAL_SAME;
         break;
@@ -1271,6 +1285,11 @@ static char *pluralize(const char *str) {
     case 'p':
       if (!strcasecmp(rel + 1, "ants")) {
         found = PLURAL_SAME;
+        break;
+      }
+      if (!strcasecmp(rel + 1, "enis")) {
+        found = PLURAL_SUFFIX;
+        suffix = "es";
       }
       break;
     case 'Q':

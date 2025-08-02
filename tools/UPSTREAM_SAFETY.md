@@ -9,12 +9,15 @@ This document explains the safety measures in place to prevent fork-specific fil
 The `.gitattributes` file contains:
 ```
 tools/ export-ignore
+.github/copilot-instructions.md export-ignore
 ```
 
 This ensures that:
 - The `tools/` directory is excluded from `git archive` commands
-- GitHub release archives won't include fork-specific tools
-- Patch files won't include the tools directory
+- Fork-specific GitHub Copilot instructions are excluded
+- GitHub release archives won't include fork-specific files
+- Patch files won't include the protected directories/files
+- CI workflows and other legitimate `.github/` content is preserved
 
 ### 2. Clean Upstream Branch Creation
 
@@ -58,6 +61,7 @@ Clear documentation in `tools/README.md` explains:
 ### What Gets Excluded
 
 - `tools/` directory (development scripts and documentation)
+- `.github/copilot-instructions.md` (fork-specific GitHub Copilot configuration)
 - Any future fork-specific directories added to `.gitattributes`
 - Project-specific configuration files
 
@@ -74,13 +78,13 @@ Clear documentation in `tools/README.md` explains:
 You can verify what would be included in an archive:
 
 ```bash
-# Test archive contents (tools/ should be excluded)
-git archive --format=tar HEAD | tar -tf - | grep tools
-# Should show no tools/ directory files
+# Test archive contents (tools/ and copilot-instructions.md should be excluded)
+git archive --format=tar HEAD | tar -tf - | grep -E "(^tools/|copilot-instructions)"
+# Should show no results
 
 # Or create a test archive
 git archive --format=tar.gz --prefix=fluffos/ HEAD -o test-archive.tar.gz
-tar -tzf test-archive.tar.gz | grep tools
+tar -tzf test-archive.tar.gz | grep -E "(^fluffos/tools/|copilot-instructions)"
 ```
 
 ## Branch Strategy for Contributions

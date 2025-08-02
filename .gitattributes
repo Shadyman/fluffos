@@ -1,5 +1,6 @@
 * text=auto
 *.sh text eol=lf
 
-# Fork-specific directories - exclude from upstream contributions
+# Fork-specific directories and files - exclude from upstream contributions
 tools/ export-ignore
+.github/copilot-instructions.md export-ignore

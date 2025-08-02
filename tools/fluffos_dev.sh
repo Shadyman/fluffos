@@ -181,6 +181,38 @@ set_main_branch() {
     fi
 }
 
+# Function to create clean upstream contribution branch
+create_upstream_branch() {
+    local branch_name="$1"
+    if [ -z "$branch_name" ]; then
+        echo "Usage: $0 upstream-branch <branch-name>"
+        echo "Creates a clean branch from upstream/master for contributing back"
+        exit 1
+    fi
+    
+    cd "$FLUFFOS_DIR"
+    
+    # Ensure upstream remote exists
+    if ! git remote | grep -q "upstream"; then
+        echo "Adding upstream remote..."
+        git remote add upstream https://github.com/fluffos/fluffos.git
+    fi
+    
+    # Fetch latest upstream
+    echo "Fetching from upstream..."
+    git fetch upstream
+    
+    # Create branch from upstream/master
+    git checkout -b "$branch_name" upstream/master
+    
+    echo "✓ Created clean upstream contribution branch: $branch_name"
+    echo "This branch is based on upstream/master and excludes fork-specific files."
+    echo ""
+    echo "When ready to contribute:"
+    echo "  git push origin $branch_name"
+    echo "  # Then create PR from your fork to fluffos/fluffos"
+}
+
 # Main command handling
 case "$1" in
     "branch")
@@ -207,6 +239,9 @@ case "$1" in
     "main")
         set_main_branch "$2"
         ;;
+    "upstream-branch")
+        create_upstream_branch "$2"
+        ;;
     *)
         echo "FluffOS Development Helper"
         echo ""
@@ -221,6 +256,7 @@ case "$1" in
         echo "  info             Show detailed branch and repository information"
         echo "  build            Build FluffOS using cmake"
         echo "  main [branch]    Set/show main branch (default: $MAIN_BRANCH)"
+        echo "  upstream-branch <name>  Create clean branch from upstream for contributions"
         echo ""
         echo "Examples:"
         echo "  $0 branch my-new-feature"
@@ -230,6 +266,7 @@ case "$1" in
         echo "  $0 upstream"
         echo "  $0 build"
         echo "  $0 main master"
+        echo "  $0 upstream-branch contrib-fix-database"
         echo ""
         echo "Environment Variables:"
         echo "  FLUFFOS_MAIN_BRANCH    Set default main branch (current: $MAIN_BRANCH)"

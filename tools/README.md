@@ -215,6 +215,8 @@ git push origin contrib-feature
 # Create pull request from your fork to fluffos/fluffos
 ```
 
+**Note**: The `tools/` directory is marked with `export-ignore` in `.gitattributes`, so it won't be included when creating archives or patches for upstream contributions. This ensures your fork-specific development tools don't accidentally get submitted to the main FluffOS project.
+
 ## Troubleshooting
 
 ### Common Issues

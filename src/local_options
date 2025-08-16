@@ -43,6 +43,7 @@
 #undef NO_SHADOWS
 #undef USE_ICONV
 #define IPV6
+#define DTRACE
 
 #define ARRAY_RESERVED_WORD
 //#define PROFILE_FUNCTIONS

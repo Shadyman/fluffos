@@ -24,8 +24,8 @@ title: db / db_connect
 
     Returns a handle to the new connection on success, 0 otherwise
 
-    Driver will call master object's valid_database function to reterive
-    password for this database (string) or approvals (positive intgeter).
+    Driver will call master object's valid_database function to retrieve
+    password for this database (string) or approvals (positive integer).
 
     FlufFOS supports MYSQL, SQLITE3 and PostgreSQL.
 
@@ -39,7 +39,7 @@ title: db / db_connect
 
      X here means an integer representing the "type" parameter in db_connect().
 
-     Driver prvoides following pre-defines constant to lib for DB types.
+     Driver provides following pre-defines constant to lib for DB types.
 
     __USE_MYSQL__   is what -DPACKAGE_DB_MYSQL=<value> is, default to be 1
     __USE_SQLITE3__ is what -DPACKAGE_DB_SQLITE=<value> is, default to be not defined.
@@ -49,4 +49,3 @@ title: db / db_connect
 ### SEE ALSO
 
     db_close(3), db_status(3), valid_database(4)
-

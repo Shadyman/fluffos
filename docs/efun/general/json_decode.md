@@ -14,5 +14,16 @@ title: general / json_decode
 
 ### DESCRIPTION
 
-    TBW
+    Parses a JSON-formatted string and returns the corresponding LPC value.
+    The returned value can be a mapping, array, string, int, float, or nested combinations,
+    depending on the JSON input. Throws an error if the input is not valid JSON.
 
+### EXAMPLES
+
+        string json = "{\"name\":\"Alice\",\"age\":30}";
+        mapping m = json_decode(json);
+        // m == ([ "name": "Alice", "age": 30 ])
+
+### SEE ALSO
+
+    json_encode(3), json_get(3), json_pretty(3), json_valid(3)

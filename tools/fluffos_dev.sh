@@ -137,25 +137,179 @@ branch_info() {
     git log --oneline -10
 }
 
-# Function to build FluffOS
+# Function to build FluffOS with intelligent monitoring
 build_fluffos() {
     cd "$FLUFFOS_DIR"
     
-    echo "Building FluffOS..."
+    echo "Building FluffOS from scratch..."
     mkdir -p build
     cd build
     
+    # Clean build directory
+    echo "Cleaning build directory..."
+    rm -rf ./*
+    
     # Use cmake if available, otherwise try configure
     if command -v cmake >/dev/null 2>&1; then
+        echo "Running cmake..."
         cmake ..
-        make -j$(nproc 2>/dev/null || echo 4)
+        
+        echo "Running make with intelligent monitoring..."
+        if [ "$1" = "fast" ]; then
+            echo "Using parallel compilation (-j4) with build monitor..."
+            nohup make -j4 > build.log 2>&1 &
+            BUILD_PID=$!
+        elif [ "$1" = "monitor" ]; then
+            echo "Using parallel compilation with detailed monitoring..."
+            nohup make -j4 > build.log 2>&1 &
+            BUILD_PID=$!
+        else
+            echo "Using sequential compilation (easier error parsing)..."
+            nohup make > build.log 2>&1 &
+            BUILD_PID=$!
+        fi
+        
+        # Use intelligent build monitor if available
+        if [ -f "$FLUFFOS_DIR/tools/fluffos_build_monitor.py" ] && [ "$1" != "silent" ]; then
+            echo "Starting intelligent build monitor..."
+            python3 "$FLUFFOS_DIR/tools/fluffos_build_monitor.py" "$BUILD_PID" --packages http rest openapi
+            BUILD_RESULT=$?
+        else
+            echo "Monitoring build progress (PID: $BUILD_PID)..."
+            wait $BUILD_PID
+            BUILD_RESULT=$?
+        fi
+        
+        # Check build result
+        if [ $BUILD_RESULT -eq 0 ]; then
+            echo "✓ FluffOS built successfully"
+            echo "Binary location: $FLUFFOS_DIR/build/src/driver"
+        else
+            echo "✗ FluffOS build failed"
+            echo "Build log available at: $FLUFFOS_DIR/build/build.log"
+            echo "Last 20 lines of build log:"
+            tail -20 build.log
+            exit 1
+        fi
     else
         echo "CMake not found. Please install cmake to build FluffOS."
         exit 1
     fi
+}
+
+# Function to test compile individual packages
+test_package() {
+    local package_name="$1"
+    if [ -z "$package_name" ]; then
+        echo "Usage: $0 test-package <package-name>"
+        echo "Example: $0 test-package http"
+        echo "Available packages can be found in /src/packages/"
+        exit 1
+    fi
     
-    echo "✓ FluffOS built successfully"
-    echo "Binary location: $FLUFFOS_DIR/build/driver"
+    cd "$FLUFFOS_DIR/build"
+    
+    echo "Testing compilation of package: $package_name"
+    echo "Running: make package_${package_name}/fast"
+    
+    if make "package_${package_name}/fast"; then
+        echo "✓ Package '$package_name' compiled successfully"
+    else
+        echo "✗ Package '$package_name' compilation failed"
+        exit 1
+    fi
+}
+
+# Function to update documentation after successful compilation
+update_docs() {
+    cd "$FLUFFOS_DIR/build"
+    
+    echo "Updating FluffOS documentation..."
+    
+    # Check if generate_keywords exists
+    if [ ! -f "src/generate_keywords" ]; then
+        echo "✗ generate_keywords not found. Please ensure FluffOS was compiled successfully."
+        exit 1
+    fi
+    
+    # Generate keywords.json
+    echo "Step 1: Generating keywords.json..."
+    src/generate_keywords
+    
+    if [ ! -f "src/keywords.json" ]; then
+        echo "✗ Failed to generate keywords.json"
+        exit 1
+    fi
+    
+    # Copy keywords.json to docs directory
+    echo "Step 2: Copying keywords.json to docs directory..."
+    cp src/keywords.json "$FLUFFOS_DIR/docs/"
+    
+    # Change to docs directory for remaining operations
+    cd "$FLUFFOS_DIR/docs"
+    
+    # Run add_missing_efuns.py to generate missing EFUN documentation
+    echo "Step 3: Running add_missing_efuns.py to generate missing EFUN documentation..."
+    if [ -f "add_missing_efuns.py" ]; then
+        python3 add_missing_efuns.py
+        echo "✓ Missing EFUN documentation generated at: $FLUFFOS_DIR/docs/efun/general/"
+    else
+        echo "✗ add_missing_efuns.py not found in docs directory"
+        exit 1
+    fi
+    
+    # Generate AI-powered descriptions for TBW placeholders
+    echo "Step 4: Running generate_efun_descriptions.py to create AI-powered descriptions..."
+    if [ -f "generate_efun_descriptions.py" ]; then
+        python3 generate_efun_descriptions.py
+        echo "✓ AI-generated descriptions created for EFUN documentation"
+    else
+        echo "⚠ generate_efun_descriptions.py not found, skipping AI description generation"
+    fi
+    
+    # Run fix_md_header.py to add titles to markdown files
+    echo "Step 5: Running fix_md_header.py to add titles to markdown files..."
+    if [ -f "fix_md_header.py" ]; then
+        python3 fix_md_header.py
+        echo "✓ Markdown headers fixed"
+    else
+        echo "⚠ fix_md_header.py not found, skipping header fixes"
+    fi
+    
+    # Run update_index.sh to generate index files
+    echo "Step 6: Running update_index.sh to generate index files..."
+    if [ -f "update_index.sh" ]; then
+        chmod +x update_index.sh
+        ./update_index.sh
+        echo "✓ Index files generated"
+    else
+        echo "⚠ update_index.sh not found, skipping index generation"
+    fi
+    
+    echo "✓ Documentation update completed successfully!"
+    echo "Documentation available at: $FLUFFOS_DIR/docs/"
+}
+
+# Function to build with monitoring (new command)
+monitor_build() {
+    echo "=== FluffOS Build with Detailed Monitoring ==="
+    build_fluffos "monitor"
+}
+
+# Function to do a full build and update cycle
+full_build() {
+    echo "=== Full FluffOS Build and Update Cycle ==="
+    
+    # Build FluffOS
+    build_fluffos "$1"
+    
+    # Update documentation
+    echo ""
+    echo "=== Updating Documentation ==="
+    update_docs
+    
+    echo ""
+    echo "✓ Full build and update completed successfully!"
 }
 
 # Function to set main branch
@@ -234,7 +388,19 @@ case "$1" in
         branch_info
         ;;
     "build")
-        build_fluffos
+        build_fluffos "$2"
+        ;;
+    "monitor-build")
+        monitor_build
+        ;;
+    "test-package")
+        test_package "$2"
+        ;;
+    "update-docs")
+        update_docs
+        ;;
+    "full-build")
+        full_build "$2"
         ;;
     "main")
         set_main_branch "$2"
@@ -247,16 +413,26 @@ case "$1" in
         echo ""
         echo "Usage: $0 <command> [arguments]"
         echo ""
-        echo "Commands:"
+        echo "Git Commands:"
         echo "  branch <name>     Create and switch to a new feature branch"
         echo "  commit '<msg>'    Commit and push current changes to your fork"
         echo "  status           Show current git status and recent commits"
         echo "  sync             Sync current branch with your fork"
         echo "  upstream         Fetch and show upstream merge options"
         echo "  info             Show detailed branch and repository information"
-        echo "  build            Build FluffOS using cmake"
         echo "  main [branch]    Set/show main branch (default: $MAIN_BRANCH)"
         echo "  upstream-branch <name>  Create clean branch from upstream for contributions"
+        echo ""
+        echo "Build Commands:"
+        echo "  build [fast|monitor|silent]  Build FluffOS from scratch with options:"
+        echo "                               fast: parallel build (-j4)"
+        echo "                               monitor: parallel build with detailed monitoring"
+        echo "                               silent: no monitoring, just build"
+        echo "                               (default): sequential build with smart monitoring"
+        echo "  monitor-build    Build with detailed monitoring (same as 'build monitor')"
+        echo "  test-package <name>  Test compile individual package (e.g., http, rest, openapi)"
+        echo "  update-docs      Complete documentation update (keywords → EFUN docs → AI descriptions → headers → indexes)"
+        echo "  full-build [fast]    Complete build and documentation update cycle"
         echo ""
         echo "Examples:"
         echo "  $0 branch my-new-feature"
@@ -264,7 +440,14 @@ case "$1" in
         echo "  $0 status"
         echo "  $0 sync"
         echo "  $0 upstream"
-        echo "  $0 build"
+        echo "  $0 build              # Sequential build with smart monitoring"
+        echo "  $0 build fast         # Parallel build (-j4) with monitoring"
+        echo "  $0 build monitor      # Parallel build with detailed monitoring"
+        echo "  $0 build silent       # Build without monitoring output"
+        echo "  $0 monitor-build      # Same as 'build monitor'"
+        echo "  $0 test-package http  # Test HTTP package compilation"
+        echo "  $0 update-docs        # Complete documentation update (6-step process with AI descriptions)"
+        echo "  $0 full-build         # Complete build and update cycle"
         echo "  $0 main master"
         echo "  $0 upstream-branch contrib-fix-database"
         echo ""

@@ -193,6 +193,71 @@
     {
         "args_types": [
             [
+                "int"
+            ],
+            [
+                "string",
+                "function"
+            ],
+            [
+                "mapping"
+            ]
+        ],
+        "max_args": 3,
+        "min_args": 3,
+        "name": "http_start_server",
+        "returns": "int",
+        "type": "efun"
+    },
+    {
+        "args_types": [
+            [
+                "int"
+            ]
+        ],
+        "max_args": 1,
+        "min_args": 1,
+        "name": "http_stop_server",
+        "returns": "int",
+        "type": "efun"
+    },
+    {
+        "args_types": [
+            [
+                "int"
+            ],
+            [
+                "mapping"
+            ]
+        ],
+        "max_args": 2,
+        "min_args": 2,
+        "name": "http_send_response",
+        "returns": "int",
+        "type": "efun"
+    },
+    {
+        "args_types": [
+            [
+                "string"
+            ],
+            [
+                "mapping"
+            ],
+            [
+                "string",
+                "function"
+            ]
+        ],
+        "max_args": 3,
+        "min_args": 2,
+        "name": "http_send_request",
+        "returns": "int",
+        "type": "efun"
+    },
+    {
+        "args_types": [
+            [
                 "string"
             ],
             [
@@ -3665,6 +3730,126 @@
         "type": "efun"
     },
     {
+        "args_types": [],
+        "max_args": 0,
+        "min_args": 0,
+        "name": "rest_create_router",
+        "returns": "int",
+        "type": "efun"
+    },
+    {
+        "args_types": [
+            [
+                "int"
+            ],
+            [
+                "string"
+            ],
+            [
+                "string"
+            ],
+            [
+                "string",
+                "function"
+            ]
+        ],
+        "max_args": 4,
+        "min_args": 4,
+        "name": "rest_add_route",
+        "returns": "int",
+        "type": "efun"
+    },
+    {
+        "args_types": [
+            [
+                "int"
+            ],
+            [
+                "mapping"
+            ]
+        ],
+        "max_args": 2,
+        "min_args": 2,
+        "name": "rest_process_route",
+        "returns": "mapping",
+        "type": "efun"
+    },
+    {
+        "args_types": [
+            [
+                "mapping"
+            ],
+            [
+                "string"
+            ]
+        ],
+        "max_args": 2,
+        "min_args": 2,
+        "name": "rest_create_jwt",
+        "returns": "string",
+        "type": "efun"
+    },
+    {
+        "args_types": [
+            [
+                "string"
+            ],
+            [
+                "string"
+            ]
+        ],
+        "max_args": 2,
+        "min_args": 2,
+        "name": "rest_verify_jwt",
+        "returns": "mapping",
+        "type": "efun"
+    },
+    {
+        "args_types": [
+            [
+                "mixed"
+            ],
+            [
+                "mapping"
+            ]
+        ],
+        "max_args": 2,
+        "min_args": 2,
+        "name": "rest_validate_schema",
+        "returns": "mapping",
+        "type": "efun"
+    },
+    {
+        "args_types": [
+            [
+                "mapping"
+            ]
+        ],
+        "max_args": 1,
+        "min_args": 1,
+        "name": "rest_parse_request",
+        "returns": "mapping",
+        "type": "efun"
+    },
+    {
+        "args_types": [
+            [
+                "mixed"
+            ],
+            [
+                "int"
+            ],
+            [
+                "mapping"
+            ]
+        ],
+        "max_args": 3,
+        "min_args": 3,
+        "name": "rest_format_response",
+        "returns": "mapping",
+        "type": "efun"
+    },
+    {
         "args_types": [
             [
                 "int"
@@ -4500,6 +4685,60 @@
         "min_args": 0,
         "name": "pcre_cache",
         "returns": "mapping",
+        "type": "efun"
+    },
+    {
+        "args_types": [
+            [
+                "int"
+            ],
+            [
+                "mapping"
+            ]
+        ],
+        "max_args": 2,
+        "min_args": 2,
+        "name": "rest_generate_openapi",
+        "returns": "mapping",
+        "type": "efun"
+    },
+    {
+        "args_types": [
+            [
+                "int"
+            ],
+            [
+                "string"
+            ],
+            [
+                "string"
+            ],
+            [
+                "mapping"
+            ]
+        ],
+        "max_args": 4,
+        "min_args": 4,
+        "name": "rest_set_route_docs",
+        "returns": "int",
+        "type": "efun"
+    },
+    {
+        "args_types": [
+            [
+                "int"
+            ],
+            [
+                "string"
+            ],
+            [
+                "string"
+            ]
+        ],
+        "max_args": 3,
+        "min_args": 3,
+        "name": "rest_serve_docs",
+        "returns": "int",
         "type": "efun"
     },
     {

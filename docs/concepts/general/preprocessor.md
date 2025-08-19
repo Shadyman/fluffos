@@ -2,9 +2,8 @@
 layout: doc
 title: general / preprocessor
 ---
-# preprocessor
 
-### LPC Preprocessor Manual
+# LPC Preprocessor Manual
 
 > (Updated 93.07.17)
 
@@ -26,7 +25,7 @@ Note:
     For those directives that begin with '#' (such as #include), the
     '#' symbol must start in the first column (of the line).
 
-Sharing Definitions and Code
+### Sharing Definitions and Code
 
 This facility is provided through the #include directive.
 
@@ -57,8 +56,7 @@ in the file doing the including, then a duplicate-name error will occur at
 compile time (in the same way that the error would occur if you simply typed
 in file.h rather than using #include).
 
-
-#### Macros
+### Macros
 
 Macro definitions are used to replace subsequent instances of a given
 word with a different sequence of text.  Reasons for doing so include
@@ -113,11 +111,10 @@ Syntax:
 
 Note:
 
-    It's perfectly acceptable to undefine an identifier that hasn't been
+    It is perfectly acceptable to undefine an identifier that hasn't been
     defined yet.
 
-
-#### Conditional Compilation
+### Conditional Compilation
 
 These directives can add flexibility to your code.  Based on whether an
 identifier is defined (or not defined), variations of the code can be
@@ -196,9 +193,9 @@ string version() { return -1; }
 #endif
 ```
 
-#### Debugging
+### Debugging
 
-The '#echo' directive allows you to print messages to the driver's stderr
+The `#echo` directive allows you to print messages to the driver's stderr
 (STanDard ERRor) stream.  This facility is useful for diagnostics and
 debugging.
 
@@ -212,8 +209,7 @@ Note:
     message, and is printed verbatim.  It's not necessary to enclose text
     with quotes.
 
-
-#### Compiler Specific
+### Compiler Specific
 
 This facility performs implementation-dependent actions.
 
@@ -230,7 +226,7 @@ At this time the following control keywords are recognized:
     o   optimize
     o   error_context
 
-Also, #pragma no_keyword can be used to turn a pragma off.
+Also, `#pragma no_keyword` can be used to turn a pragma off.
 
 Notes:
 
@@ -252,7 +248,7 @@ Notes:
     'error_context' adds more text to error messages indicating where on
     the line the error occured
 
-#### Text Formatting Shortcuts
+### Text Formatting Shortcuts
 
 This facility makes it easier to format text for help messages, room
 descriptions, etc.

@@ -2,7 +2,7 @@
 layout: doc
 title: general / parse_tree
 ---
-# parse_tree
+# parse_tree()
 
 ## NODE_TERNARY_OP
 

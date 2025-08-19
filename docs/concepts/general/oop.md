@@ -2,11 +2,11 @@
 layout: doc
 title: general / oop
 ---
-# oop
+# OOP
 
-OOP stands for "Object-Oriented Programming"
+OOP stands for **"Object-Oriented Programming"**
 
-If you know how to code in C or Pascal or even one of the modern BASICs
+If you know how to code in C or Pascal, or even one of the modern BASICs
 (with procedures), then you already have many of the skills you will need
 to program effectively in LPC. The main thing you need is a skill in
 translating your ideas into a sequential flow of steps (that a computer

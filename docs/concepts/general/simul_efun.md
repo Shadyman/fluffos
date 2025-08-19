@@ -2,9 +2,7 @@
 layout: doc
 title: general / simul_efun
 ---
-# simul_efun
-
-Simulated efunctions (simul_efuns)
+# Simulated efunctions (simul_efuns)
 
 There is a mechanism to allow the mudlib to simulate efunctions. All
 simulated efuns must be defined in a special file (the name and location
@@ -27,7 +25,7 @@ could perform various restrictive checks and then call efun::move_object().
 The efun:: prefix is necessary so that the driver will know you wish to call
 the move_object efun and not recursively call the simulate_efun within which
 the call to move_object is contained. [Note that valid_override() in master.c
-can be used to conrol which simul_efuns may be overridden via the efun::
+can be used to control which simul_efuns may be overridden via the efun::
 prefix]. Simulated efuns are also useful for adding functions that many
 different objects may need to call but which aren't appropriate for
 inclusion in an inherited file.

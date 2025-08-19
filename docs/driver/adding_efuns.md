@@ -2,14 +2,15 @@
 layout: doc
 title: general / adding_efuns
 ---
-# adding_efuns
+# Adding Efuns
 
 This document explains how to add efunctions to FluffOS driver. Here are the
 steps:
 
 1. Creating a directory under `src/packages/` with name `mypkg`.
 
-2. inside `src/packages/mypkg` directory, create LPC function prototype file called `mypkg.spec`.
+2. inside `src/packages/mypkg` directory, create LPC function prototype file
+   called `mypkg.spec`.
 
    For example, the prototype for the cat() efun is as follows:
 
@@ -26,7 +27,8 @@ steps:
 
    call_out() does not return a value.
 
-3. Create a file `mypkg.cc` and create an `CMakeLists.txt` to compile it, add an library target called `PACKAGE_MYPKG`.
+3. Create a file `mypkg.cc` and create an `CMakeLists.txt` to compile it, add a
+   library target called `PACKAGE_MYPKG`.
 
 4. In your `mypkg.cc`, start by including the pkg API header,
 
@@ -34,23 +36,28 @@ steps:
 
    Then add a function of the form `f_efunction_name() {}`
 
-   For examples of how to structure the f_efunction_name function, look at the other efun already defined in
-    the driver.
+   For examples of how to structure the f_efunction_name function, look at the
+   other efun already defined in the driver.
 
-   In addition, you should read the file ./doc/driver/stackmachine. This file is fairly old but is still
-     useful toward understanding the general structure of the driver stack machine.
+   In addition, you should read the file ./doc/driver/stackmachine. This file is
+   fairly old but is still useful toward understanding the general structure of
+   the driver stack machine.
 
-   The main points to know are that the arguments passed to an efunction are stored on a stack of svalues named `sp`.
-   For example, if the efunction is passed three arguments, then the first argument will be at `(sp - 2)`, the
-   second at `(sp - 1)`, and the third at sp. If a function allows a variable number of arguments, then the
-   num_arg parameter of the efun will be set to indicate the number of arguments actually passed (on the sp stack).
+   The main points to know are that the arguments passed to an efunction are
+   stored on a stack of svalues named `sp`.
 
-   Each efunction is responsible for leaving a single svalue on the sp stack at the time the efunction exits(even if
-    the efunction is defined to return void).
+   For example, if the efunction is passed three arguments, then the first argument
+   will be at `(sp - 2)`, the second at `(sp - 1)`, and the third at sp. If a
+   function allows a variable number of arguments, then the `num_arg` parameter
+   of the efun will be set to indicate the number of arguments actually passed
+   (on the sp stack).
 
-   The usual strategy is to use the stack values that you need `(sp - x)`, `pop_n_elems(num_args)` and then push a
-    result onto the stack.
+   Each efunction is responsible for leaving a single svalue on the sp stack at
+   the time the efunction exits(even if the efunction is defined to return void).
 
-   Note, if an efunction takes a single argument and is defined to return void, then you needn't pop anything from
-    the stack or push anything on (the single argument can serve as the return value).
+   The usual strategy is to use the stack values that you need `(sp - x)`,
+   `pop_n_elems(num_args)` and then push a result onto the stack.
 
+   Note, if an efunction takes a single argument and is defined to return void,
+   then you needn't pop anything from the stack or push anything on (the single
+   argument can serve as the return value).

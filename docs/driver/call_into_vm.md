@@ -5,40 +5,44 @@ title: general / call_into_vm
 # call_into_vm
 
 ### Author
-sunyucong@gmail.com
+
+<sunyucong@gmail.com>
 
 ### Date
+
 2017-08-29
 
-Driver code are consisted of roughly 2 parts.
+The VM Driver code consists of roughly 2 parts:
 
-1. VM related code. This is the LPC vm and associated stack machine. All EFUN functions also belongs to this part.
-2. Non VM code, this mostly includes communication related stuff.
+1. VM-Related Code. This is the LPC VM and associated stack machine.
+   All EFUN functions belong in this part.
+2. Non-VM Code: this is mostly communication-related functionality.
 
-To execute LPC, Non VM code needs to do some preparations:
+To execute LPC, Non-VM code first needs to be prepared:
 
 1. Push control frame to control frame stack.
 2. Push svalue_t arguments into stack
-3. set PC and various variables for VM code.
-4. call execute_instruction(pc)
-5. deal with various error condition, if no error, use the value and reset everything.
+3. Set PC and various variables for VM code.
+4. Call `execute_instruction(pc)`
+5. Deal with any error conditions; if no errors, use the value and reset everything.
 
-Normally, Non VM code _should not_ go through this process, as there is currently several helper functions that most of
-the driver code uses.
+Normally, Non-VM code _should not_ go through this process, as there are
+currently several helper functions that most of the driver code uses, such as:
 
-1. safe_apply()
-2. safe_call_function_pointer()
-3. ...
+- safe_apply()
+- safe_call_function_pointer()
+- ...
 
-However, several parts of driver can't use these functions, instead they are using
+However, several parts of driver can't use these functions, instead they are
+using:
 
-1. apply()
-2. call_direct()
-3. call_program()
+- apply()
+- call_direct()
+- call_program()
 
-For these code, the only correct way of doing this is documented here.
+For this code, the only correct way of doing this is documented here.
 
-```
+```cpp
 //  use push_number() , push_malloc_string() etc to push arguments into stack
     num_arg = X; // MUST remember how many arguments were pushed.
 
@@ -57,9 +61,10 @@ For these code, the only correct way of doing this is documented here.
     pop_context(&econ);
 ```
 
-(unfinished)
+_**(unfinished)**_
 
-LPC VM use C++ Exception to handle _any_ error encountered during LPC execution. This could come from following non-exausted list
+LPC VM use C++ Exception to handle _any_ error encountered during LPC execution.
+This could come from the following non-exhaustive list:
 
-    1. error generated from 'throw()' in LPC code.
-    2. 'error()' function from EFUN implementations.
+- an error generated from `throw()` in LPC code
+- the `error()` function from EFUN implementations

@@ -2,9 +2,7 @@
 layout: doc
 title: general / objects
 ---
-# objects
-
-- What is an object?
+# What is an Object?
 
 An object consists of a collection of functions (also called 'methods')
 and data (variables) on which the functions operate. The only way to
@@ -16,5 +14,5 @@ are objects. Even your character is an object (a special kind of object
 called "interactive" but still an object in most every respect). Each
 object (except possibly virtual objects) in the mud is associated with
 some file written in LPC (in the mud's directory structure) that describes
-how the object is to interact with the gamedriver and the rest of the objects
+how the object is to interact with the game driver and the rest of the objects
 in the mud.

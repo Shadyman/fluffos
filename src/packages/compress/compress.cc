@@ -9,6 +9,10 @@
 
 #include <zlib.h>
 
+#ifdef PACKAGE_SOCKETS
+#include "packages/sockets/socket_efuns.h"
+#endif
+
 #define GZ_EXTENSION ".gz"
 
 enum { COMPRESS_BUF_SIZE = 8096 };
@@ -316,20 +320,72 @@ void f_uncompress() {
 #endif
 
 /* Socket compression stream efuns */
+
+// Compression socket handlers
+static int compress_socket_create_handler(enum socket_mode mode, svalue_t *read_callback, svalue_t *close_callback) {
+  // For compression modes, we create the underlying socket and mark it as compressed
+  // The actual compression will be handled by socket read/write wrappers
+  
+  enum socket_mode base_mode;
+  switch (mode) {
+    case STREAM_COMPRESSED:
+      base_mode = STREAM;
+      break;
+    case STREAM_TLS_COMPRESSED:
+      base_mode = STREAM_TLS;
+      break;
+    case DATAGRAM_COMPRESSED:
+      base_mode = DATAGRAM;
+      break;
+    default:
+      return -1;  // Invalid mode
+  }
+  
+  // Create the underlying socket with the base mode
+  // The socket system will set the S_COMPRESSED flag automatically
+  return socket_create(base_mode, read_callback, close_callback);
+}
+
+// Initialize compression socket handlers
+static void init_compress_socket_handlers() {
+  static int initialized = 0;
+  if (initialized) return;
+  
+#ifdef PACKAGE_SOCKETS
+  // Register handlers for compression modes
+  register_socket_create_handler(STREAM_COMPRESSED, compress_socket_create_handler);
+  register_socket_create_handler(STREAM_TLS_COMPRESSED, compress_socket_create_handler);
+  register_socket_create_handler(DATAGRAM_COMPRESSED, compress_socket_create_handler);
+#endif
+  
+  initialized = 1;
+}
+
 #ifdef F_COMPRESS_SOCKET_CREATE
 void f_compress_socket_create() {
   try {
+    // Initialize handlers if not done already
+    init_compress_socket_handlers();
+    
     int mode = sp->u.number;
     
     // Validate compression socket mode
-    if (mode != 7 && mode != 8 && mode != 9) {  // STREAM_COMPRESSED, STREAM_TLS_COMPRESSED, DATAGRAM_COMPRESSED
+    if (mode != STREAM_COMPRESSED && mode != STREAM_TLS_COMPRESSED && mode != DATAGRAM_COMPRESSED) {
       error("compress_socket_create: Invalid compression socket mode %d\n", mode);
       return;
     }
     
-    // For now, delegate to regular socket_create
-    // This would need integration with the socket package
-    error("compress_socket_create: Not yet implemented\n");
+    // Get the callback parameters
+    svalue_t *close_callback = (st_num_arg >= 3) ? sp - 1 : nullptr;
+    svalue_t *read_callback = sp - (st_num_arg >= 3 ? 2 : 1);
+    
+    // Call the compression handler directly
+    int result = compress_socket_create_handler(static_cast<enum socket_mode>(mode), read_callback, close_callback);
+    
+    // Clean up stack and return result
+    pop_n_elems(st_num_arg);
+    push_number(result);
+    
   } catch (const std::exception& e) {
     pop_n_elems(st_num_arg);
     error("compress_socket_create: %s\n", e.what());

@@ -22,7 +22,8 @@ struct rest_route {
     std::regex compiled_pattern;
     std::vector<std::string> param_names;
     svalue_t handler;
-    mapping_t *metadata;
+    mapping_t *metadata;  // General route metadata
+    mapping_t *openapi_docs;  // OpenAPI documentation for this route
 };
 
 // REST router context
@@ -31,6 +32,9 @@ struct rest_router_context {
     std::vector<std::shared_ptr<rest_route>> routes;
     mapping_t *middleware;
     mapping_t *config;
+    mapping_t *openapi_info;  // OpenAPI specification info
+    std::string docs_path;    // Path for serving documentation
+    std::string ui_path;      // Path for serving UI
 };
 
 // Global REST management
@@ -46,6 +50,9 @@ mapping_t *rest_jwt_verify_impl(const char *token, const char *secret);
 mapping_t *rest_validate_impl(svalue_t *data, mapping_t *schema);
 mapping_t *rest_parse_request_impl(mapping_t *http_request);
 mapping_t *rest_format_response_impl(svalue_t *data, int status, mapping_t *headers);
+mapping_t *rest_generate_openapi_impl(int router_id, mapping_t *api_info);
+int rest_set_route_docs_impl(int router_id, const char *method, const char *pattern, mapping_t *docs);
+int rest_serve_docs_impl(int router_id, const char *docs_path, const char *ui_path);
 
 // Utility functions
 std::string rest_pattern_to_regex(const std::string &pattern, std::vector<std::string> &param_names);

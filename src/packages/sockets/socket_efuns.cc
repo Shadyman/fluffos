@@ -1176,6 +1176,7 @@ int socket_write(int fd, svalue_t *message, const char *name) {
               should_continue = true;
               break;
           }
+          break;  // Prevent fallthrough to default case
         default:
           debug(sockets, "ssl_write: lpc socket %d (real fd %" FMT_SOCKET_FD ") error: %s.\n",
                 fd, lpc_socks[fd].fd, ERR_error_string(e, nullptr));
@@ -1285,7 +1286,8 @@ void socket_read_select_handler(int fd) {
     case STATE_BOUND:
       switch (lpc_socks[fd].mode) {
         case DATAGRAM_BINARY:
-        case DATAGRAM: {
+        case DATAGRAM:
+        case DATAGRAM_COMPRESSED: {
           char addr[NI_MAXHOST + NI_MAXSERV];
           debug(sockets, ("read_socket_handler: DATA_XFER DATAGRAM\n"));
           addrlen = sizeof(sockaddr);
@@ -1342,6 +1344,18 @@ void socket_read_select_handler(int fd) {
         case STREAM_BINARY:
         case STREAM_TLS:
         case STREAM_TLS_BINARY:
+        case STREAM_COMPRESSED:
+        case STREAM_TLS_COMPRESSED:
+          break;
+        
+        // HTTP/WebSocket/External modes are handled by specialized handlers
+        // and should not reach this point, but add them for completeness
+        case HTTP_SERVER: case HTTPS_SERVER: case HTTP_CLIENT: case HTTPS_CLIENT:
+        case REST_SERVER: case REST_CLIENT:
+        case WEBSOCKET_SERVER: case WEBSOCKET_CLIENT: case WEBSOCKET_SECURE_SERVER: case WEBSOCKET_SECURE_CLIENT:
+        case WEBSOCKET_FILE_STREAM: case WEBSOCKET_BINARY_STREAM: case WEBSOCKET_COMPRESSED_NATIVE: case MQTT_CLIENT:
+        case EXTERNAL_PIPE: case EXTERNAL_SOCKETPAIR: case EXTERNAL_FIFO: case EXTERNAL_EVENTFD: case EXTERNAL_INOTIFY:
+          debug(sockets, ("read_socket_handler: specialized mode %d should not reach this handler\n"), lpc_socks[fd].mode);
           break;
       }
       break;
@@ -1356,7 +1370,8 @@ void socket_read_select_handler(int fd) {
     case STATE_HANDSHAKE: {
       switch (lpc_socks[fd].mode) {
         case STREAM_TLS:
-        case STREAM_TLS_BINARY: {
+        case STREAM_TLS_BINARY:
+        case STREAM_TLS_COMPRESSED: {
           debug(sockets, ("read_socket_handler: HANDSHAKE\n"));
           return handle_tls_handshake(fd);
         }
@@ -1364,11 +1379,13 @@ void socket_read_select_handler(int fd) {
           debug(sockets, ("read_socket_handler: STATE_HANDSHAKE unsupported mode.\n"));
           break;
       }
+      break;  // Prevent fallthrough to STATE_DATA_XFER
     }
 
     case STATE_DATA_XFER:
       switch (lpc_socks[fd].mode) {
         case DATAGRAM:
+        case DATAGRAM_COMPRESSED:
           break;
 
         case MUD:
@@ -1486,6 +1503,7 @@ void socket_read_select_handler(int fd) {
           break;
         case STREAM_TLS:
         case STREAM_TLS_BINARY:
+        case STREAM_TLS_COMPRESSED:  // Compressed TLS behaves like regular TLS
           debug(sockets, ("read_socket_handler: DATA_XFER STREAM_TLS\n"));
           cc = SSL_read(lpc_socks[fd].ssl, buf, sizeof(buf) - 1);
           if (cc <= 0) {
@@ -1531,6 +1549,23 @@ void socket_read_select_handler(int fd) {
           debug(sockets, ("read_socket_handler: apply read callback\n"));
           call_callback(fd, S_READ_FP, 2);
           return;
+        
+        // Compression modes behave like their base modes 
+        case STREAM_COMPRESSED:
+          // Compressed stream should behave like STREAM, but this point should not be reached
+          // since compression is handled transparently
+          debug(sockets, ("read_socket_handler: STREAM_COMPRESSED should be handled transparently\n"));
+          break;
+        
+        // HTTP/WebSocket/External modes are handled by specialized handlers
+        // and should not reach this point, but add them for completeness
+        case HTTP_SERVER: case HTTPS_SERVER: case HTTP_CLIENT: case HTTPS_CLIENT:
+        case REST_SERVER: case REST_CLIENT:
+        case WEBSOCKET_SERVER: case WEBSOCKET_CLIENT: case WEBSOCKET_SECURE_SERVER: case WEBSOCKET_SECURE_CLIENT:
+        case WEBSOCKET_FILE_STREAM: case WEBSOCKET_BINARY_STREAM: case WEBSOCKET_COMPRESSED_NATIVE: case MQTT_CLIENT:
+        case EXTERNAL_PIPE: case EXTERNAL_SOCKETPAIR: case EXTERNAL_FIFO: case EXTERNAL_EVENTFD: case EXTERNAL_INOTIFY:
+          debug(sockets, ("read_socket_handler: specialized mode %d should not reach this handler\n"), lpc_socks[fd].mode);
+          break;
       }
       break;
   }
@@ -1538,6 +1573,7 @@ void socket_read_select_handler(int fd) {
   switch(lpc_socks[fd].mode) {
     case MUD:
     case STREAM:
+    case STREAM_COMPRESSED:  // Compressed stream behaves like regular stream for error handling
       if (cc == -1) {
         auto e = evutil_socket_geterror(lpc_socks[fd].fd);
         debug(sockets, "read_socket_handler: %d (fd %d), error: (%d) %s.\n", fd, lpc_socks[fd].fd,
@@ -1580,7 +1616,8 @@ void socket_write_select_handler(int fd) {
   if (lpc_socks[fd].state == STATE_HANDSHAKE) {
     switch (lpc_socks[fd].mode) {
       case STREAM_TLS:
-      case STREAM_TLS_BINARY: {
+      case STREAM_TLS_BINARY:
+      case STREAM_TLS_COMPRESSED: {
         debug(sockets, ("socket_write_select_handler: HANDSHAKE\n"));
         handle_tls_handshake(fd);
         return ;

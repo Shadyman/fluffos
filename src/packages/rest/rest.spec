@@ -11,3 +11,6 @@ mapping rest_verify_jwt(string, string);
 mapping rest_validate_schema(mixed, mapping);
 mapping rest_parse_request(mapping);
 mapping rest_format_response(mixed, int, mapping);
+mapping rest_generate_openapi(int, mapping);
+int rest_set_route_docs(int, string, string, mapping);
+int rest_serve_docs(int, string, string);

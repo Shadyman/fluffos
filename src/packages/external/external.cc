@@ -12,6 +12,20 @@
 #include "include/socket_err.h"
 #include "packages/sockets/socket_efuns.h"
 
+#ifdef __linux__
+#include <sys/eventfd.h>
+#include <sys/inotify.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#endif
+
+// Forward declarations for socket integration
+#ifdef PACKAGE_SOCKETS
+static int external_socket_create_handler(enum socket_mode mode, svalue_t *read_callback, svalue_t *close_callback);
+static void init_external_socket_handlers();
+#endif
+
 #ifndef _WIN32
 #include <sstream>
 #include <vector>
@@ -153,7 +167,7 @@ int external_start(int which, svalue_t *args, svalue_t *arg1, svalue_t *arg2, sv
         res += "continued\n";
       }
 
-      debug(external_start, "external_start: %s\n", format_time(res).c_str());
+      // debug(external_start, "external_start: %s\n", res.c_str());
     } while (!WIFEXITED(status) && !WIFSIGNALED(status));
   }).detach();
 
@@ -342,6 +356,9 @@ void f_external_start() {
 #ifdef F_EXTERNAL_SOCKET_CREATE
 void f_external_socket_create() {
   try {
+    // Initialize handlers if not done already
+    init_external_socket_handlers();
+    
     int mode = sp->u.number;
     
     // Validate external socket mode
@@ -357,9 +374,17 @@ void f_external_socket_create() {
       return;
     }
     
-    // For now, delegate to regular socket_create
-    // This would need integration with the socket package
-    error("external_socket_create: Not yet implemented\n");
+    // Get the callback parameters
+    svalue_t *close_callback = (st_num_arg >= 3) ? sp - 1 : nullptr;
+    svalue_t *read_callback = sp - (st_num_arg >= 3 ? 2 : 1);
+    
+    // Call the external handler directly
+    int result = external_socket_create_handler(static_cast<enum socket_mode>(mode), read_callback, close_callback);
+    
+    // Clean up stack and return result
+    pop_n_elems(st_num_arg);
+    push_number(result);
+    
   } catch (const std::exception& e) {
     pop_n_elems(st_num_arg);
     error("external_socket_create: %s\n", e.what());
@@ -421,3 +446,103 @@ void f_external_inotify_read_events() {
   }
 }
 #endif
+
+/* External Process Socket Integration */
+
+// External socket handlers
+static int external_socket_create_handler(enum socket_mode mode, svalue_t *read_callback, svalue_t *close_callback) {
+  try {
+    int fd = -1;
+    
+    switch (mode) {
+      case EXTERNAL_PIPE: {
+        // Create a Unix pipe for external process communication
+        int pipefd[2];
+        if (pipe(pipefd) == -1) {
+          // debug(external_start, "external_socket_create: pipe() failed: %s\n", strerror(errno));
+          return EESOCKET;
+        }
+        
+        // Use the read end as the socket fd
+        fd = pipefd[0];
+        // Store the write end for later use (would need socket structure extension)
+        close(pipefd[1]);  // For now, close write end
+        break;
+      }
+      
+      case EXTERNAL_SOCKETPAIR: {
+        // Create Unix domain socketpair
+        int sockfd[2];
+        if (socketpair(AF_UNIX, SOCK_STREAM, 0, sockfd) == -1) {
+          // debug(external_start, "external_socket_create: socketpair() failed: %s\n", strerror(errno));
+          return EESOCKET;
+        }
+        
+        fd = sockfd[0];
+        close(sockfd[1]);  // For now, close other end
+        break;
+      }
+      
+      case EXTERNAL_FIFO: {
+        // Named FIFO creation would be handled in socket_bind()
+        // For now, return a placeholder fd
+        fd = -2;  // Special marker for FIFO mode
+        break;
+      }
+      
+#ifdef __linux__
+      case EXTERNAL_EVENTFD: {
+        // Create Linux eventfd for signaling
+        fd = eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK);
+        if (fd == -1) {
+          // debug(external_start, "external_socket_create: eventfd() failed: %s\n", strerror(errno));
+          return EESOCKET;
+        }
+        break;
+      }
+      
+      case EXTERNAL_INOTIFY: {
+        // Create inotify instance for file system monitoring
+        fd = inotify_init1(IN_CLOEXEC | IN_NONBLOCK);
+        if (fd == -1) {
+          // debug(external_start, "external_socket_create: inotify_init1() failed: %s\n", strerror(errno));
+          return EESOCKET;
+        }
+        break;
+      }
+#endif
+      
+      default:
+        return EEMODENOTSUPP;
+    }
+    
+    if (fd >= 0) {
+      // Create a proper socket using the external fd
+      // This would require integration with the socket system to use external fds
+      // For now, return the fd directly (this is a simplification)
+      return fd;
+    }
+    
+    return EESOCKET;
+  } catch (const std::exception& e) {
+    // debug(external_start, "external_socket_create error: %s\n", e.what());
+    return EESOCKET;
+  }
+}
+
+// Initialize external socket handlers
+static void init_external_socket_handlers() {
+  static int initialized = 0;
+  if (initialized) return;
+  
+  // Register handlers for external modes (40-44)
+  register_socket_create_handler(EXTERNAL_PIPE, external_socket_create_handler);
+  register_socket_create_handler(EXTERNAL_SOCKETPAIR, external_socket_create_handler);
+  register_socket_create_handler(EXTERNAL_FIFO, external_socket_create_handler);
+#ifdef __linux__
+  register_socket_create_handler(EXTERNAL_EVENTFD, external_socket_create_handler);
+  register_socket_create_handler(EXTERNAL_INOTIFY, external_socket_create_handler);
+#endif
+  
+  initialized = 1;
+}

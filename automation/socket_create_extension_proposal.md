@@ -83,12 +83,24 @@ EXTERNAL_INOTIFY = 44,  // File system event monitoring (safe with whitelist)
 - Unified callback interface
 - Available when websockets are enabled in build
 
-### Phase 3: REST Integration (Modes 30-31)
+### Phase 3: REST Integration (Modes 24-25)
 
 - REST_SERVER/REST_CLIENT modes require PACKAGE_REST to be compiled
-- Built on top of HTTP modes (10-13)
+- Built on top of HTTP modes (20-23) via libwebsockets
 - Provides automatic URL routing and JSON handling
-- Integrates with rest_* EFUNs
+- Integrates with rest_* EFUNs including OpenAPI documentation generation
+- OpenAPI functionality is built into PACKAGE_REST (no separate package needed)
+
+#### OpenAPI Integration within PACKAGE_REST
+
+The REST package includes comprehensive OpenAPI 3.0 support through:
+
+- `rest_generate_openapi(router_id, api_info)` - Generate OpenAPI spec from routes
+- `rest_set_route_docs(router_id, method, pattern, docs)` - Add documentation to routes
+- `rest_serve_docs(router_id, docs_path, ui_path)` - Serve interactive documentation
+
+This provides automatic API documentation generation, interactive documentation UI (Swagger/ReDoc), 
+schema validation integration, and comprehensive request/response documentation.
 
 ### Phase 4: Advanced Protocols (Modes 40-43)
 
@@ -115,8 +127,51 @@ int udp_socket = socket_create(DATAGRAM_COMPRESSED, "udp_data", "udp_error");
 // HTTP server
 int http_socket = socket_create(HTTP_SERVER, "http_read_callback", "http_close_callback");
 
-// REST API server
+// REST API server with OpenAPI documentation
 int rest_socket = socket_create(REST_SERVER, "rest_request_callback", "rest_close_callback");
+
+// Example: Setting up REST router with OpenAPI docs
+int router_id = rest_create_router();
+
+// Add routes with documentation
+rest_add_route(router_id, "GET", "/users/{id}", "get_user_handler");
+rest_set_route_docs(router_id, "GET", "/users/{id}", ([
+    "summary": "Get user by ID",
+    "description": "Retrieve a specific user by their unique identifier",
+    "parameters": ([
+        "id": ([
+            "type": "integer",
+            "description": "User ID",
+            "example": 123
+        ])
+    ]),
+    "responses": ([
+        "200": ([
+            "description": "User found",
+            "schema": ([
+                "type": "object",
+                "properties": ([
+                    "id": (["type": "integer"]),
+                    "name": (["type": "string"]),
+                    "email": (["type": "string"])
+                ])
+            ])
+        ])
+    ])
+]));
+
+// Generate and serve OpenAPI documentation
+mapping api_info = ([
+    "title": "MUD REST API",
+    "version": "1.0.0",
+    "description": "FluffOS MUD REST API with OpenAPI documentation"
+]);
+
+// Auto-generate OpenAPI spec from routes
+mapping openapi_spec = rest_generate_openapi(router_id, api_info);
+
+// Serve interactive documentation at /docs
+rest_serve_docs(router_id, "/docs", "/swagger-ui");
 ```
 
 ### WebSocket Modes

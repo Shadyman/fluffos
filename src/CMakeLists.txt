@@ -290,6 +290,7 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}/thirdparty/libwebsockets")
 set(GENERATED_HEADERS
         "${CMAKE_CURRENT_BINARY_DIR}/config.h"
         "${CMAKE_CURRENT_BINARY_DIR}/packages/packages.autogen.h"
+        "${CMAKE_CURRENT_BINARY_DIR}/socket_modes.h"
         )
 
 # Tools
@@ -597,3 +598,6 @@ endif()
 
 # Must keep this line at the end, so we get all the variables.
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+
+# Generate socket modes header based on enabled packages
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/socket_modes.h.in ${CMAKE_CURRENT_BINARY_DIR}/socket_modes.h)

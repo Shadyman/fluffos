@@ -3,11 +3,17 @@ if(${PACKAGE_SOCKETS})
             "socket_efuns.cc"
             "socket_efuns.h"
             "socket_option_manager.h"
+            "socket_option_manager.cc"
             "socket_options.h"
             "socket_option_validator.h"
             "socket_option_validator.cc"
             "socket_error_handler.h"
             "socket_error_handler.cc"
+            "http_handler.h"
+            "http_handler.cc"
+            "http_efuns.cc"
+            "socket_http_integration.h"
+            "socket_http_integration.cc"
             "sockets.cc"
             )
 endif()

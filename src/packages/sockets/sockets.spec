@@ -24,3 +24,17 @@
      * ret[5] = (object) owner
      */
     mixed *socket_status(void | int);
+
+/*
+ * HTTP socket efuns - Phase 2 Unified Socket Architecture
+ */
+    int socket_set_http_mode(int, mapping | void);
+    mapping socket_http_request(int);
+    int socket_http_response(int, int, string | void, mapping | void);
+    int socket_http_error(int, int, string | void);
+    int socket_http_json(int, string, int | void);
+    int socket_http_redirect(int, string, int | void);
+    mapping socket_http_headers(int);
+    int socket_is_http_mode(int);
+    int socket_http_reset(int);
+    int socket_http_keepalive(int);

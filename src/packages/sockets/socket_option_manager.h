@@ -122,6 +122,46 @@ private:
     
     // Security helper
     bool check_system_permission(object_t* caller) const;
+    bool is_socket_owner(object_t* caller) const;
+    socket_option_access get_caller_access_level(object_t* caller) const;
+    
+    // Type matching helper
+    bool svalue_matches_type(const svalue_t* value, socket_option_type expected_type) const;
+    
+    // Internal option registration helpers
+    void register_option(int option_id, socket_option_type type, socket_option_category category, 
+                        socket_option_access access, const svalue_t& default_val, const char* desc,
+                        long min_int = 0, long max_int = 0);
+    void register_option(int option_id, socket_option_type type, socket_option_category category, 
+                        socket_option_access access, bool default_bool, const char* desc);
+    void register_option(int option_id, socket_option_type type, socket_option_category category, 
+                        socket_option_access access, const char* default_str, const char* desc);
+    void register_option(int option_id, socket_option_type type, socket_option_category category, 
+                        socket_option_access access, int default_int, const char* desc, 
+                        long min_val = 0, long max_val = 0);
+    void register_option(int option_id, socket_option_type type, socket_option_category category, 
+                        socket_option_access access, void* default_ptr, const char* desc);
+    
+    // Option category registration methods
+    void register_core_options();
+    void register_http_options();
+    void register_rest_options();
+    void register_websocket_options();
+    void register_mqtt_options();
+    void register_external_options();
+    void register_database_options();
+    void register_cache_options();
+    void register_tls_options();
+    void register_internal_options();
+    
+    // Protocol mode management
+    int get_socket_mode_from_options() const;
+    void update_protocol_modes(int option, const svalue_t* value);
+    void set_internal_mode(int mode_option, bool enabled);
+    
+    // Utility functions for formatting
+    const char* get_type_name(socket_option_type type) const;
+    const char* get_category_name(socket_option_category category) const;
     
     // Constraint validation helpers
     bool validate_integer_constraints(int option, long value) const;

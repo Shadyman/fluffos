@@ -337,3 +337,87 @@ void f_external_start() {
   sp->u.number = fd;
 }
 #endif
+
+/* External process integration socket efuns */
+#ifdef F_EXTERNAL_SOCKET_CREATE
+void f_external_socket_create() {
+  try {
+    int mode = sp->u.number;
+    
+    // Validate external socket mode
+    if (mode < 40 || mode > 44) {  // EXTERNAL_PIPE through EXTERNAL_INOTIFY
+      error("external_socket_create: Invalid external socket mode %d\n", mode);
+      return;
+    }
+    
+    // Security check
+    if (!check_valid_socket("external_socket_create", -1, current_object, "N/A", -1)) {
+      pop_n_elems(st_num_arg);
+      push_number(EESECURITY);
+      return;
+    }
+    
+    // For now, delegate to regular socket_create
+    // This would need integration with the socket package
+    error("external_socket_create: Not yet implemented\n");
+  } catch (const std::exception& e) {
+    pop_n_elems(st_num_arg);
+    error("external_socket_create: %s\n", e.what());
+  }
+}
+#endif
+
+#ifdef F_EXTERNAL_EVENTFD_SIGNAL
+void f_external_eventfd_signal() {
+  try {
+    error("external_eventfd_signal: Not yet implemented\n");
+  } catch (const std::exception& e) {
+    pop_n_elems(st_num_arg);
+    error("external_eventfd_signal: %s\n", e.what());
+  }
+}
+#endif
+
+#ifdef F_EXTERNAL_EVENTFD_READ
+void f_external_eventfd_read() {
+  try {
+    error("external_eventfd_read: Not yet implemented\n");
+  } catch (const std::exception& e) {
+    pop_n_elems(st_num_arg);
+    error("external_eventfd_read: %s\n", e.what());
+  }
+}
+#endif
+
+#ifdef F_EXTERNAL_INOTIFY_ADD_WATCH
+void f_external_inotify_add_watch() {
+  try {
+    error("external_inotify_add_watch: Not yet implemented\n");
+  } catch (const std::exception& e) {
+    pop_n_elems(st_num_arg);
+    error("external_inotify_add_watch: %s\n", e.what());
+  }
+}
+#endif
+
+#ifdef F_EXTERNAL_INOTIFY_REMOVE_WATCH
+void f_external_inotify_remove_watch() {
+  try {
+    error("external_inotify_remove_watch: Not yet implemented\n");
+  } catch (const std::exception& e) {
+    pop_n_elems(st_num_arg);
+    error("external_inotify_remove_watch: %s\n", e.what());
+  }
+}
+#endif
+
+#ifdef F_EXTERNAL_INOTIFY_READ_EVENTS
+void f_external_inotify_read_events() {
+  try {
+    error("external_inotify_read_events: Not yet implemented\n");
+  } catch (const std::exception& e) {
+    pop_n_elems(st_num_arg);
+    error("external_inotify_read_events: %s\n", e.what());
+  }
+}
+#endif

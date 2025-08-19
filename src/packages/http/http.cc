@@ -407,3 +407,125 @@ void f_http_send_request(void) {
     sp->type = T_NUMBER;
     sp->u.number = result;
 }
+
+/* WebSocket integration efuns */
+#ifdef F_WEBSOCKET_SOCKET_CREATE
+void f_websocket_socket_create() {
+  try {
+    int mode = sp->u.number;
+    
+    // Validate WebSocket socket mode
+    if (mode < 30 || mode > 37) {  // WEBSOCKET_SERVER through MQTT_CLIENT
+      error("websocket_socket_create: Invalid WebSocket socket mode %d\n", mode);
+      return;
+    }
+    
+    // For now, delegate to regular socket_create
+    // This would need integration with the socket package and existing websocket.cc
+    error("websocket_socket_create: Not yet implemented\n");
+  } catch (const std::exception& e) {
+    pop_n_elems(st_num_arg);
+    error("websocket_socket_create: %s\n", e.what());
+  }
+}
+#endif
+
+#ifdef F_WEBSOCKET_SEND_MESSAGE
+void f_websocket_send_message() {
+  try {
+    error("websocket_send_message: Not yet implemented\n");
+  } catch (const std::exception& e) {
+    pop_n_elems(st_num_arg);
+    error("websocket_send_message: %s\n", e.what());
+  }
+}
+#endif
+
+#ifdef F_WEBSOCKET_SEND_BINARY
+void f_websocket_send_binary() {
+  try {
+    error("websocket_send_binary: Not yet implemented\n");
+  } catch (const std::exception& e) {
+    pop_n_elems(st_num_arg);
+    error("websocket_send_binary: %s\n", e.what());
+  }
+}
+#endif
+
+#ifdef F_WEBSOCKET_CLOSE_CONNECTION
+void f_websocket_close_connection() {
+  try {
+    error("websocket_close_connection: Not yet implemented\n");
+  } catch (const std::exception& e) {
+    pop_n_elems(st_num_arg);
+    error("websocket_close_connection: %s\n", e.what());
+  }
+}
+#endif
+
+#ifdef F_WEBSOCKET_GET_INFO
+void f_websocket_get_info() {
+  try {
+    error("websocket_get_info: Not yet implemented\n");
+  } catch (const std::exception& e) {
+    pop_n_elems(st_num_arg);
+    error("websocket_get_info: %s\n", e.what());
+  }
+}
+#endif
+
+/* MQTT client efuns */
+#ifdef F_MQTT_SOCKET_CREATE
+void f_mqtt_socket_create() {
+  try {
+    error("mqtt_socket_create: Not yet implemented\n");
+  } catch (const std::exception& e) {
+    pop_n_elems(st_num_arg);
+    error("mqtt_socket_create: %s\n", e.what());
+  }
+}
+#endif
+
+#ifdef F_MQTT_PUBLISH
+void f_mqtt_publish() {
+  try {
+    error("mqtt_publish: Not yet implemented\n");
+  } catch (const std::exception& e) {
+    pop_n_elems(st_num_arg);
+    error("mqtt_publish: %s\n", e.what());
+  }
+}
+#endif
+
+#ifdef F_MQTT_SUBSCRIBE
+void f_mqtt_subscribe() {
+  try {
+    error("mqtt_subscribe: Not yet implemented\n");
+  } catch (const std::exception& e) {
+    pop_n_elems(st_num_arg);
+    error("mqtt_subscribe: %s\n", e.what());
+  }
+}
+#endif
+
+#ifdef F_MQTT_UNSUBSCRIBE
+void f_mqtt_unsubscribe() {
+  try {
+    error("mqtt_unsubscribe: Not yet implemented\n");
+  } catch (const std::exception& e) {
+    pop_n_elems(st_num_arg);
+    error("mqtt_unsubscribe: %s\n", e.what());
+  }
+}
+#endif
+
+#ifdef F_MQTT_DISCONNECT
+void f_mqtt_disconnect() {
+  try {
+    error("mqtt_disconnect: Not yet implemented\n");
+  } catch (const std::exception& e) {
+    pop_n_elems(st_num_arg);
+    error("mqtt_disconnect: %s\n", e.what());
+  }
+}
+#endif

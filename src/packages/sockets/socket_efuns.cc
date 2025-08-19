@@ -28,7 +28,17 @@
 
 #if defined(PACKAGE_SOCKETS) || defined(PACKAGE_EXTERNAL)
 
-const char *socket_modes[] = {"MUD", "STREAM", "DATAGRAM", "STREAM_BINARY", "DATAGRAM_BINARY", "STREAM_TLS", "STREAM_TLS_BINARY"};
+const char *socket_modes[] = {
+  "MUD", "STREAM", "DATAGRAM", "STREAM_BINARY", "DATAGRAM_BINARY", "STREAM_TLS", "STREAM_TLS_BINARY",
+  "STREAM_COMPRESSED", "STREAM_TLS_COMPRESSED", "DATAGRAM_COMPRESSED",
+  nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,  // 10-19 reserved
+  "HTTP_SERVER", "HTTPS_SERVER", "HTTP_CLIENT", "HTTPS_CLIENT", "REST_SERVER", "REST_CLIENT",
+  nullptr, nullptr, nullptr, nullptr,  // 26-29 reserved
+  "WEBSOCKET_SERVER", "WEBSOCKET_CLIENT", "WEBSOCKET_SECURE_SERVER", "WEBSOCKET_SECURE_CLIENT",
+  "WEBSOCKET_FILE_STREAM", "WEBSOCKET_BINARY_STREAM", "WEBSOCKET_COMPRESSED_NATIVE", "MQTT_CLIENT",
+  nullptr, nullptr,  // 38-39 reserved
+  "EXTERNAL_PIPE", "EXTERNAL_SOCKETPAIR", "EXTERNAL_FIFO", "EXTERNAL_EVENTFD", "EXTERNAL_INOTIFY"
+};
 
 const char *socket_states[] = {"CLOSED", "CLOSING", "UNBOUND", "BOUND", "LISTEN", "HANDSHAKE", "DATA_XFER"};
 const char *socket_options[] = {"SO_TLS_VERIFY_PEER", "SO_TLS_SNI_HOSTNAME"};
@@ -124,6 +134,90 @@ void handle_tls_handshake(int fd) {
 }
 
 }  // namespace
+
+// Socket mode helper functions
+static bool is_compression_mode(enum socket_mode mode) {
+  return (mode >= 7 && mode <= 9);  // STREAM_COMPRESSED, STREAM_TLS_COMPRESSED, DATAGRAM_COMPRESSED
+}
+
+static bool is_http_mode(enum socket_mode mode) {
+  return (mode >= 20 && mode <= 25);  // HTTP_SERVER through REST_CLIENT
+}
+
+static bool is_websocket_mode(enum socket_mode mode) {
+  return (mode >= 30 && mode <= 37);  // WEBSOCKET_SERVER through MQTT_CLIENT
+}
+
+static bool is_external_mode(enum socket_mode mode) {
+  return (mode >= 40 && mode <= 44);  // EXTERNAL_PIPE through EXTERNAL_INOTIFY
+}
+
+static bool is_package_available(enum socket_mode mode) {
+  if (is_compression_mode(mode)) {
+#ifdef PACKAGE_COMPRESS
+    return true;
+#else
+    return false;
+#endif
+  }
+  
+  if (is_http_mode(mode) || is_websocket_mode(mode)) {
+#ifdef PACKAGE_HTTP
+    return true;
+#else
+    return false;
+#endif
+  }
+  
+  if (is_external_mode(mode)) {
+#ifdef PACKAGE_EXTERNAL
+    return true;
+#else
+    return false;
+#endif
+  }
+  
+  return true;  // Core modes (0-6) are always available
+}
+
+// Package integration hook implementations
+bool socket_mode_is_compression(enum socket_mode mode) {
+  return is_compression_mode(mode);
+}
+
+bool socket_mode_is_http(enum socket_mode mode) {
+  return is_http_mode(mode);
+}
+
+bool socket_mode_is_websocket(enum socket_mode mode) {
+  return is_websocket_mode(mode);
+}
+
+bool socket_mode_is_external(enum socket_mode mode) {
+  return is_external_mode(mode);
+}
+
+bool socket_mode_package_available(enum socket_mode mode) {
+  return is_package_available(mode);
+}
+
+// Package handler registration system
+#include <map>
+static std::map<enum socket_mode, socket_create_handler_t> create_handlers;
+static std::map<enum socket_mode, socket_bind_handler_t> bind_handlers;
+static std::map<enum socket_mode, socket_connect_handler_t> connect_handlers;
+
+void register_socket_create_handler(enum socket_mode mode, socket_create_handler_t handler) {
+  create_handlers[mode] = handler;
+}
+
+void register_socket_bind_handler(enum socket_mode mode, socket_bind_handler_t handler) {
+  bind_handlers[mode] = handler;
+}
+
+void register_socket_connect_handler(enum socket_mode mode, socket_connect_handler_t handler) {
+  connect_handlers[mode] = handler;
+}
 
 // Initialize LPC socket data structure and register events
 void new_lpc_socket_event_listener(int idx, lpc_socket_t *sock, evutil_socket_t real_fd) {
@@ -357,7 +451,16 @@ int socket_create(enum socket_mode mode, svalue_t *read_callback, svalue_t *clos
   int type, i, fd;
   int binary = 0;
   bool tls = false;
+  bool compressed = false;
+  bool external_socket = false;
+  enum socket_mode base_mode = mode;
 
+  // Check if package is available for the requested mode
+  if (!is_package_available(mode)) {
+    return EEMODENOTSUPP;
+  }
+
+  // Handle binary variants
   if (mode == STREAM_BINARY) {
     binary = 1;
     mode = STREAM;
@@ -366,23 +469,68 @@ int socket_create(enum socket_mode mode, svalue_t *read_callback, svalue_t *clos
     mode = DATAGRAM;
   }
 
-  switch (mode) {
-    case MUD:
-    case STREAM:
-      type = SOCK_STREAM;
-      break;
-    case DATAGRAM:
-      type = SOCK_DGRAM;
-      break;
-    case STREAM_TLS_BINARY:
-      binary = 1;
-      // fall through
-    case STREAM_TLS:
-      tls = true;
-      type = SOCK_STREAM;
-      break;
-    default:
-      return EEMODENOTSUPP;
+  // Handle compression modes
+  if (is_compression_mode(base_mode)) {
+    compressed = true;
+    switch (base_mode) {
+      case STREAM_COMPRESSED:
+        mode = STREAM;
+        type = SOCK_STREAM;
+        break;
+      case STREAM_TLS_COMPRESSED:
+        mode = STREAM_TLS;
+        tls = true;
+        type = SOCK_STREAM;
+        break;
+      case DATAGRAM_COMPRESSED:
+        mode = DATAGRAM;
+        type = SOCK_DGRAM;
+        break;
+      default:
+        return EEMODENOTSUPP;
+    }
+  }
+  // Handle HTTP/WebSocket modes - delegate to package handlers
+  else if (is_http_mode(base_mode) || is_websocket_mode(base_mode)) {
+    // Check if there's a registered handler for this mode
+    auto handler_it = create_handlers.find(base_mode);
+    if (handler_it != create_handlers.end()) {
+      return handler_it->second(base_mode, read_callback, close_callback);
+    }
+    // No handler registered, mode not supported yet
+    return EEMODENOTSUPP;
+  }
+  // Handle external process modes
+  else if (is_external_mode(base_mode)) {
+    external_socket = true;
+    // Check if there's a registered handler for this mode
+    auto handler_it = create_handlers.find(base_mode);
+    if (handler_it != create_handlers.end()) {
+      return handler_it->second(base_mode, read_callback, close_callback);
+    }
+    // No handler registered, mode not supported yet
+    return EEMODENOTSUPP;
+  }
+  // Handle standard modes
+  else {
+    switch (mode) {
+      case MUD:
+      case STREAM:
+        type = SOCK_STREAM;
+        break;
+      case DATAGRAM:
+        type = SOCK_DGRAM;
+        break;
+      case STREAM_TLS_BINARY:
+        binary = 1;
+        // fall through
+      case STREAM_TLS:
+        tls = true;
+        type = SOCK_STREAM;
+        break;
+      default:
+        return EEMODENOTSUPP;
+    }
   }
   i = find_new_socket();
   if (i >= 0) {
@@ -448,13 +596,20 @@ int socket_create(enum socket_mode mode, svalue_t *read_callback, svalue_t *clos
     if (tls) {
       lpc_socks[i].flags |= S_TLS_SUPPORT;
     }
+    if (compressed) {
+      lpc_socks[i].flags |= S_COMPRESSED;
+    }
+    if (external_socket) {
+      lpc_socks[i].flags |= S_EXTERNAL;
+    }
 
-    lpc_socks[i].mode = mode;
+    lpc_socks[i].mode = base_mode;  // Store the original mode, not the transformed one
     lpc_socks[i].state = STATE_UNBOUND;
     lpc_socks[i].owner_ob = current_object;
     current_object->flags |= O_EFUN_SOCKET;
 
-    debug(sockets, "socket_create: created lpc socket %d (real fd %d) mode %s\n", i, fd, socket_modes[mode]);
+    debug(sockets, "socket_create: created lpc socket %d (real fd %d) mode %s\n", i, fd, 
+          socket_modes[base_mode] ? socket_modes[base_mode] : "UNKNOWN");
   }
 
   return i;
@@ -1843,7 +1998,10 @@ array_t *socket_status(int which) {
 
   ret->item[2].type = T_STRING;
   ret->item[2].subtype = STRING_CONSTANT;
-  ret->item[2].u.string = socket_modes[lpc_socks[which].mode];
+  ret->item[2].u.string = (lpc_socks[which].mode < sizeof(socket_modes)/sizeof(socket_modes[0]) && 
+                           socket_modes[lpc_socks[which].mode]) 
+                          ? socket_modes[lpc_socks[which].mode] 
+                          : "UNKNOWN";
 
   ret->item[3].type = T_STRING;
   ret->item[3].subtype = STRING_MALLOC;

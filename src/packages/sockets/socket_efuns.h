@@ -117,13 +117,10 @@ enum socket_flags {
   S_READ_FP = 0x020,
   S_WRITE_FP = 0x040,
   S_CLOSE_FP = 0x080,
-  S_EXTERNAL = 0x100,
+  S_EXTERNAL = 0x100,        // External process socket (covers all external modes)
   S_LINKDEAD = 0x200,
   S_TLS_SUPPORT = 0x400,
   S_COMPRESSED = 0x800,      // Socket uses compression
-  S_HTTP_MODE = 0x1000,      // HTTP-based socket mode
-  S_WEBSOCKET_MODE = 0x2000, // WebSocket-based socket mode
-  S_EXTERNAL_MODE = 0x4000,  // External process integration mode
 };
 
 array_t *socket_status(int);
@@ -158,5 +155,22 @@ void mark_sockets();
 void lpc_socks_closeall();
 
 void new_lpc_socket_event_listener(int idx, lpc_socket_t *sock, evutil_socket_t real_fd);
+
+// Package integration hooks
+bool socket_mode_is_compression(enum socket_mode mode);
+bool socket_mode_is_http(enum socket_mode mode);
+bool socket_mode_is_websocket(enum socket_mode mode);
+bool socket_mode_is_external(enum socket_mode mode);
+bool socket_mode_package_available(enum socket_mode mode);
+
+// Integration callbacks for specialized packages
+typedef int (*socket_create_handler_t)(enum socket_mode mode, svalue_t *read_callback, svalue_t *close_callback);
+typedef int (*socket_bind_handler_t)(int fd, int port, const char *addr);
+typedef int (*socket_connect_handler_t)(int fd, const char *addr, svalue_t *read_callback, svalue_t *write_callback);
+
+// Registration functions for package handlers
+void register_socket_create_handler(enum socket_mode mode, socket_create_handler_t handler);
+void register_socket_bind_handler(enum socket_mode mode, socket_bind_handler_t handler);
+void register_socket_connect_handler(enum socket_mode mode, socket_connect_handler_t handler);
 
 #endif /* _SOCKET_EFUNS_H_ */

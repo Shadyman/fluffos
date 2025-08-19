@@ -225,6 +225,12 @@ update_docs() {
     cd "$FLUFFOS_DIR/build"
     
     echo "Updating FluffOS documentation..."
+    echo ""
+    echo "🤖 REMINDER: For complex documentation tasks like creating guidelines,"
+    echo "    formatting standards, or comprehensive documentation reviews,"
+    echo "    consider using Claude Code subagents with the Task tool."
+    echo "    This ensures consistent quality and leverages specialized expertise."
+    echo ""
     
     # Check if generate_keywords exists
     if [ ! -f "src/generate_keywords" ]; then
@@ -260,6 +266,7 @@ update_docs() {
     
     # Generate AI-powered descriptions for TBW placeholders
     echo "Step 4: Running generate_efun_descriptions.py to create AI-powered descriptions..."
+    echo "         💡 TIP: For complex documentation tasks, use Claude Code subagents"
     if [ -f "generate_efun_descriptions.py" ]; then
         python3 generate_efun_descriptions.py
         echo "✓ AI-generated descriptions created for EFUN documentation"
@@ -458,5 +465,10 @@ case "$1" in
             echo "Your fork: $(git remote get-url origin)"
         fi
         echo "Upstream:  https://github.com/fluffos/fluffos"
+        echo ""
+        echo "💡 TIP: For complex tasks like documentation creation, code analysis, or formatting"
+        echo "    standards, consider using Claude Code subagents with the Task tool. This"
+        echo "    ensures consistent quality and leverages specialized expertise for different"
+        echo "    types of tasks (e.g., general-purpose, statusline-setup, output-style-setup)."
         ;;
 esac

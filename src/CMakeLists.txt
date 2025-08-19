@@ -32,6 +32,22 @@ option(PACKAGE_SOCKETS "sockets package" ON)
 option(PACKAGE_TRIM "trim package" ON)
 option(PACKAGE_UIDS "uids package" OFF)
 option(PACKAGE_EXTERNAL "external package" ON)
+
+# libwebsockets configuration for enhanced HTTP/WebSocket features
+option(LWS_WITH_HTTP_STREAM_COMPRESSION "Enable HTTP gzip/deflate compression" ON)
+option(LWS_WITH_HTTP_BROTLI "Enable HTTP brotli compression (requires LWS_WITH_HTTP_STREAM_COMPRESSION)" ON)
+option(LWS_WITH_RANGES "Support HTTP ranges (RFC7233) for partial content" ON)
+option(LWS_WITH_ACCESS_LOG "Enable Apache-compatible HTTP access logs" ON)
+option(LWS_WITH_SYS_ASYNC_DNS "Enable non-blocking DNS resolution" ON)
+option(LWS_WITH_PEER_LIMITS "Track and limit per-peer resource allocation" ON)
+
+# PACKAGE_COMPRESS configuration
+add_definitions(-DSAVE_GZ_EXTENSION=".o.gz")  # Compressed save file extension
+add_definitions(-DGZ_EXTENSION=".gz")         # General gzip extension
+
+# PACKAGE_EXTERNAL configuration 
+add_definitions(-DMAX_EXTERNAL_CMDS=100)      # Allow up to 100 external commands
+
 option(DEBUG ON)
 option(DEBUGMALLOC ${DEBUG})
 # End of list of compile options.

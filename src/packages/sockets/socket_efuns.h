@@ -11,13 +11,49 @@
 
 // The number here is same as the one in include/socket.h
 enum socket_mode {
+  // Core FluffOS modes (existing)
   MUD = 0,
   STREAM = 1,
   DATAGRAM = 2,
   STREAM_BINARY = 3,
   DATAGRAM_BINARY = 4,
   STREAM_TLS = 5,
-  STREAM_TLS_BINARY = 6
+  STREAM_TLS_BINARY = 6,
+  
+  // Core socket compression modes (PACKAGE_COMPRESS)
+  STREAM_COMPRESSED = 7,
+  STREAM_TLS_COMPRESSED = 8,
+  DATAGRAM_COMPRESSED = 9,
+  
+  // Reserved for future core expansion: 10-19
+  
+  // HTTP-based modes (PACKAGE_HTTP - requires libwebsockets)
+  HTTP_SERVER = 20,
+  HTTPS_SERVER = 21,
+  HTTP_CLIENT = 22,
+  HTTPS_CLIENT = 23,
+  REST_SERVER = 24,
+  REST_CLIENT = 25,
+  // Reserved for HTTP/REST expansion: 26-29
+  
+  // WebSocket-based modes (libwebsockets)
+  WEBSOCKET_SERVER = 30,
+  WEBSOCKET_CLIENT = 31,
+  WEBSOCKET_SECURE_SERVER = 32,
+  WEBSOCKET_SECURE_CLIENT = 33,
+  WEBSOCKET_FILE_STREAM = 34,
+  WEBSOCKET_BINARY_STREAM = 35,
+  WEBSOCKET_COMPRESSED_NATIVE = 36,
+  MQTT_CLIENT = 37,
+  // Reserved for libwebsockets expansion: 38-39
+  
+  // External process integration (PACKAGE_EXTERNAL)
+  EXTERNAL_PIPE = 40,
+  EXTERNAL_SOCKETPAIR = 41,
+  EXTERNAL_FIFO = 42,
+  EXTERNAL_EVENTFD = 43,
+  EXTERNAL_INOTIFY = 44
+  // Reserved for external integration: 45-49
 };
 
 enum socket_option {
@@ -84,6 +120,10 @@ enum socket_flags {
   S_EXTERNAL = 0x100,
   S_LINKDEAD = 0x200,
   S_TLS_SUPPORT = 0x400,
+  S_COMPRESSED = 0x800,      // Socket uses compression
+  S_HTTP_MODE = 0x1000,      // HTTP-based socket mode
+  S_WEBSOCKET_MODE = 0x2000, // WebSocket-based socket mode
+  S_EXTERNAL_MODE = 0x4000,  // External process integration mode
 };
 
 array_t *socket_status(int);

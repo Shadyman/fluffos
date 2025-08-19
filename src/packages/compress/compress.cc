@@ -314,3 +314,69 @@ void f_uncompress() {
   }
 }
 #endif
+
+/* Socket compression stream efuns */
+#ifdef F_COMPRESS_SOCKET_CREATE
+void f_compress_socket_create() {
+  try {
+    int mode = sp->u.number;
+    
+    // Validate compression socket mode
+    if (mode != 7 && mode != 8 && mode != 9) {  // STREAM_COMPRESSED, STREAM_TLS_COMPRESSED, DATAGRAM_COMPRESSED
+      error("compress_socket_create: Invalid compression socket mode %d\n", mode);
+      return;
+    }
+    
+    // For now, delegate to regular socket_create
+    // This would need integration with the socket package
+    error("compress_socket_create: Not yet implemented\n");
+  } catch (const std::exception& e) {
+    pop_n_elems(st_num_arg);
+    error("compress_socket_create: %s\n", e.what());
+  }
+}
+#endif
+
+#ifdef F_COMPRESS_SOCKET_WRITE
+void f_compress_socket_write() {
+  try {
+    error("compress_socket_write: Not yet implemented\n");
+  } catch (const std::exception& e) {
+    pop_n_elems(st_num_arg);
+    error("compress_socket_write: %s\n", e.what());
+  }
+}
+#endif
+
+#ifdef F_COMPRESS_SOCKET_READ
+void f_compress_socket_read() {
+  try {
+    error("compress_socket_read: Not yet implemented\n");
+  } catch (const std::exception& e) {
+    pop_n_elems(st_num_arg);
+    error("compress_socket_read: %s\n", e.what());
+  }
+}
+#endif
+
+#ifdef F_COMPRESS_SOCKET_FLUSH
+void f_compress_socket_flush() {
+  try {
+    error("compress_socket_flush: Not yet implemented\n");
+  } catch (const std::exception& e) {
+    pop_n_elems(st_num_arg);
+    error("compress_socket_flush: %s\n", e.what());
+  }
+}
+#endif
+
+#ifdef F_COMPRESS_SOCKET_ALGORITHM
+void f_compress_socket_algorithm() {
+  try {
+    error("compress_socket_algorithm: Not yet implemented\n");
+  } catch (const std::exception& e) {
+    pop_n_elems(st_num_arg);
+    error("compress_socket_algorithm: %s\n", e.what());
+  }
+}
+#endif

@@ -20,10 +20,10 @@ enum socket_mode {
   STREAM_TLS_BINARY = 6
 };
 
-enum socket_option {
-  SO_INVALID = 0,
-  SO_TLS_VERIFY_PEER = 1,
-  SO_TLS_SNI_HOSTNAME = 2,
+enum legacy_socket_option {
+  LEGACY_SO_INVALID = -1,
+  LEGACY_SO_TLS_VERIFY_PEER = 0,
+  LEGACY_SO_TLS_SNI_HOSTNAME = 1,
 };
 
 constexpr int NUM_SOCKET_OPTIONS = 3;

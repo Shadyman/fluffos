@@ -66,8 +66,8 @@ private:
     
     // Helper methods
     void initialize_descriptors();
-    bool validate_option_value(int option, const svalue_t* value);
-    bool has_access_permission(int option, object_t* caller);
+    bool validate_option_value(int option, const svalue_t* value) const;
+    bool has_access_permission(int option, object_t* caller) const;
     void convert_to_type(svalue_t* value, socket_option_type target_type);
     svalue_t get_default_value(int option);
     
@@ -116,6 +116,12 @@ public:
     // Backward compatibility with existing socket system
     void migrate_from_legacy_options(const svalue_t legacy_options[], size_t count);
     void update_legacy_options(svalue_t legacy_options[], size_t count) const;
+    
+    // Friend functions for global access to static members
+    friend const SocketOptionDescriptor* get_option_descriptor(int option);
+    friend bool validate_socket_option(int option, const svalue_t* value, const char** error_msg);
+    friend array_t* get_options_in_category(socket_option_category category);
+    friend bool is_valid_socket_option(int option);
     
 private:
     mutable std::string last_error_;

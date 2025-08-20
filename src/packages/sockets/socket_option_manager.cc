@@ -104,7 +104,7 @@ void SocketOptionManager::register_core_options() {
 
 void SocketOptionManager::register_http_options() {
     register_option(SO_HTTP_HEADERS, OPTION_TYPE_MAPPING, OPTION_CATEGORY_HTTP,
-                   OPTION_ACCESS_PUBLIC, nullptr, "HTTP request/response headers");
+                   OPTION_ACCESS_PUBLIC, static_cast<void*>(nullptr), "HTTP request/response headers");
                    
     register_option(SO_HTTP_METHOD, OPTION_TYPE_STRING, OPTION_CATEGORY_HTTP,
                    OPTION_ACCESS_PUBLIC, "GET", "HTTP request method");
@@ -130,22 +130,22 @@ void SocketOptionManager::register_http_options() {
 void SocketOptionManager::register_rest_options() {
     // Note: REST options do NOT use SO_ prefix per compliance requirements
     register_option(REST_ROUTER_CONFIG, OPTION_TYPE_MAPPING, OPTION_CATEGORY_REST,
-                   OPTION_ACCESS_OWNER, nullptr, "REST router configuration");
+                   OPTION_ACCESS_OWNER, static_cast<void*>(nullptr), "REST router configuration");
                    
     register_option(REST_ADD_ROUTE, OPTION_TYPE_MAPPING, OPTION_CATEGORY_REST,
-                   OPTION_ACCESS_OWNER, nullptr, "Add REST API route");
+                   OPTION_ACCESS_OWNER, static_cast<void*>(nullptr), "Add REST API route");
                    
     register_option(REST_OPENAPI_INFO, OPTION_TYPE_MAPPING, OPTION_CATEGORY_REST,
-                   OPTION_ACCESS_PUBLIC, nullptr, "OpenAPI specification info");
+                   OPTION_ACCESS_PUBLIC, static_cast<void*>(nullptr), "OpenAPI specification info");
                    
     register_option(REST_JWT_SECRET, OPTION_TYPE_STRING, OPTION_CATEGORY_REST,
                    OPTION_ACCESS_PRIVILEGED, "", "JWT signing secret");
                    
     register_option(REST_MIDDLEWARE, OPTION_TYPE_ARRAY, OPTION_CATEGORY_REST,
-                   OPTION_ACCESS_OWNER, nullptr, "REST middleware chain");
+                   OPTION_ACCESS_OWNER, static_cast<void*>(nullptr), "REST middleware chain");
                    
     register_option(REST_CORS_CONFIG, OPTION_TYPE_MAPPING, OPTION_CATEGORY_REST,
-                   OPTION_ACCESS_PUBLIC, nullptr, "CORS configuration");
+                   OPTION_ACCESS_PUBLIC, static_cast<void*>(nullptr), "CORS configuration");
 }
 
 void SocketOptionManager::register_websocket_options() {
@@ -154,7 +154,7 @@ void SocketOptionManager::register_websocket_options() {
                    OPTION_ACCESS_PUBLIC, "", "WebSocket subprotocol");
                    
     register_option(WS_EXTENSIONS, OPTION_TYPE_ARRAY, OPTION_CATEGORY_WEBSOCKET,
-                   OPTION_ACCESS_PUBLIC, nullptr, "WebSocket extensions");
+                   OPTION_ACCESS_PUBLIC, static_cast<void*>(nullptr), "WebSocket extensions");
                    
     register_option(WS_MAX_MESSAGE_SIZE, OPTION_TYPE_INTEGER, OPTION_CATEGORY_WEBSOCKET,
                    OPTION_ACCESS_PUBLIC, DEFAULT_WS_MAX_MESSAGE_SIZE, "Maximum message size",
@@ -195,10 +195,10 @@ void SocketOptionManager::register_external_options() {
                    OPTION_ACCESS_PRIVILEGED, "", "External command to execute");
                    
     register_option(EXTERNAL_ARGS, OPTION_TYPE_ARRAY, OPTION_CATEGORY_EXTERNAL,
-                   OPTION_ACCESS_PRIVILEGED, nullptr, "Command arguments");
+                   OPTION_ACCESS_PRIVILEGED, static_cast<void*>(nullptr), "Command arguments");
                    
     register_option(EXTERNAL_ENV, OPTION_TYPE_MAPPING, OPTION_CATEGORY_EXTERNAL,
-                   OPTION_ACCESS_PRIVILEGED, nullptr, "Environment variables");
+                   OPTION_ACCESS_PRIVILEGED, static_cast<void*>(nullptr), "Environment variables");
                    
     register_option(EXTERNAL_WORKING_DIR, OPTION_TYPE_STRING, OPTION_CATEGORY_EXTERNAL,
                    OPTION_ACCESS_PRIVILEGED, "/tmp", "Working directory");
@@ -615,7 +615,7 @@ array_t* SocketOptionManager::get_categories() const {
 
 // Private helper methods
 
-bool SocketOptionManager::validate_option_value(int option, const svalue_t* value) {
+bool SocketOptionManager::validate_option_value(int option, const svalue_t* value) const {
     auto it = option_descriptors_.find(option);
     if (it == option_descriptors_.end()) {
         last_error_ = "Unknown option: " + std::to_string(option);

@@ -3,6 +3,7 @@
 
 #include "socket_options.h"
 #include "socket_option_validator.h"
+#include "vm/internal/base/svalue.h"
 #include <string>
 #include <map>
 #include <vector>
@@ -168,7 +169,7 @@ struct SocketError {
     // Associated data
     int socket_fd;                // Socket file descriptor (-1 if N/A)
     socket_options related_option; // Related option (if applicable)
-    mixed option_value;           // Option value that caused error
+    svalue_t option_value;        // Option value that caused error
     int system_errno;             // System errno (if applicable)
     
     // Timing information

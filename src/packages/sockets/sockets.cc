@@ -310,20 +310,20 @@ void f_socket_set_option() {
   }
 
   switch(option) {
-    case SO_TLS_VERIFY_PEER:
+    case LEGACY_SO_TLS_VERIFY_PEER:
       if (arg->type != T_NUMBER) {
         bad_arg(3, F_SOCKET_SET_OPTION);
       }
       if (arg->u.number != 0 && arg->u.number != 1) {
         error("Bad socket option value: %d, onl 0 or 1 is accepted.\n", arg->u.number);
       }
-      assign_svalue_no_free(&lpc_socks_get(lpc_sock)->options[SO_TLS_VERIFY_PEER], arg);
+      assign_svalue_no_free(&lpc_socks_get(lpc_sock)->options[LEGACY_SO_TLS_VERIFY_PEER], arg);
       break;
-    case SO_TLS_SNI_HOSTNAME:
+    case LEGACY_SO_TLS_SNI_HOSTNAME:
       if (arg->type != T_STRING) {
         bad_arg(3, F_SOCKET_SET_OPTION);
       }
-      assign_svalue_no_free(&lpc_socks_get(lpc_sock)->options[SO_TLS_SNI_HOSTNAME], arg);
+      assign_svalue_no_free(&lpc_socks_get(lpc_sock)->options[LEGACY_SO_TLS_SNI_HOSTNAME], arg);
       break;
     default:
         error("Unknown socket option: %d\n", option);
@@ -342,11 +342,11 @@ void f_socket_get_option() {
   }
 
   switch(option) {
-    case SO_TLS_VERIFY_PEER:
-      push_number(lpc_socks_get(lpc_sock)->options[SO_TLS_VERIFY_PEER].u.number);
+    case LEGACY_SO_TLS_VERIFY_PEER:
+      push_number(lpc_socks_get(lpc_sock)->options[LEGACY_SO_TLS_VERIFY_PEER].u.number);
       break;
-    case SO_TLS_SNI_HOSTNAME:
-      copy_and_push_string(lpc_socks_get(lpc_sock)->options[SO_TLS_SNI_HOSTNAME].u.string);
+    case LEGACY_SO_TLS_SNI_HOSTNAME:
+      copy_and_push_string(lpc_socks_get(lpc_sock)->options[LEGACY_SO_TLS_SNI_HOSTNAME].u.string);
       break;
     default:
       error("Unknown socket option: %d\n", option);

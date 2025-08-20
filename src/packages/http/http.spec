@@ -1,11 +1,13 @@
 /*
  * HTTP efuns - HTTP/1.1 Protocol Support for FluffOS Unified Socket Architecture
  * 
+ * TEMPORARILY DISABLED - HTTPHandler implementation incomplete
  * These functions provide HTTP client and server capabilities through the
  * unified socket architecture. This package was restructured from the
  * sockets package as part of architecture correction.
  */
 
+/*
 // HTTP client functions
 int http_get(string, mapping | void, function | void);
 int http_post(string, mixed, mapping | void, function | void);
@@ -27,3 +29,4 @@ string rest_generate_openapi_spec();
 int rest_set_api_info(mapping);
 int rest_enable_cors(mapping | void);
 int rest_add_middleware(string, string);
+*/

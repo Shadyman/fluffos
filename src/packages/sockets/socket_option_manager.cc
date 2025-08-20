@@ -772,7 +772,7 @@ void SocketOptionManager::convert_to_type(svalue_t* value, socket_option_type ta
             if (value->type == T_NUMBER) {
                 // Convert integer to string - would need proper string allocation
                 char buffer[32];
-                snprintf(buffer, sizeof(buffer), "%d", value->u.number);
+                snprintf(buffer, sizeof(buffer), "%ld", value->u.number);
                 // This is simplified - real implementation would use FluffOS string allocation
                 value->type = T_STRING;
                 value->u.string = make_shared_string(buffer);

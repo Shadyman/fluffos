@@ -143,9 +143,9 @@ struct OptionMetadata {
         access_level(OPTION_ACCESS_PUBLIC),
         has_default(false),
         has_range_limits(false),
-        has_string_constraints(false),
         min_int_value(0), max_int_value(0),
         min_float_value(0.0f), max_float_value(0.0f),
+        has_string_constraints(false),
         min_string_length(0), max_string_length(0) {}
 };
 

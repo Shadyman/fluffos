@@ -135,18 +135,12 @@ public:
 };
 
 /*
- * REST Socket Options (No SO_ prefix per architecture guide)
+ * REST Socket Options - Use values from socket_options.h
+ * No redefinition needed, import via socket_options.h
  */
-#define REST_ADD_ROUTE 4100
-#define REST_OPENAPI_INFO 4101
-#define REST_JWT_SECRET 4102
-#define REST_DOCS_PATH 4103
-#define REST_ROUTER_CONFIG 4104
-#define REST_VALIDATION_SCHEMA 4105
-#define REST_CORS_CONFIG 4106
-#define REST_MIDDLEWARE 4107
-#define REST_AUTH_CONFIG 4108
-#define REST_RATE_LIMIT 4109
+#include "../../sockets/socket_options.h"
+// REST options now defined in socket_options.h:
+// REST_ADD_ROUTE = 111, REST_OPENAPI_INFO = 112, REST_JWT_SECRET = 113, etc.
 
 /*
  * REST Integration Functions

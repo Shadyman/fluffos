@@ -124,19 +124,77 @@ bool RestRouter::compile_route_pattern(RestRoute* route) {
 std::string RestRouter::convert_pattern_to_regex(const std::string& pattern) {
     std::string regex_pattern = pattern;
     
-    // Escape regex special characters except our parameter syntax
-    // TODO: Implement full pattern to regex conversion
-    // For now, simple parameter replacement: {param} -> ([^/]+)
+    // Enhanced pattern to regex conversion with advanced features
     
+    // First, escape regex special characters (except our parameter syntax)
+    std::string escaped;
+    for (size_t i = 0; i < regex_pattern.size(); ++i) {
+        char c = regex_pattern[i];
+        if (c == '.' || c == '*' || c == '+' || c == '?' || c == '(' || c == ')' || 
+            c == '[' || c == ']' || c == '^' || c == '$' || c == '|' || c == '\\') {
+            // Don't escape if it's part of our parameter syntax
+            if (!(c == '*' && (i == 0 || regex_pattern[i-1] == '/' || i == regex_pattern.size()-1))) {
+                escaped += '\\';
+            }
+        }
+        escaped += c;
+    }
+    regex_pattern = escaped;
+    
+    // Advanced pattern replacements
     size_t pos = 0;
+    
+    // Handle wildcard patterns: /* -> /.*
+    pos = 0;
+    while ((pos = regex_pattern.find("/*", pos)) != std::string::npos) {
+        regex_pattern.replace(pos, 2, "/.*");
+        pos += 3;
+    }
+    
+    // Handle optional parameters: {param?} -> ([^/]*)?
+    pos = 0;
     while ((pos = regex_pattern.find('{', pos)) != std::string::npos) {
         size_t end_pos = regex_pattern.find('}', pos);
         if (end_pos != std::string::npos) {
-            regex_pattern.replace(pos, end_pos - pos + 1, "([^/]+)");
-            pos += 7; // Length of "([^/]+)"
+            std::string param_content = regex_pattern.substr(pos + 1, end_pos - pos - 1);
+            
+            if (!param_content.empty() && param_content.back() == '?') {
+                // Optional parameter
+                regex_pattern.replace(pos, end_pos - pos + 1, "([^/]*)?");
+                pos += 8; // Length of "([^/]*)?"
+            } else if (param_content.find(':') != std::string::npos) {
+                // Typed parameter: {id:int} -> ([0-9]+)
+                size_t colon_pos = param_content.find(':');
+                std::string param_type = param_content.substr(colon_pos + 1);
+                
+                if (param_type == "int" || param_type == "integer") {
+                    regex_pattern.replace(pos, end_pos - pos + 1, "([0-9]+)");
+                    pos += 8; // Length of "([0-9]+)"
+                } else if (param_type == "uuid") {
+                    regex_pattern.replace(pos, end_pos - pos + 1, 
+                        "([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})");
+                    pos += 76; // Length of UUID pattern
+                } else if (param_type == "alpha") {
+                    regex_pattern.replace(pos, end_pos - pos + 1, "([a-zA-Z]+)");
+                    pos += 11; // Length of "([a-zA-Z]+)"
+                } else {
+                    // Default to string pattern
+                    regex_pattern.replace(pos, end_pos - pos + 1, "([^/]+)");
+                    pos += 7; // Length of "([^/]+)"
+                }
+            } else {
+                // Regular parameter: {param} -> ([^/]+)
+                regex_pattern.replace(pos, end_pos - pos + 1, "([^/]+)");
+                pos += 7; // Length of "([^/]+)"
+            }
         } else {
             break;
         }
+    }
+    
+    // Handle trailing slash normalization
+    if (regex_pattern.length() > 1 && regex_pattern.back() == '/') {
+        regex_pattern += "?"; // Make trailing slash optional
     }
     
     // Anchor pattern
@@ -299,8 +357,7 @@ bool socket_rest_add_route(int socket_id, const mapping_t* route_config) {
         return false;
     }
     
-    // TODO: Extract configuration from mapping and call router->add_route()
-    return false; // Placeholder implementation
+    return router->register_route_from_mapping(route_config);
 }
 
 bool socket_rest_remove_route(int socket_id, int route_id) {
@@ -319,4 +376,92 @@ array_t* socket_rest_get_routes(int socket_id) {
     }
     
     return router->get_all_routes();
+}
+
+bool RestRouter::register_route_from_mapping(const mapping_t* route_config) {
+    if (!route_config) {
+        last_error_ = "Route configuration mapping is null";
+        return false;
+    }
+    
+    // Extract required fields
+    svalue_t* method_sv = find_string_in_mapping(const_cast<mapping_t*>(route_config), "method");
+    svalue_t* pattern_sv = find_string_in_mapping(const_cast<mapping_t*>(route_config), "pattern");
+    svalue_t* handler_obj_sv = find_string_in_mapping(const_cast<mapping_t*>(route_config), "handler_object");
+    svalue_t* handler_func_sv = find_string_in_mapping(const_cast<mapping_t*>(route_config), "handler_function");
+    
+    if (!method_sv || method_sv->type != T_STRING ||
+        !pattern_sv || pattern_sv->type != T_STRING ||
+        !handler_obj_sv || handler_obj_sv->type != T_STRING ||
+        !handler_func_sv || handler_func_sv->type != T_STRING) {
+        last_error_ = "Missing required route configuration fields";
+        return false;
+    }
+    
+    std::string method = method_sv->u.string;
+    std::string pattern = pattern_sv->u.string;
+    std::string handler_object = handler_obj_sv->u.string;
+    std::string handler_function = handler_func_sv->u.string;
+    
+    // Extract optional description
+    std::string description = "";
+    svalue_t* desc_sv = find_string_in_mapping(const_cast<mapping_t*>(route_config), "description");
+    if (desc_sv && desc_sv->type == T_STRING) {
+        description = desc_sv->u.string;
+    }
+    
+    return add_route(method, pattern, handler_object, handler_function, description);
+}
+
+array_t* RestRouter::get_all_routes() const {
+    array_t* result = allocate_empty_array(routes_.size());
+    
+    for (size_t i = 0; i < routes_.size(); ++i) {
+        const RestRoute& route = *routes_[i];
+        mapping_t* route_info = allocate_mapping(6);
+        
+        // Add route information to mapping
+        add_mapping_string(route_info, "method", route.method.c_str());
+        add_mapping_string(route_info, "pattern", route.pattern.c_str());
+        add_mapping_string(route_info, "handler_object", route.handler_object.c_str());
+        add_mapping_string(route_info, "handler_function", route.handler_function.c_str());
+        add_mapping_string(route_info, "description", route.description.c_str());
+        add_mapping_pair(route_info, "route_id", route.route_id);
+        
+        result->item[i].type = T_MAPPING;
+        result->item[i].u.map = route_info;
+    }
+    
+    return result;
+}
+
+mapping_t* RestRouter::get_route_info(int route_id) const {
+    for (const auto& route : routes_) {
+        if (route->route_id == route_id) {
+            mapping_t* route_info = allocate_mapping(8);
+            
+            add_mapping_string(route_info, "method", route->method.c_str());
+            add_mapping_string(route_info, "pattern", route->pattern.c_str());
+            add_mapping_string(route_info, "handler_object", route->handler_object.c_str());
+            add_mapping_string(route_info, "handler_function", route->handler_function.c_str());
+            add_mapping_string(route_info, "description", route->description.c_str());
+            add_mapping_pair(route_info, "route_id", route->route_id);
+            add_mapping_pair(route_info, "requires_auth", route->requires_auth ? 1 : 0);
+            
+            // Add parameter names array
+            if (!route->param_names.empty()) {
+                array_t* param_array = allocate_empty_array(route->param_names.size());
+                for (size_t i = 0; i < route->param_names.size(); ++i) {
+                    param_array->item[i].type = T_STRING;
+                    param_array->item[i].subtype = STRING_MALLOC;
+                    param_array->item[i].u.string = string_copy(route->param_names[i].c_str(), "get_route_info");
+                }
+                add_mapping_array(route_info, "param_names", param_array);
+            }
+            
+            return route_info;
+        }
+    }
+    
+    return nullptr;
 }

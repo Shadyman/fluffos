@@ -488,7 +488,24 @@ void HTTPHandler::clear_buffer() {
 
 // Option integration methods
 bool HTTPHandler::set_http_option(int option, const svalue_t* value, object_t* caller) {
-    return option_manager_->set_option(option, value, caller);
+    // Handle special REST and HTTP option processing
+    switch (option) {
+        case REST_ADD_ROUTE:
+            return process_rest_add_route_option(value, caller);
+            
+        case REST_OPENAPI_INFO:
+            return process_rest_openapi_info_option(value, caller);
+            
+        case REST_JWT_SECRET:
+            return process_rest_jwt_secret_option(value, caller);
+            
+        case SO_HTTP_HEADERS:
+            return process_http_headers_option(value, caller);
+            
+        default:
+            // Delegate to option manager for standard options
+            return option_manager_->set_option(option, value, caller);
+    }
 }
 
 bool HTTPHandler::get_http_option(int option, svalue_t* result, object_t* caller) {
@@ -667,6 +684,95 @@ std::string HTTPHandler::get_content_type_with_charset(const std::string& mime_t
 }
 
 /*
+ * REST Option Processing Functions (Phase 2 Golf Implementation)
+ */
+
+bool HTTPHandler::process_rest_add_route_option(const svalue_t* value, object_t* caller) {
+    if (!value || value->type != T_MAPPING) {
+        return false;
+    }
+    
+    mapping_t* route_config = value->u.map;
+    
+    // Extract route configuration from mapping
+    // Expected keys: "method", "path", "handler", "validation" 
+    svalue_t* method_val = find_string_in_mapping(route_config, "method");
+    svalue_t* path_val = find_string_in_mapping(route_config, "path");
+    svalue_t* handler_val = find_string_in_mapping(route_config, "handler");
+    
+    if (!method_val || method_val->type != T_STRING ||
+        !path_val || path_val->type != T_STRING ||
+        !handler_val || handler_val->type != T_STRING) {
+        return false;
+    }
+    
+    // Store in option manager for REST router processing
+    return option_manager_->set_option(REST_ADD_ROUTE, value, caller);
+}
+
+bool HTTPHandler::process_rest_openapi_info_option(const svalue_t* value, object_t* caller) {
+    if (!value || value->type != T_MAPPING) {
+        return false;
+    }
+    
+    mapping_t* api_info = value->u.map;
+    
+    // Expected keys: "title", "version", "description", "contact", "license"
+    svalue_t* title_val = find_string_in_mapping(api_info, "title");
+    svalue_t* version_val = find_string_in_mapping(api_info, "version");
+    
+    if (!title_val || title_val->type != T_STRING ||
+        !version_val || version_val->type != T_STRING) {
+        return false;
+    }
+    
+    // Store in option manager for OpenAPI generator
+    return option_manager_->set_option(REST_OPENAPI_INFO, value, caller);
+}
+
+bool HTTPHandler::process_rest_jwt_secret_option(const svalue_t* value, object_t* caller) {
+    if (!value || value->type != T_STRING) {
+        return false;
+    }
+    
+    const char* secret = value->u.string;
+    if (!secret || strlen(secret) < 32) {
+        // JWT secrets should be at least 32 characters for security
+        return false;
+    }
+    
+    // Store in option manager for JWT authentication
+    return option_manager_->set_option(REST_JWT_SECRET, value, caller);
+}
+
+bool HTTPHandler::process_http_headers_option(const svalue_t* value, object_t* caller) {
+    if (!value || value->type != T_MAPPING) {
+        return false;
+    }
+    
+    mapping_t* headers = value->u.map;
+    
+    // Validate header names and values
+    for (int i = 0; i < headers->table_size; i++) {
+        for (mapping_node_t* node = headers->table[i]; node; node = node->next) {
+            if (node->values[0].type != T_STRING || node->values[1].type != T_STRING) {
+                return false;
+            }
+            
+            std::string name = node->values[0].u.string;
+            std::string value = node->values[1].u.string;
+            
+            if (!is_valid_header_name(name) || !is_valid_header_value(value)) {
+                return false;
+            }
+        }
+    }
+    
+    // Store in option manager for HTTP response generation
+    return option_manager_->set_option(SO_HTTP_HEADERS, value, caller);
+}
+
+/*
  * Socket Integration Functions
  */
 
@@ -680,7 +786,7 @@ bool socket_enable_http_mode(int socket_id, const mapping_t* options) {
                 for (mapping_node_t* node = options->table[i]; node; node = node->next) {
                     if (node->values[0].type == T_NUMBER) {
                         int option = node->values[0].u.number;
-                        handler->set_http_option(option, &node->values[1]);
+                        handler->set_http_option(option, &node->values[1], nullptr);
                     }
                 }
             }
@@ -710,7 +816,7 @@ int socket_process_http_data(int socket_id, const char* data, size_t length) {
     return it->second->is_request_complete() ? 1 : 0;
 }
 
-string_t* socket_generate_http_response(int socket_id, int status, const char* body, 
+char* socket_generate_http_response(int socket_id, int status, const char* body, 
                                         const mapping_t* headers) {
     auto it = http_handlers_.find(socket_id);
     if (it == http_handlers_.end()) {
@@ -734,7 +840,13 @@ string_t* socket_generate_http_response(int socket_id, int status, const char* b
         header_map
     );
     
-    return make_shared_string(response.c_str());
+    // Allocate and copy the response string
+    size_t len = response.length();
+    char* result = static_cast<char*>(DMALLOC(len + 1, TAG_STRING, "socket_generate_http_response"));
+    if (result) {
+        strcpy(result, response.c_str());
+    }
+    return result;
 }
 
 HTTPHandler* get_http_handler(int socket_id) {
@@ -771,3 +883,4 @@ void HTTPHandler::dump_connection_state(outbuffer_t* buffer) const {
     outbuf_addv(buffer, "  Parsing Headers: %s\n", connection_->parsing_headers ? "Yes" : "No");
     outbuf_addv(buffer, "  Bytes Needed: %zu\n", connection_->bytes_needed);
 }
+

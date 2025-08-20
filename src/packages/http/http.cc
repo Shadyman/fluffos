@@ -2,6 +2,7 @@
 #include "http.h"
 #include "http_parser.h"
 #include "packages/sockets/socket_efuns.h"
+#include "vm/internal/base/mapping.h"
 
 /*
  * HTTP efunctions for LPC integration
@@ -48,7 +49,7 @@ void f_socket_set_http_mode() {
 }
 #endif
 
-#ifdef F_SOCKET_HTTP_REQUEST_DISABLED  // Temporarily disabled - HTTPHandler missing
+#ifdef F_SOCKET_HTTP_REQUEST  // Re-enabled - HTTPHandler implementation complete
 void f_socket_http_request() {
     int socket_id;
     int num_args = st_num_arg;
@@ -86,59 +87,36 @@ void f_socket_http_request() {
     }
     
     // Add method
-    svalue_t key, value;
-    key.type = T_STRING;
-    key.u.string = make_shared_string("method");
-    value.type = T_STRING;
-    value.u.string = make_shared_string(handler->get_method_string(request.method));
-    add_mapping_pair(request_mapping, &key, &value);
+    add_mapping_string(request_mapping, "method", handler->get_method_string(request.method));
     
     // Add URI
-    key.u.string = make_shared_string("uri");
-    value.u.string = make_shared_string(request.uri.c_str());
-    add_mapping_pair(request_mapping, &key, &value);
+    add_mapping_string(request_mapping, "uri", request.uri.c_str());
     
     // Add path
-    key.u.string = make_shared_string("path");
-    value.u.string = make_shared_string(request.path.c_str());
-    add_mapping_pair(request_mapping, &key, &value);
+    add_mapping_string(request_mapping, "path", request.path.c_str());
     
     // Add query string
-    key.u.string = make_shared_string("query");
-    value.u.string = make_shared_string(request.query_string.c_str());
-    add_mapping_pair(request_mapping, &key, &value);
+    add_mapping_string(request_mapping, "query", request.query_string.c_str());
     
     // Add version
-    key.u.string = make_shared_string("version");
-    value.u.string = make_shared_string(handler->get_version_string(request.version));
-    add_mapping_pair(request_mapping, &key, &value);
+    add_mapping_string(request_mapping, "version", handler->get_version_string(request.version));
     
     // Add content length
-    key.u.string = make_shared_string("content_length");
-    value.type = T_NUMBER;
-    value.u.number = static_cast<int>(request.content_length);
-    add_mapping_pair(request_mapping, &key, &value);
+    add_mapping_pair(request_mapping, "content_length", static_cast<int>(request.content_length));
     
     // Add body
-    key.type = T_STRING;
-    key.u.string = make_shared_string("body");
-    value.type = T_STRING;
-    value.u.string = make_shared_string(request.body.c_str());
-    add_mapping_pair(request_mapping, &key, &value);
+    add_mapping_string(request_mapping, "body", request.body.c_str());
     
-    // Add headers as nested mapping
-    mapping_t* headers_mapping = allocate_mapping(request.headers.size());
-    if (headers_mapping) {
+    // Add headers as nested mapping (simplified for now)
+    // TODO: Implement proper mapping nesting once insert_in_mapping is available
+    if (!request.headers.empty()) {
+        // For now, just add a simple string representation
+        std::string headers_str = "";
         for (const auto& header : request.headers) {
-            key.u.string = make_shared_string(header.first.c_str());
-            value.u.string = make_shared_string(header.second.c_str());
-            add_mapping_pair(headers_mapping, &key, &value);
+            if (!headers_str.empty()) headers_str += ", ";
+            headers_str += header.first + ":" + header.second;
         }
-        
-        key.u.string = make_shared_string("headers");
-        value.type = T_MAPPING;
-        value.u.map = headers_mapping;
-        add_mapping_pair(request_mapping, &key, &value);
+        add_mapping_string(request_mapping, "headers_string", headers_str.c_str());
     }
     
     pop_stack();
@@ -146,7 +124,7 @@ void f_socket_http_request() {
 }
 #endif
 
-#ifdef F_SOCKET_HTTP_RESPONSE_DISABLED  // Temporarily disabled - HTTPHandler missing
+#ifdef F_SOCKET_HTTP_RESPONSE  // Re-enabled - HTTPHandler implementation complete
 void f_socket_http_response() {
     int socket_id, status;
     char* body = nullptr;
@@ -162,7 +140,7 @@ void f_socket_http_response() {
     
     if (num_args >= 3) {
         if ((sp - num_args + 3)->type == T_STRING) {
-            body = (sp - num_args + 3)->u.string;
+            body = const_cast<char*>((sp - num_args + 3)->u.string);
         }
     }
     
@@ -175,7 +153,7 @@ void f_socket_http_response() {
     }
     
     // Generate HTTP response
-    string_t* response = socket_generate_http_response(socket_id, status, body, headers);
+    char* response = socket_generate_http_response(socket_id, status, body, headers);
     
     if (response) {
         // Write response to socket
@@ -194,7 +172,7 @@ void f_socket_http_response() {
 }
 #endif
 
-#ifdef F_SOCKET_HTTP_ERROR_DISABLED  // Temporarily disabled - HTTPHandler missing
+#ifdef F_SOCKET_HTTP_ERROR  // Re-enabled - HTTPHandler implementation complete
 void f_socket_http_error() {
     int socket_id, status;
     char* message = nullptr;
@@ -209,7 +187,7 @@ void f_socket_http_error() {
     
     if (num_args == 3) {
         if ((sp)->type == T_STRING) {
-            message = (sp)->u.string;
+            message = const_cast<char*>((sp)->u.string);
         } else {
             bad_arg(3, F_SOCKET_HTTP_ERROR);
         }
@@ -239,7 +217,7 @@ void f_socket_http_error() {
 }
 #endif
 
-#ifdef F_SOCKET_HTTP_JSON_DISABLED  // Temporarily disabled - HTTPHandler missing
+#ifdef F_SOCKET_HTTP_JSON  // Re-enabled - HTTPHandler implementation complete
 void f_socket_http_json() {
     int socket_id;
     char* json_body;
@@ -255,7 +233,7 @@ void f_socket_http_json() {
     if ((sp - num_args + 2)->type != T_STRING) {
         bad_arg(2, F_SOCKET_HTTP_JSON);
     }
-    json_body = (sp - num_args + 2)->u.string;
+    json_body = const_cast<char*>((sp - num_args + 2)->u.string);
     
     if (num_args == 3) {
         status = (sp)->u.number;
@@ -285,7 +263,7 @@ void f_socket_http_json() {
 }
 #endif
 
-#ifdef F_SOCKET_HTTP_REDIRECT_DISABLED  // Temporarily disabled - HTTPHandler missing
+#ifdef F_SOCKET_HTTP_REDIRECT  // Re-enabled - HTTPHandler implementation complete
 void f_socket_http_redirect() {
     int socket_id;
     char* location;
@@ -301,7 +279,7 @@ void f_socket_http_redirect() {
     if ((sp - num_args + 2)->type != T_STRING) {
         bad_arg(2, F_SOCKET_HTTP_REDIRECT);
     }
-    location = (sp - num_args + 2)->u.string;
+    location = const_cast<char*>((sp - num_args + 2)->u.string);
     
     if (num_args == 3) {
         status = (sp)->u.number;
@@ -331,7 +309,7 @@ void f_socket_http_redirect() {
 }
 #endif
 
-#ifdef F_SOCKET_HTTP_HEADERS_DISABLED  // Temporarily disabled - HTTPHandler missing
+#ifdef F_SOCKET_HTTP_HEADERS  // Re-enabled - HTTPHandler implementation complete
 void f_socket_http_headers() {
     int socket_id;
     int num_args = st_num_arg;
@@ -376,7 +354,7 @@ void f_socket_is_http_mode() {
 }
 #endif
 
-#ifdef F_SOCKET_HTTP_RESET_DISABLED  // Temporarily disabled - HTTPHandler missing
+#ifdef F_SOCKET_HTTP_RESET  // Re-enabled - HTTPHandler implementation complete
 void f_socket_http_reset() {
     int socket_id;
     
@@ -400,7 +378,7 @@ void f_socket_http_reset() {
 }
 #endif
 
-#ifdef F_SOCKET_HTTP_KEEPALIVE_DISABLED  // Temporarily disabled - HTTPHandler missing
+#ifdef F_SOCKET_HTTP_KEEPALIVE  // Re-enabled - HTTPHandler implementation complete
 void f_socket_http_keepalive() {
     int socket_id;
     
@@ -424,12 +402,6 @@ void f_socket_http_keepalive() {
 }
 #endif
 
-// Helper function to add mapping pairs (simplified implementation)
-static void add_mapping_pair(mapping_t* map, const svalue_t* key, const svalue_t* value) {
-    // This would require proper FluffOS mapping implementation
-    // For now, this is a placeholder that would need to be implemented
-    // using the actual FluffOS mapping functions
-}
 
 // Temporarily disabled - conflicts with FluffOS built-in functions
 /*

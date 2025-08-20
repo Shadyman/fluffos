@@ -9,6 +9,7 @@
 
 #include "packages/sockets/socket_efuns.h"
 #include "packages/sockets/socket_options.h"
+#include "packages/sockets/socket_option_manager.h"
 #include "net/tls.h"
 
 #include <cinttypes>
@@ -217,6 +218,12 @@ static void clear_socket(int which, int dofree) {
     set_read_callback(which, nullptr);
     set_write_callback(which, nullptr);
     set_close_callback(which, nullptr);
+    
+    // Clean up SocketOptionManager
+    if (lpc_socks[which].option_manager != nullptr) {
+      delete lpc_socks[which].option_manager;
+      lpc_socks[which].option_manager = nullptr;
+    }
   }
 
   lpc_socks[which].fd = -1;
@@ -240,6 +247,7 @@ static void clear_socket(int which, int dofree) {
   lpc_socks[which].w_len = 0;
   lpc_socks[which].ev_read = nullptr;
   lpc_socks[which].ev_write = nullptr;
+  lpc_socks[which].option_manager = nullptr;
 }
 
 /*
@@ -454,6 +462,9 @@ int socket_create(enum socket_mode mode, svalue_t *read_callback, svalue_t *clos
     lpc_socks[i].state = STATE_UNBOUND;
     lpc_socks[i].owner_ob = current_object;
     current_object->flags |= O_EFUN_SOCKET;
+
+    // Initialize SocketOptionManager for unified option handling
+    lpc_socks[i].option_manager = new SocketOptionManager(i);
 
     debug(sockets, "socket_create: created lpc socket %d (real fd %d) mode %s\n", i, fd, socket_modes[mode]);
   }
@@ -679,6 +690,9 @@ int socket_accept(int fd, svalue_t *read_callback, svalue_t *write_callback) {
     set_read_callback(i, read_callback);
     set_write_callback(i, write_callback);
     copy_close_callback(i, fd);
+
+    // Initialize SocketOptionManager for unified option handling
+    lpc_socks[i].option_manager = new SocketOptionManager(i);
 
     current_object->flags |= O_EFUN_SOCKET;
 

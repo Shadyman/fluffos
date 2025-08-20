@@ -38,11 +38,12 @@ enum rest_content_type {
     REST_CONTENT_UNKNOWN = 99
 };
 
+// REST validation levels (distinct from socket option values)
 enum rest_validation_level {
-    REST_VALIDATION_NONE = 0,
-    REST_VALIDATION_BASIC = 1,
-    REST_VALIDATION_STRICT = 2,
-    REST_VALIDATION_SCHEMA = 3
+    REST_VALIDATE_NONE = 0,
+    REST_VALIDATE_BASIC = 1,
+    REST_VALIDATE_STRICT = 2,
+    REST_VALIDATE_SCHEMA = 3
 };
 
 // REST Route structure

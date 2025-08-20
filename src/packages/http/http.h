@@ -40,6 +40,7 @@ class HTTPResponse;
 
 // Import core HTTP structures and enums from parser
 #include "http_parser.h"
+#include "http_handler.h"
 
 /*
  * Main HTTP Package Interface
@@ -62,16 +63,16 @@ void f_http_send_response();
 void f_http_get_request_info();
 
 // Socket mode integration
-bool socket_enable_http_mode(int socket_id, const mapping_t* options = nullptr);
+bool socket_enable_http_mode(int socket_id, const mapping_t* options);
 bool socket_is_http_mode(int socket_id);
 int socket_process_http_data(int socket_id, const char* data, size_t length);
 char* socket_generate_http_response(int socket_id, int status, const char* body, 
-                                   const mapping_t* headers = nullptr);
+                                   const mapping_t* headers);
 
-// HTTP handler management
-class HTTPHandler* get_http_handler(int socket_id);
-bool register_http_handler(int socket_id, std::unique_ptr<HTTPHandler> handler);
-void cleanup_http_handler(int socket_id);
+// HTTP handler management functions (now defined in http_handler.h)
+// HTTPHandler* get_http_handler(int socket_id);
+// bool register_http_handler(int socket_id, std::unique_ptr<HTTPHandler> handler);
+// void cleanup_http_handler(int socket_id);
 
 /*
  * HTTP Package Constants

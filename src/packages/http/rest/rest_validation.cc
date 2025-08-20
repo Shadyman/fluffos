@@ -18,7 +18,7 @@ private:
     mutable std::string last_error_;
     
 public:
-    RestValidator() : validation_level_(REST_VALIDATION_BASIC) {}
+    RestValidator() : validation_level_(REST_VALIDATE_BASIC) {}
     
     bool validate_json_request(const HTTPRequest& request) {
         // Check content type

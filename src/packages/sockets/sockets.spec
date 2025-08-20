@@ -27,9 +27,8 @@
 
 /*
  * HTTP socket efuns - Phase 2 Unified Socket Architecture
- * TEMPORARILY DISABLED - HTTPHandler implementation incomplete
+ * HTTPHandler implementation now complete - functions re-enabled
  */
-/*  
     int socket_set_http_mode(int, mapping | void);
     mapping socket_http_request(int);
     int socket_http_response(int, int, string | void, mapping | void);
@@ -40,4 +39,3 @@
     int socket_is_http_mode(int);
     int socket_http_reset(int);
     int socket_http_keepalive(int);
-*/

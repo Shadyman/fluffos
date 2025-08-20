@@ -246,8 +246,8 @@ bool HTTPParser::validate_content_length(const HTTPRequest& request) {
 }
 
 void HTTPParser::process_connection_headers(HTTPRequest* request) {
-    auto it = request.headers.find("connection");
-    if (it != request.headers.end()) {
+    auto it = request->headers.find("connection");
+    if (it != request->headers.end()) {
         std::string conn_value = it->second;
         std::transform(conn_value.begin(), conn_value.end(), conn_value.begin(), ::tolower);
         request->keep_alive = (conn_value == "keep-alive");

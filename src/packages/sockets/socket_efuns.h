@@ -9,6 +9,9 @@
 
 #include <event2/util.h>
 
+// Forward declaration for SocketOptionManager
+class SocketOptionManager;
+
 // The number here is same as the one in include/socket.h
 enum socket_mode {
   MUD = 0,
@@ -70,6 +73,7 @@ struct lpc_socket_t {
   SSL_CTX* ssl_ctx;
   SSL* ssl;
   svalue_t options[NUM_SOCKET_OPTIONS];
+  SocketOptionManager* option_manager;
 };
 
 enum socket_flags {

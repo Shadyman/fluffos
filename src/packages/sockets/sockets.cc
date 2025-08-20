@@ -6,6 +6,8 @@
 #include "base/package_api.h"
 
 #include "packages/sockets/socket_efuns.h"
+#include "packages/sockets/socket_option_manager.h"
+#include "packages/sockets/socket_option_validator.h"
 
 #ifdef _WIN32
 #include <ws2tcpip.h>
@@ -309,49 +311,80 @@ void f_socket_set_option() {
      error("Bad socket descriptor: %d\n", lpc_sock);
   }
 
-  switch(option) {
-    case LEGACY_SO_TLS_VERIFY_PEER:
-      if (arg->type != T_NUMBER) {
-        bad_arg(3, F_SOCKET_SET_OPTION);
-      }
-      if (arg->u.number != 0 && arg->u.number != 1) {
-        error("Bad socket option value: %d, onl 0 or 1 is accepted.\n", arg->u.number);
-      }
-      assign_svalue_no_free(&lpc_socks_get(lpc_sock)->options[LEGACY_SO_TLS_VERIFY_PEER], arg);
-      break;
-    case LEGACY_SO_TLS_SNI_HOSTNAME:
-      if (arg->type != T_STRING) {
-        bad_arg(3, F_SOCKET_SET_OPTION);
-      }
-      assign_svalue_no_free(&lpc_socks_get(lpc_sock)->options[LEGACY_SO_TLS_SNI_HOSTNAME], arg);
-      break;
-    default:
-        error("Unknown socket option: %d\n", option);
+  lpc_socket_t *sock = lpc_socks_get(lpc_sock);
+  
+  // Handle legacy TLS options for backward compatibility
+  if (option == LEGACY_SO_TLS_VERIFY_PEER) {
+    if (arg->type != T_NUMBER) {
+      bad_arg(3, F_SOCKET_SET_OPTION);
+    }
+    if (arg->u.number != 0 && arg->u.number != 1) {
+      error("Bad socket option value: %d, only 0 or 1 is accepted.\n", arg->u.number);
+    }
+    assign_svalue_no_free(&sock->options[LEGACY_SO_TLS_VERIFY_PEER], arg);
+    pop_3_elems();
+    return;
+  } else if (option == LEGACY_SO_TLS_SNI_HOSTNAME) {
+    if (arg->type != T_STRING) {
+      bad_arg(3, F_SOCKET_SET_OPTION);
+    }
+    assign_svalue_no_free(&sock->options[LEGACY_SO_TLS_SNI_HOSTNAME], arg);
+    pop_3_elems();
+    return;
   }
+
+  // Use SocketOptionManager for unified options
+  if (!sock->option_manager) {
+    error("Socket option manager not initialized for socket %d\n", lpc_sock);
+  }
+
+  bool result = sock->option_manager->set_option(option, arg, current_object);
+  if (!result) {
+    error("Failed to set socket option %d: %s\n", option, 
+          sock->option_manager->get_validation_error());
+  }
+  
   pop_3_elems();
 }
 #endif
 
 #ifdef F_SOCKET_GET_OPTION
 void f_socket_get_option() {
-  auto lpc_sock  = (sp - 2)->u.number;
-  auto option = (sp - 1)->u.number;
+  auto lpc_sock  = (sp - 1)->u.number;
+  auto option = sp->u.number;
 
   if (lpc_sock < 0 || lpc_sock >= lpc_socks_num()) {
     error("Bad socket descriptor: %d\n", lpc_sock);
   }
 
-  switch(option) {
-    case LEGACY_SO_TLS_VERIFY_PEER:
-      push_number(lpc_socks_get(lpc_sock)->options[LEGACY_SO_TLS_VERIFY_PEER].u.number);
-      break;
-    case LEGACY_SO_TLS_SNI_HOSTNAME:
-      copy_and_push_string(lpc_socks_get(lpc_sock)->options[LEGACY_SO_TLS_SNI_HOSTNAME].u.string);
-      break;
-    default:
-      error("Unknown socket option: %d\n", option);
+  lpc_socket_t *sock = lpc_socks_get(lpc_sock);
+  
+  // Handle legacy TLS options for backward compatibility
+  if (option == LEGACY_SO_TLS_VERIFY_PEER) {
+    push_number(sock->options[LEGACY_SO_TLS_VERIFY_PEER].u.number);
+    pop_2_elems();
+    return;
+  } else if (option == LEGACY_SO_TLS_SNI_HOSTNAME) {
+    copy_and_push_string(sock->options[LEGACY_SO_TLS_SNI_HOSTNAME].u.string);
+    pop_2_elems();
+    return;
   }
-  pop_2_elems();
+
+  // Use SocketOptionManager for unified options
+  if (!sock->option_manager) {
+    error("Socket option manager not initialized for socket %d\n", lpc_sock);
+  }
+
+  svalue_t result;
+  bool success = sock->option_manager->get_option(option, &result, current_object);
+  if (!success) {
+    error("Failed to get socket option %d: %s\n", option,
+          sock->option_manager->get_validation_error());
+  }
+
+  // Push the result onto the stack
+  *sp = result;  // Replace option number with result
+  pop_stack();   // Remove socket descriptor
 }
 #endif
 

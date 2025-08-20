@@ -65,8 +65,8 @@ void f_http_get_request_info();
 bool socket_enable_http_mode(int socket_id, const mapping_t* options = nullptr);
 bool socket_is_http_mode(int socket_id);
 int socket_process_http_data(int socket_id, const char* data, size_t length);
-string_t* socket_generate_http_response(int socket_id, int status, const char* body, 
-                                       const mapping_t* headers = nullptr);
+char* socket_generate_http_response(int socket_id, int status, const char* body, 
+                                   const mapping_t* headers = nullptr);
 
 // HTTP handler management
 class HTTPHandler* get_http_handler(int socket_id);
@@ -92,9 +92,7 @@ void cleanup_http_handler(int socket_id);
 #define SO_HTTP_SSL_CERT         4027
 #define SO_HTTP_SSL_KEY          4028
 
-// Default values
-#define DEFAULT_HTTP_USER_AGENT "FluffOS HTTP Client v1.0"
-#define DEFAULT_HTTP_TIMEOUT 30
+// Default values - use values from socket_options.h to avoid conflicts
 #define DEFAULT_HTTP_MAX_REDIRECTS 5
 
 // Package integration with FluffOS build system
@@ -103,7 +101,7 @@ extern "C" {
     void register_http_package();
     
     // EFun specifications
-    extern const efun_spec_t http_efuns[];
+    extern const efun_ptr_t http_efuns[];
     extern const int num_http_efuns;
 }
 

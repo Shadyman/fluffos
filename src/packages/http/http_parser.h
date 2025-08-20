@@ -128,7 +128,6 @@ private:
     
     // URI processing
     bool parse_uri(const std::string& uri, std::string* path, std::string* query);
-    std::string decode_uri_component(const std::string& encoded);
     
     // Content processing
     bool validate_content_length(const HTTPRequest& request);

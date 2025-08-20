@@ -48,7 +48,7 @@ void f_socket_set_http_mode() {
 }
 #endif
 
-#ifdef F_SOCKET_HTTP_REQUEST
+#ifdef F_SOCKET_HTTP_REQUEST_DISABLED  // Temporarily disabled - HTTPHandler missing
 void f_socket_http_request() {
     int socket_id;
     int num_args = st_num_arg;
@@ -146,7 +146,7 @@ void f_socket_http_request() {
 }
 #endif
 
-#ifdef F_SOCKET_HTTP_RESPONSE
+#ifdef F_SOCKET_HTTP_RESPONSE_DISABLED  // Temporarily disabled - HTTPHandler missing
 void f_socket_http_response() {
     int socket_id, status;
     char* body = nullptr;
@@ -194,7 +194,7 @@ void f_socket_http_response() {
 }
 #endif
 
-#ifdef F_SOCKET_HTTP_ERROR
+#ifdef F_SOCKET_HTTP_ERROR_DISABLED  // Temporarily disabled - HTTPHandler missing
 void f_socket_http_error() {
     int socket_id, status;
     char* message = nullptr;
@@ -239,7 +239,7 @@ void f_socket_http_error() {
 }
 #endif
 
-#ifdef F_SOCKET_HTTP_JSON
+#ifdef F_SOCKET_HTTP_JSON_DISABLED  // Temporarily disabled - HTTPHandler missing
 void f_socket_http_json() {
     int socket_id;
     char* json_body;
@@ -285,7 +285,7 @@ void f_socket_http_json() {
 }
 #endif
 
-#ifdef F_SOCKET_HTTP_REDIRECT
+#ifdef F_SOCKET_HTTP_REDIRECT_DISABLED  // Temporarily disabled - HTTPHandler missing
 void f_socket_http_redirect() {
     int socket_id;
     char* location;
@@ -331,7 +331,7 @@ void f_socket_http_redirect() {
 }
 #endif
 
-#ifdef F_SOCKET_HTTP_HEADERS
+#ifdef F_SOCKET_HTTP_HEADERS_DISABLED  // Temporarily disabled - HTTPHandler missing
 void f_socket_http_headers() {
     int socket_id;
     int num_args = st_num_arg;
@@ -376,7 +376,7 @@ void f_socket_is_http_mode() {
 }
 #endif
 
-#ifdef F_SOCKET_HTTP_RESET
+#ifdef F_SOCKET_HTTP_RESET_DISABLED  // Temporarily disabled - HTTPHandler missing
 void f_socket_http_reset() {
     int socket_id;
     
@@ -400,7 +400,7 @@ void f_socket_http_reset() {
 }
 #endif
 
-#ifdef F_SOCKET_HTTP_KEEPALIVE
+#ifdef F_SOCKET_HTTP_KEEPALIVE_DISABLED  // Temporarily disabled - HTTPHandler missing
 void f_socket_http_keepalive() {
     int socket_id;
     
@@ -431,6 +431,8 @@ static void add_mapping_pair(mapping_t* map, const svalue_t* key, const svalue_t
     // using the actual FluffOS mapping functions
 }
 
+// Temporarily disabled - conflicts with FluffOS built-in functions
+/*
 // Helper function to create shared strings (placeholder)
 static char* make_shared_string(const char* str) {
     // This would use the actual FluffOS string allocation mechanism
@@ -448,3 +450,4 @@ static void push_mapping(mapping_t* map) {
     // This would use the actual FluffOS stack manipulation functions
     push_undefinedp();  // Placeholder
 }
+*/

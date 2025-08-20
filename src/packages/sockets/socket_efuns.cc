@@ -8,6 +8,7 @@
 #include "base/package_api.h"
 
 #include "packages/sockets/socket_efuns.h"
+#include "packages/sockets/socket_options.h"
 #include "net/tls.h"
 
 #include <cinttypes>

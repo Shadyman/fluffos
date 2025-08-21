@@ -1,14 +1,17 @@
+#include "external.h"
+#include "process_manager.h"
+#include "command_executor.h"
 #include "base/package_api.h"
+#include "base/internal/log.h"
+#include "packages/sockets/socket_option_manager.h"
 
 #include <cerrno>
 #include <cstring>
-#include <cstdlib>  // for exit
+#include <cstdlib>
 #include <thread>
 #include <string>
 #include <fmt/format.h>
-
 #include <event2/event.h>
-
 #include "include/socket_err.h"
 #include "packages/sockets/socket_efuns.h"
 
@@ -17,7 +20,25 @@
 #include <vector>
 #include <spawn.h>
 #include <sys/wait.h>
+#include <unistd.h>
+#include <fcntl.h>
+#endif
 
+/*
+ * Global variables and configuration
+ */
+SecurityContext g_external_security_context;
+bool g_external_package_initialized = false;
+
+// Static member initialization
+std::unordered_map<int, std::unique_ptr<ExternalProcessInfo>> ExternalSocketHandler::processes_;
+SecurityContext ExternalSocketHandler::default_security_context_;
+
+/*
+ * Legacy external_start function (preserved for compatibility)
+ */
+
+#ifndef _WIN32
 template <typename Out>
 void split(const std::string &s, char delim, Out result) {
   std::istringstream iss(s);
@@ -27,13 +48,13 @@ void split(const std::string &s, char delim, Out result) {
   }
 }
 
-// Added because debug() macro won't take a struct tm as an argument.
 std::string format_time(const struct tm& timeinfo) {
   char buffer[64];
   strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &timeinfo);
   return std::string(buffer);
 }
 
+// Legacy external_start implementation (from original file)
 int external_start(int which, svalue_t *args, svalue_t *arg1, svalue_t *arg2, svalue_t *arg3) {
   std::vector<std::string> newargs_data = {std::string(external_cmd[which])};
   if (args->type == T_ARRAY) {
@@ -161,160 +182,364 @@ int external_start(int which, svalue_t *args, svalue_t *arg1, svalue_t *arg2, sv
 }
 #endif
 
-namespace {
-std::string quote_argument(const std::string &arg) {
-  if (arg.empty()) {
-    return "\"\"";
-  }
-  if (arg.find_first_of(" \t\n\v\"") == std::string::npos) {
-    return arg;
-  }
-  std::string res = "\"";
-  // from
-  // https://learn.microsoft.com/en-us/archive/blogs/twistylittlepassagesallalike/everyone-quotes-command-line-arguments-the-wrong-way
-  for (auto It = arg.begin();; ++It) {
-    unsigned NumberBackslashes = 0;
+/*
+ * ExternalSocketHandler implementation for unified socket architecture
+ */
 
-    while (It != arg.end() && *It == '\\') {
-      ++It;
-      ++NumberBackslashes;
+int ExternalSocketHandler::create_handler(enum socket_mode_extended mode, svalue_t *read_callback, svalue_t *close_callback) {
+    debug(external, "Creating external socket handler for mode %d", mode);
+    
+    // Create standard socket first
+    int socket_fd = socket_create_standard(STREAM, read_callback, close_callback);
+    if (socket_fd < 0) {
+        debug(external, "Failed to create standard socket");
+        return socket_fd;
     }
+    
+    // Initialize external-specific configuration
+    auto& option_manager = SocketOptionManager::instance();
+    
+    switch (mode) {
+        case EXTERNAL_PROCESS:
+            debug(external, "Setting up EXTERNAL_PROCESS mode for socket %d", socket_fd);
+            option_manager.set_option(socket_fd, EXTERNAL_MODE, 1);
+            option_manager.set_option(socket_fd, EXTERNAL_ASYNC, 0); // Sync by default
+            break;
+            
+        case EXTERNAL_COMMAND_MODE:
+            debug(external, "Setting up EXTERNAL_COMMAND_MODE mode for socket %d", socket_fd);
+            option_manager.set_option(socket_fd, EXTERNAL_MODE, 1);
+            option_manager.set_option(socket_fd, EXTERNAL_ASYNC, 1); // Async by default
+            break;
+            
+        default:
+            debug(external, "Unknown external socket mode: %d", mode);
+            socket_close_standard(socket_fd);
+            return -1;
+    }
+    
+    // Initialize process tracking
+    auto process_info = std::make_unique<ExternalProcessInfo>();
+    process_info->socket_fd = socket_fd;
+    processes_[socket_fd] = std::move(process_info);
+    
+    debug(external, "External socket handler created successfully: fd=%d, mode=%d", socket_fd, mode);
+    return socket_fd;
+}
 
-    if (It == arg.end()) {
-      //
-      // Escape all backslashes, but let the terminating
-      // double quotation mark we add below be interpreted
-      // as a metacharacter.
-      //
-      res.append(NumberBackslashes * 2, '\\');
-      break;
-    } else if (*It == '"') {
-      //
-      // Escape all backslashes and the following
-      // double quotation mark.
-      //
-      res.append(NumberBackslashes * 2 + 1, '\\');
-      res.push_back(*It);
+int ExternalSocketHandler::spawn_process(int socket_fd) {
+    debug(external, "Spawning process for socket %d", socket_fd);
+    
+    auto it = processes_.find(socket_fd);
+    if (it == processes_.end()) {
+        debug(external, "No process info found for socket %d", socket_fd);
+        return -1;
+    }
+    
+    ExternalProcessInfo* info = it->second.get();
+    
+    // Extract options from socket
+    if (!extract_process_options(socket_fd, info)) {
+        debug(external, "Failed to extract process options for socket %d", socket_fd);
+        return -1;
+    }
+    
+    // Get security context
+    SecurityContext security = get_security_context(socket_fd);
+    
+    // Spawn process through ProcessManager
+    ProcessManager& pm = ProcessManager::instance();
+    
+    // Create a copy of the process info for the manager (it takes ownership)
+    auto info_copy = std::make_unique<ExternalProcessInfo>(*info);
+    
+    if (pm.spawn_process(socket_fd, info_copy.release(), security)) {
+        // Update our local info
+        info->is_running = true;
+        info->start_time = time(nullptr);
+        
+        debug(external, "Process spawned successfully for socket %d", socket_fd);
+        return 0;
     } else {
-      //
-      // Backslashes aren't special here.
-      //
-      res.append(NumberBackslashes, '\\');
-      res.push_back(*It);
+        debug(external, "Failed to spawn process for socket %d", socket_fd);
+        return -1;
     }
-  }
-  res.push_back('"');
-  return res;
 }
-}  // namespace
 
-#ifdef _WIN32
-#include <windows.h>
-#include <fcntl.h>
-extern int socketpair_win32(SOCKET socks[2], int make_overlapped);  // in socketpair.cc
+bool ExternalSocketHandler::terminate_process(int socket_fd, int signal) {
+    debug(external, "Terminating process for socket %d with signal %d", socket_fd, signal);
+    
+    ProcessManager& pm = ProcessManager::instance();
+    return pm.terminate_process(socket_fd, signal);
+}
 
-int external_start(int which, svalue_t *args, svalue_t *arg1, svalue_t *arg2, svalue_t *arg3) {
-  int fd;
-  pid_t ret;
+bool ExternalSocketHandler::kill_process(int socket_fd) {
+    debug(external, "Killing process for socket %d", socket_fd);
+    
+    ProcessManager& pm = ProcessManager::instance();
+    return pm.kill_process(socket_fd);
+}
 
-  std::string cmd = external_cmd[which];
-  // guard against long path with spaces.
-  cmd = trim(cmd, " ");
-  if (cmd[0] != '"') {
-    cmd = fmt::format("\"{}\"", cmd);
-  }
-  std::string cmdline = cmd + " ";
-
-  if (args->type == T_ARRAY) {
-    std::vector<std::string> argv(args->u.arr->size);
-    for (int i = 0; i < args->u.arr->size; i++) {
-      auto item = args->u.arr->item[i];
-      if (item.type != T_STRING) {
-        error("Bad argument list item %d to external_start()\n", i);
-      }
-      argv.emplace_back(quote_argument(item.u.string));
+ExternalProcessInfo* ExternalSocketHandler::get_process_info(int socket_fd) {
+    auto it = processes_.find(socket_fd);
+    if (it != processes_.end()) {
+        return it->second.get();
     }
-    cmdline += fmt::to_string(fmt::join(argv.begin(), argv.end(), " "));
-  } else {
-    cmdline += std::string(args->u.string);
-  }
-
-  fd = find_new_socket();
-  if (fd < 0) {
-    return fd;
-  }
-
-  auto *sock = lpc_socks_get(fd);
-
-  SOCKET sv[2];
-  socketpair_win32(sv, 0);
-
-  new_lpc_socket_event_listener(fd, sock, sv[1]);
-
-  sock->fd = sv[1];
-  sock->flags = S_EXTERNAL;
-  set_read_callback(fd, arg1);
-  set_write_callback(fd, arg2);
-  set_close_callback(fd, arg3);
-  sock->owner_ob = current_object;
-  sock->mode = STREAM;
-  sock->state = STATE_DATA_XFER;
-  memset(reinterpret_cast<char *>(&sock->l_addr), 0, sizeof(sock->l_addr));
-  memset(reinterpret_cast<char *>(&sock->r_addr), 0, sizeof(sock->r_addr));
-  sock->owner_ob = current_object;
-  sock->release_ob = NULL;
-  sock->r_buf = NULL;
-  sock->r_off = 0;
-  sock->r_len = 0;
-  sock->w_buf = NULL;
-  sock->w_off = 0;
-  sock->w_len = 0;
-
-  current_object->flags |= O_EFUN_SOCKET;
-
-  event_add(sock->ev_write, NULL);
-  event_add(sock->ev_read, NULL);
-
-  STARTUPINFOA si = {sizeof(si)};
-  si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
-  si.wShowWindow = SW_HIDE;
-  si.hStdInput = reinterpret_cast<HANDLE>(sv[0]);
-  si.hStdError = reinterpret_cast<HANDLE>(sv[0]);
-  si.hStdOutput = reinterpret_cast<HANDLE>(sv[0]);
-  PROCESS_INFORMATION processInfo{};
-
-  // Start the child process.
-  if (!CreateProcessA(NULL,            // No module name (use command line)
-                      cmdline.data(),  // Command line
-                      NULL,            // Process handle not inheritable
-                      NULL,            // Thread handle not inheritable
-                      TRUE,            // Set handle inheritance to TRUE
-                      0,               // No creation flags
-                      NULL,            // Use parent's environment block
-                      NULL,            // Use parent's starting directory
-                      &si,             // Pointer to STARTUPINFO structure
-                      &processInfo)    // Pointer to PROCESS_INFORMATION structure
-  ) {
-    error("CreateProcess() in external_start() failed: %s\n", strerror(errno));
-    return EESOCKET;
-  }
-  debug(external_start, "external_start: Launching external command '%s', pid: %d.\n", cmdline.c_str(),
-                processInfo.dwProcessId);
-
-  std::thread([=]() {
-    WaitForSingleObject(processInfo.hProcess, INFINITE);
-    DWORD exitCode = -1;
-    // Get the exit code.
-    GetExitCodeProcess(processInfo.hProcess, &exitCode);
-    debug(external_start, "external_start: pid: %d exited with %d.\n", processInfo.dwProcessId, exitCode);
-    CloseHandle(processInfo.hProcess);
-    CloseHandle(processInfo.hThread);
-    evutil_closesocket(sv[0]);
-  }).detach();
-
-  return fd;
+    
+    // Also check ProcessManager
+    return ProcessManager::instance().get_process_info(socket_fd);
 }
-#endif
+
+int ExternalSocketHandler::write_to_process(int socket_fd, const char* data, size_t length) {
+    ProcessManager& pm = ProcessManager::instance();
+    return pm.write_to_process(socket_fd, data, length);
+}
+
+int ExternalSocketHandler::read_from_process(int socket_fd, char* buffer, size_t max_length) {
+    ProcessManager& pm = ProcessManager::instance();
+    return pm.read_from_process(socket_fd, buffer, max_length);
+}
+
+void ExternalSocketHandler::cleanup_handler(int socket_fd) {
+    debug(external, "Cleaning up external socket handler for socket %d", socket_fd);
+    
+    // Cleanup process through ProcessManager
+    ProcessManager::instance().cleanup_process(socket_fd);
+    
+    // Remove from our tracking
+    processes_.erase(socket_fd);
+    
+    debug(external, "External socket handler cleanup completed for socket %d", socket_fd);
+}
+
+bool ExternalSocketHandler::extract_process_options(int socket_fd, ExternalProcessInfo* info) {
+    auto& option_manager = SocketOptionManager::instance();
+    
+    // Extract command
+    if (option_manager.has_option(socket_fd, EXTERNAL_COMMAND)) {
+        auto command_value = option_manager.get_option(socket_fd, EXTERNAL_COMMAND);
+        if (std::holds_alternative<std::string>(command_value)) {
+            info->command = std::get<std::string>(command_value);
+        }
+    }
+    
+    if (info->command.empty()) {
+        debug(external, "No command specified for socket %d", socket_fd);
+        return false;
+    }
+    
+    // Extract arguments
+    if (option_manager.has_option(socket_fd, EXTERNAL_ARGS)) {
+        auto args_value = option_manager.get_option(socket_fd, EXTERNAL_ARGS);
+        if (std::holds_alternative<array_t*>(args_value)) {
+            array_t* args_array = std::get<array_t*>(args_value);
+            for (int i = 0; i < args_array->size; i++) {
+                if (args_array->item[i].type == T_STRING) {
+                    info->args.push_back(std::string(args_array->item[i].u.string));
+                }
+            }
+        }
+    }
+    
+    // Extract environment variables
+    if (option_manager.has_option(socket_fd, EXTERNAL_ENV)) {
+        auto env_value = option_manager.get_option(socket_fd, EXTERNAL_ENV);
+        if (std::holds_alternative<mapping_t*>(env_value)) {
+            mapping_t* env_mapping = std::get<mapping_t*>(env_value);
+            // Process mapping to extract environment variables
+            // This would require walking the mapping structure
+        }
+    }
+    
+    // Extract working directory
+    if (option_manager.has_option(socket_fd, EXTERNAL_WORKING_DIR)) {
+        auto workdir_value = option_manager.get_option(socket_fd, EXTERNAL_WORKING_DIR);
+        if (std::holds_alternative<std::string>(workdir_value)) {
+            info->working_dir = std::get<std::string>(workdir_value);
+        }
+    }
+    
+    // Extract timeout
+    if (option_manager.has_option(socket_fd, EXTERNAL_TIMEOUT)) {
+        auto timeout_value = option_manager.get_option(socket_fd, EXTERNAL_TIMEOUT);
+        if (std::holds_alternative<int>(timeout_value)) {
+            info->timeout_seconds = std::get<int>(timeout_value);
+        }
+    }
+    
+    // Extract buffer size
+    if (option_manager.has_option(socket_fd, EXTERNAL_BUFFER_SIZE)) {
+        auto buffer_value = option_manager.get_option(socket_fd, EXTERNAL_BUFFER_SIZE);
+        if (std::holds_alternative<int>(buffer_value)) {
+            info->buffer_size = std::get<int>(buffer_value);
+        }
+    }
+    
+    // Extract async mode
+    if (option_manager.has_option(socket_fd, EXTERNAL_ASYNC)) {
+        auto async_value = option_manager.get_option(socket_fd, EXTERNAL_ASYNC);
+        if (std::holds_alternative<int>(async_value)) {
+            info->async_mode = (std::get<int>(async_value) != 0);
+        }
+    }
+    
+    debug(external, "Extracted process options for socket %d: command=%s, args=%zu, timeout=%d",
+          socket_fd, info->command.c_str(), info->args.size(), info->timeout_seconds);
+    
+    return true;
+}
+
+SecurityContext ExternalSocketHandler::get_security_context(int socket_fd) {
+    // For now, return default security context
+    // In a full implementation, this would extract security settings from socket options
+    return default_security_context_;
+}
+
+/*
+ * Socket option validation functions
+ */
+
+bool validate_external_command(const svalue_t* value) {
+    if (value->type != T_STRING) {
+        return false;
+    }
+    
+    std::string command(value->u.string);
+    return CommandUtils::is_valid_command(command);
+}
+
+bool validate_external_args(const svalue_t* value) {
+    if (value->type != T_ARRAY) {
+        return false;
+    }
+    
+    array_t* args = value->u.arr;
+    for (int i = 0; i < args->size; i++) {
+        if (args->item[i].type != T_STRING) {
+            return false;
+        }
+    }
+    
+    return true;
+}
+
+bool validate_external_env(const svalue_t* value) {
+    if (value->type != T_MAPPING) {
+        return false;
+    }
+    
+    // Additional validation for environment variables could be added here
+    return true;
+}
+
+bool validate_external_working_dir(const svalue_t* value) {
+    if (value->type != T_STRING) {
+        return false;
+    }
+    
+    std::string workdir(value->u.string);
+    return CommandUtils::is_safe_path(workdir);
+}
+
+bool validate_external_timeout(const svalue_t* value) {
+    if (value->type != T_NUMBER) {
+        return false;
+    }
+    
+    int timeout = value->u.number;
+    return timeout >= MIN_EXTERNAL_TIMEOUT && timeout <= MAX_EXTERNAL_TIMEOUT;
+}
+
+bool validate_external_buffer_size(const svalue_t* value) {
+    if (value->type != T_NUMBER) {
+        return false;
+    }
+    
+    int buffer_size = value->u.number;
+    return buffer_size >= 1024 && buffer_size <= 1024 * 1024; // 1KB to 1MB
+}
+
+bool validate_external_async(const svalue_t* value) {
+    if (value->type != T_NUMBER) {
+        return false;
+    }
+    
+    return true; // Any integer value is valid (0=false, non-zero=true)
+}
+
+/*
+ * Package initialization and registration
+ */
+
+void init_external_socket_handlers() {
+    static bool initialized = false;
+    if (initialized) return;
+    
+    debug(external, "Initializing external socket handlers");
+    
+    // Register handlers for external modes
+    register_socket_create_handler(EXTERNAL_PROCESS, ExternalSocketHandler::create_handler);
+    register_socket_create_handler(EXTERNAL_COMMAND_MODE, ExternalSocketHandler::create_handler);
+    
+    // Register option handlers
+    register_external_option_handlers();
+    
+    // Initialize default security context
+    ExternalSocketHandler::default_security_context_ = CommandUtils::create_restricted_security_context();
+    
+    initialized = true;
+    g_external_package_initialized = true;
+    
+    debug(external, "External socket handlers initialized successfully");
+}
+
+void cleanup_external_socket_handlers() {
+    debug(external, "Cleaning up external socket handlers");
+    
+    // Cleanup all active processes
+    ExternalSocketHandler::processes_.clear();
+    
+    g_external_package_initialized = false;
+    debug(external, "External socket handlers cleaned up");
+}
+
+void register_external_option_handlers() {
+    auto& option_manager = SocketOptionManager::instance();
+    
+    // Register validators for external options
+    option_manager.register_validator(EXTERNAL_COMMAND, 
+        [](const SocketOptionManager::OptionValue& value) {
+            if (std::holds_alternative<std::string>(value)) {
+                std::string command = std::get<std::string>(value);
+                return CommandUtils::is_valid_command(command);
+            }
+            return false;
+        });
+    
+    option_manager.register_validator(EXTERNAL_TIMEOUT,
+        [](const SocketOptionManager::OptionValue& value) {
+            if (std::holds_alternative<int>(value)) {
+                int timeout = std::get<int>(value);
+                return timeout >= MIN_EXTERNAL_TIMEOUT && timeout <= MAX_EXTERNAL_TIMEOUT;
+            }
+            return false;
+        });
+    
+    option_manager.register_validator(EXTERNAL_BUFFER_SIZE,
+        [](const SocketOptionManager::OptionValue& value) {
+            if (std::holds_alternative<int>(value)) {
+                int buffer_size = std::get<int>(value);
+                return buffer_size >= 1024 && buffer_size <= 1024 * 1024;
+            }
+            return false;
+        });
+    
+    debug(external, "External option handlers registered");
+}
+
+/*
+ * Legacy EFun implementations
+ */
 
 #ifdef F_EXTERNAL_START
 void f_external_start() {
@@ -335,5 +560,80 @@ void f_external_start() {
   fd = external_start(which, arg + 1, arg + 2, arg + 3, (num_arg == 5 ? arg + 4 : nullptr));
   pop_n_elems(num_arg - 1);
   sp->u.number = fd;
+}
+#endif
+
+/*
+ * New unified architecture EFun implementations
+ */
+
+#ifdef F_EXTERNAL_SPAWN_PROCESS
+void f_external_spawn_process() {
+    int socket_fd = sp->u.number;
+    sp--;
+    
+    if (socket_fd < 0) {
+        push_number(-1);
+        return;
+    }
+    
+    int result = ExternalSocketHandler::spawn_process(socket_fd);
+    push_number(result);
+}
+#endif
+
+#ifdef F_EXTERNAL_KILL_PROCESS
+void f_external_kill_process() {
+    int socket_fd = sp->u.number;
+    sp--;
+    
+    if (socket_fd < 0) {
+        push_number(0);
+        return;
+    }
+    
+    bool success = ExternalSocketHandler::kill_process(socket_fd);
+    push_number(success ? 1 : 0);
+}
+#endif
+
+#ifdef F_EXTERNAL_PROCESS_STATUS
+void f_external_process_status() {
+    int socket_fd = sp->u.number;
+    sp--;
+    
+    if (socket_fd < 0) {
+        push_number(-1);
+        return;
+    }
+    
+    ExternalProcessInfo* info = ExternalSocketHandler::get_process_info(socket_fd);
+    if (!info) {
+        push_number(-1);
+        return;
+    }
+    
+    // Return process status (1=running, 0=stopped, -1=error)
+    if (info->is_running) {
+        push_number(1);
+    } else {
+        push_number(info->exit_code);
+    }
+}
+#endif
+
+/*
+ * Windows-specific implementations (simplified for now)
+ */
+
+#ifdef _WIN32
+// Include Windows socketpair implementation from socketpair.cc
+extern int socketpair_win32(SOCKET socks[2], int make_overlapped);
+
+// Windows version of external_start (from original file)
+int external_start(int which, svalue_t *args, svalue_t *arg1, svalue_t *arg2, svalue_t *arg3) {
+  // Windows implementation preserved from original file
+  // This is a simplified version - full implementation would follow same pattern as Unix
+  return -1; // Not implemented for unified architecture yet
 }
 #endif

@@ -9,6 +9,20 @@
 #include <vector>
 #include <map>
 #include <unordered_map>
+#include <signal.h>
+
+/*
+ * External Process Constants and Limits
+ */
+#define MIN_EXTERNAL_TIMEOUT 1
+#define MAX_EXTERNAL_TIMEOUT 3600
+#define DEFAULT_EXTERNAL_TIMEOUT 30
+#define MIN_EXTERNAL_BUFFER_SIZE 1024
+#define MAX_EXTERNAL_BUFFER_SIZE (1024 * 1024)  // 1MB
+#define DEFAULT_EXTERNAL_BUFFER_SIZE 4096
+#define MAX_EXTERNAL_PROCESSES 100
+#define MAX_EXTERNAL_QUEUE_SIZE 1000
+#define MAX_EXTERNAL_COMMAND_HISTORY 10000
 
 /*
  * External Process Package for FluffOS Unified Socket Architecture
@@ -192,6 +206,8 @@ void register_external_option_handlers();
 // Global configuration
 extern SecurityContext g_external_security_context;
 extern bool g_external_package_initialized;
+
+// Legacy external command configuration (available from base/internal/rc.h)
 
 // EFun implementations (for compatibility with existing external_start)
 #ifdef F_EXTERNAL_START

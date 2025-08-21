@@ -1,0 +1,10 @@
+int socket_mqtt_connect(int socket_fd, string broker_host, void | int broker_port, void | string client_id);
+int socket_mqtt_disconnect(int socket_fd);
+mapping socket_mqtt_status(int socket_fd);
+int socket_mqtt_publish(int socket_fd, string topic, string payload, void | int qos, void | int retain);
+int socket_mqtt_subscribe(int socket_fd, string | string * topic, void | int | int * qos);
+int socket_mqtt_unsubscribe(int socket_fd, string | string * topic);
+int socket_mqtt_set_config(int socket_fd, mapping config);
+mapping socket_mqtt_get_config(int socket_fd);
+int socket_mqtt_set_will(int socket_fd, string topic, string message, void | int qos, void | int retain);
+int socket_mqtt_clear_will(int socket_fd);

@@ -1,0 +1,12 @@
+prefix="/usr/local"
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: libwebsockets_static
+Description: Websockets server and client static library
+Version: 4.2.1-v20230904-3279863-115-g7288ca55
+
+Libs: -L${libdir} -lwebsockets_static
+Libs.private:
+Cflags: -I${includedir}

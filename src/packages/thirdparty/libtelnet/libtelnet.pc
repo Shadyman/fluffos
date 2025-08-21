@@ -1,0 +1,9 @@
+libdir=/usr/local/lib
+includedir=/usr/local/include
+
+Name: libtelnet
+Description: TELNET protocol handling library
+URL: https://github.com/seanmiddleditch/libtelne
+Version: 0.30.0
+Libs: -L -ltelnet
+Cflags: -I

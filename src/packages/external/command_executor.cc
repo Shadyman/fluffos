@@ -614,4 +614,19 @@ SecurityContext create_restricted_security_context() {
     return ctx;
 }
 
+std::string resolve_relative_path(const std::string& path, const std::string& base_dir) {
+    // Simple implementation - in a real system this would handle complex path resolution
+    if (path.empty() || path[0] == '/') {
+        return path; // Already absolute
+    }
+    
+    std::string result = base_dir;
+    if (!result.empty() && result.back() != '/') {
+        result += "/";
+    }
+    result += path;
+    
+    return result;
+}
+
 } // namespace CommandUtils

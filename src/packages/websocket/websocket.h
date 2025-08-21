@@ -2,10 +2,14 @@
 #define PACKAGES_WEBSOCKET_H_
 
 /*
- * WebSocket Package Header
+ * WebSocket Socket Mode Handler
  * 
  * FluffOS WebSocket implementation using libwebsockets integration
- * for unified socket architecture support.
+ * for unified socket architecture. Provides socket mode handlers for:
+ * - WEBSOCKET_SERVER (16)
+ * - WEBSOCKET_CLIENT (17) 
+ * - WEBSOCKET_TLS_SERVER (18)
+ * - WEBSOCKET_TLS_CLIENT (19)
  */
 
 #include "base/package_api.h"
@@ -244,59 +248,38 @@ private:
 };
 
 /*
- * Global WebSocket Functions - exported to LPC
+ * WebSocket Socket Mode Handler Functions
+ * Called by the unified socket system for WebSocket protocols
  */
 
-// Server functions
-svalue_t f_websocket_create_server(int num_arg, svalue_t* args);
-svalue_t f_websocket_bind_server(int num_arg, svalue_t* args);
-svalue_t f_websocket_close_server(int num_arg, svalue_t* args);
+// Socket mode handler registration
+void register_websocket_socket_handlers();
 
-// Client functions
-svalue_t f_websocket_connect(int num_arg, svalue_t* args);
-svalue_t f_websocket_client_handshake(int num_arg, svalue_t* args);
+// Socket mode handlers for unified socket architecture
+int websocket_socket_create(int mode, const char* read_callback, 
+                           const char* close_callback, object_t* owner);
+int websocket_socket_bind(int socket_fd, int port, const char* address);
+int websocket_socket_listen(int socket_fd, int backlog);
+int websocket_socket_connect(int socket_fd, const char* address, int port);
+int websocket_socket_write(int socket_fd, const char* data, int len);
+int websocket_socket_close(int socket_fd);
 
-// Message operations
-svalue_t f_websocket_send_text(int num_arg, svalue_t* args);
-svalue_t f_websocket_send_binary(int num_arg, svalue_t* args);
-svalue_t f_websocket_send_ping(int num_arg, svalue_t* args);
-svalue_t f_websocket_send_pong(int num_arg, svalue_t* args);
+// WebSocket-specific socket option handlers
+bool websocket_set_socket_option(int socket_fd, int option, const svalue_t* value);
+svalue_t websocket_get_socket_option(int socket_fd, int option);
 
-// Frame operations
-svalue_t f_websocket_parse_frame(int num_arg, svalue_t* args);
-svalue_t f_websocket_build_frame(int num_arg, svalue_t* args);
+// WebSocket protocol message handlers
+void websocket_handle_incoming_data(int socket_fd, const char* data, int len);
+void websocket_handle_connection_established(int socket_fd);
+void websocket_handle_connection_closed(int socket_fd, int reason);
 
-// Connection management
-svalue_t f_websocket_upgrade_connection(int num_arg, svalue_t* args);
-svalue_t f_websocket_close_connection(int num_arg, svalue_t* args);
-svalue_t f_websocket_get_connection_info(int num_arg, svalue_t* args);
+// WebSocket frame processing (internal)
+bool websocket_process_frame(int socket_fd, const uint8_t* frame_data, size_t len);
+bool websocket_send_frame(int socket_fd, ws_frame_opcode opcode, 
+                         const uint8_t* payload, size_t len);
 
-// Protocol operations
-svalue_t f_websocket_set_subprotocol(int num_arg, svalue_t* args);
-svalue_t f_websocket_get_subprotocol(int num_arg, svalue_t* args);
-svalue_t f_websocket_negotiate_extensions(int num_arg, svalue_t* args);
-svalue_t f_websocket_get_extensions(int num_arg, svalue_t* args);
-
-// Validation and security
-svalue_t f_websocket_validate_frame(int num_arg, svalue_t* args);
-svalue_t f_websocket_check_origin(int num_arg, svalue_t* args);
-svalue_t f_websocket_generate_key(int num_arg, svalue_t* args);
-svalue_t f_websocket_compute_accept(int num_arg, svalue_t* args);
-
-// State management
-svalue_t f_websocket_get_state(int num_arg, svalue_t* args);
-svalue_t f_websocket_set_ping_interval(int num_arg, svalue_t* args);
-svalue_t f_websocket_get_ping_interval(int num_arg, svalue_t* args);
-svalue_t f_websocket_set_max_message_size(int num_arg, svalue_t* args);
-
-// Compression support
-svalue_t f_websocket_enable_compression(int num_arg, svalue_t* args);
-svalue_t f_websocket_disable_compression(int num_arg, svalue_t* args);
-svalue_t f_websocket_is_compression_enabled(int num_arg, svalue_t* args);
-
-// Statistics and monitoring
-svalue_t f_websocket_get_stats(int num_arg, svalue_t* args);
-svalue_t f_websocket_reset_stats(int num_arg, svalue_t* args);
-svalue_t f_websocket_list_connections(int num_arg, svalue_t* args);
+// WebSocket upgrade handling
+bool websocket_handle_upgrade_request(int socket_fd, const char* headers);
+bool websocket_send_upgrade_response(int socket_fd, const char* websocket_key);
 
 #endif  // PACKAGES_WEBSOCKET_H_

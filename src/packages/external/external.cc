@@ -30,6 +30,8 @@
 SecurityContext g_external_security_context;
 bool g_external_package_initialized = false;
 
+// Legacy external command configuration (using existing FluffOS globals)
+
 // Static member initialization
 std::unordered_map<int, std::unique_ptr<ExternalProcessInfo>> ExternalSocketHandler::processes_;
 SecurityContext ExternalSocketHandler::default_security_context_;
@@ -187,12 +189,12 @@ int external_start(int which, svalue_t *args, svalue_t *arg1, svalue_t *arg2, sv
  */
 
 int ExternalSocketHandler::create_handler(enum socket_mode_extended mode, svalue_t *read_callback, svalue_t *close_callback) {
-    debug(external, "Creating external socket handler for mode %d", mode);
+    debug(external_start, "Creating external socket handler for mode %d", mode);
     
     // Create standard socket first
-    int socket_fd = socket_create_standard(STREAM, read_callback, close_callback);
+    int socket_fd = socket_create(STREAM, read_callback, close_callback);
     if (socket_fd < 0) {
-        debug(external, "Failed to create standard socket");
+        debug(external_start, "Failed to create standard socket");
         return socket_fd;
     }
     
@@ -201,20 +203,20 @@ int ExternalSocketHandler::create_handler(enum socket_mode_extended mode, svalue
     
     switch (mode) {
         case EXTERNAL_PROCESS:
-            debug(external, "Setting up EXTERNAL_PROCESS mode for socket %d", socket_fd);
+            debug(external_start, "Setting up EXTERNAL_PROCESS mode for socket %d", socket_fd);
             option_manager.set_option(socket_fd, EXTERNAL_MODE, 1);
             option_manager.set_option(socket_fd, EXTERNAL_ASYNC, 0); // Sync by default
             break;
             
         case EXTERNAL_COMMAND_MODE:
-            debug(external, "Setting up EXTERNAL_COMMAND_MODE mode for socket %d", socket_fd);
+            debug(external_start, "Setting up EXTERNAL_COMMAND_MODE mode for socket %d", socket_fd);
             option_manager.set_option(socket_fd, EXTERNAL_MODE, 1);
             option_manager.set_option(socket_fd, EXTERNAL_ASYNC, 1); // Async by default
             break;
             
         default:
-            debug(external, "Unknown external socket mode: %d", mode);
-            socket_close_standard(socket_fd);
+            debug(external_start, "Unknown external socket mode: %d", mode);
+            socket_close(socket_fd, 0);
             return -1;
     }
     
@@ -223,16 +225,16 @@ int ExternalSocketHandler::create_handler(enum socket_mode_extended mode, svalue
     process_info->socket_fd = socket_fd;
     processes_[socket_fd] = std::move(process_info);
     
-    debug(external, "External socket handler created successfully: fd=%d, mode=%d", socket_fd, mode);
+    debug(external_start, "External socket handler created successfully: fd=%d, mode=%d", socket_fd, mode);
     return socket_fd;
 }
 
 int ExternalSocketHandler::spawn_process(int socket_fd) {
-    debug(external, "Spawning process for socket %d", socket_fd);
+    debug(external_start, "Spawning process for socket %d", socket_fd);
     
     auto it = processes_.find(socket_fd);
     if (it == processes_.end()) {
-        debug(external, "No process info found for socket %d", socket_fd);
+        debug(external_start, "No process info found for socket %d", socket_fd);
         return -1;
     }
     
@@ -240,7 +242,7 @@ int ExternalSocketHandler::spawn_process(int socket_fd) {
     
     // Extract options from socket
     if (!extract_process_options(socket_fd, info)) {
-        debug(external, "Failed to extract process options for socket %d", socket_fd);
+        debug(external_start, "Failed to extract process options for socket %d", socket_fd);
         return -1;
     }
     
@@ -258,23 +260,23 @@ int ExternalSocketHandler::spawn_process(int socket_fd) {
         info->is_running = true;
         info->start_time = time(nullptr);
         
-        debug(external, "Process spawned successfully for socket %d", socket_fd);
+        debug(external_start, "Process spawned successfully for socket %d", socket_fd);
         return 0;
     } else {
-        debug(external, "Failed to spawn process for socket %d", socket_fd);
+        debug(external_start, "Failed to spawn process for socket %d", socket_fd);
         return -1;
     }
 }
 
 bool ExternalSocketHandler::terminate_process(int socket_fd, int signal) {
-    debug(external, "Terminating process for socket %d with signal %d", socket_fd, signal);
+    debug(external_start, "Terminating process for socket %d with signal %d", socket_fd, signal);
     
     ProcessManager& pm = ProcessManager::instance();
     return pm.terminate_process(socket_fd, signal);
 }
 
 bool ExternalSocketHandler::kill_process(int socket_fd) {
-    debug(external, "Killing process for socket %d", socket_fd);
+    debug(external_start, "Killing process for socket %d", socket_fd);
     
     ProcessManager& pm = ProcessManager::instance();
     return pm.kill_process(socket_fd);
@@ -301,7 +303,7 @@ int ExternalSocketHandler::read_from_process(int socket_fd, char* buffer, size_t
 }
 
 void ExternalSocketHandler::cleanup_handler(int socket_fd) {
-    debug(external, "Cleaning up external socket handler for socket %d", socket_fd);
+    debug(external_start, "Cleaning up external socket handler for socket %d", socket_fd);
     
     // Cleanup process through ProcessManager
     ProcessManager::instance().cleanup_process(socket_fd);
@@ -309,7 +311,7 @@ void ExternalSocketHandler::cleanup_handler(int socket_fd) {
     // Remove from our tracking
     processes_.erase(socket_fd);
     
-    debug(external, "External socket handler cleanup completed for socket %d", socket_fd);
+    debug(external_start, "External socket handler cleanup completed for socket %d", socket_fd);
 }
 
 bool ExternalSocketHandler::extract_process_options(int socket_fd, ExternalProcessInfo* info) {
@@ -324,7 +326,7 @@ bool ExternalSocketHandler::extract_process_options(int socket_fd, ExternalProce
     }
     
     if (info->command.empty()) {
-        debug(external, "No command specified for socket %d", socket_fd);
+        debug(external_start, "No command specified for socket %d", socket_fd);
         return false;
     }
     
@@ -383,7 +385,7 @@ bool ExternalSocketHandler::extract_process_options(int socket_fd, ExternalProce
         }
     }
     
-    debug(external, "Extracted process options for socket %d: command=%s, args=%zu, timeout=%d",
+    debug(external_start, "Extracted process options for socket %d: command=%s, args=%zu, timeout=%d",
           socket_fd, info->command.c_str(), info->args.size(), info->timeout_seconds);
     
     return true;
@@ -475,11 +477,12 @@ void init_external_socket_handlers() {
     static bool initialized = false;
     if (initialized) return;
     
-    debug(external, "Initializing external socket handlers");
+    debug(external_start, "Initializing external socket handlers");
     
     // Register handlers for external modes
-    register_socket_create_handler(EXTERNAL_PROCESS, ExternalSocketHandler::create_handler);
-    register_socket_create_handler(EXTERNAL_COMMAND_MODE, ExternalSocketHandler::create_handler);
+    // TODO: Implement socket mode registration when unified architecture is complete
+    // register_socket_create_handler(EXTERNAL_PROCESS, ExternalSocketHandler::create_handler);
+    // register_socket_create_handler(EXTERNAL_COMMAND_MODE, ExternalSocketHandler::create_handler);
     
     // Register option handlers
     register_external_option_handlers();
@@ -490,51 +493,24 @@ void init_external_socket_handlers() {
     initialized = true;
     g_external_package_initialized = true;
     
-    debug(external, "External socket handlers initialized successfully");
+    debug(external_start, "External socket handlers initialized successfully");
 }
 
 void cleanup_external_socket_handlers() {
-    debug(external, "Cleaning up external socket handlers");
+    debug(external_start, "Cleaning up external socket handlers");
     
     // Cleanup all active processes
     ExternalSocketHandler::processes_.clear();
     
     g_external_package_initialized = false;
-    debug(external, "External socket handlers cleaned up");
+    debug(external_start, "External socket handlers cleaned up");
 }
 
 void register_external_option_handlers() {
-    auto& option_manager = SocketOptionManager::instance();
-    
-    // Register validators for external options
-    option_manager.register_validator(EXTERNAL_COMMAND, 
-        [](const SocketOptionManager::OptionValue& value) {
-            if (std::holds_alternative<std::string>(value)) {
-                std::string command = std::get<std::string>(value);
-                return CommandUtils::is_valid_command(command);
-            }
-            return false;
-        });
-    
-    option_manager.register_validator(EXTERNAL_TIMEOUT,
-        [](const SocketOptionManager::OptionValue& value) {
-            if (std::holds_alternative<int>(value)) {
-                int timeout = std::get<int>(value);
-                return timeout >= MIN_EXTERNAL_TIMEOUT && timeout <= MAX_EXTERNAL_TIMEOUT;
-            }
-            return false;
-        });
-    
-    option_manager.register_validator(EXTERNAL_BUFFER_SIZE,
-        [](const SocketOptionManager::OptionValue& value) {
-            if (std::holds_alternative<int>(value)) {
-                int buffer_size = std::get<int>(value);
-                return buffer_size >= 1024 && buffer_size <= 1024 * 1024;
-            }
-            return false;
-        });
-    
-    debug(external, "External option handlers registered");
+    // TODO: Implement when SocketOptionManager API is available
+    // auto& option_manager = SocketOptionManager::instance();
+    // TODO: Register validators when API is available
+    debug(external_start, "External option handlers registration placeholder");
 }
 
 /*

@@ -1,0 +1,409 @@
+# GraphQL Schema for MUD Integration
+# Example schema demonstrating MUD-specific types and operations
+
+type Query {
+  # Player information
+  player(id: ID!): Player
+  players(online: Boolean, level: Int): [Player!]!
+  
+  # Room and world information
+  room(id: ID!): Room
+  rooms(area: String): [Room!]!
+  
+  # Game state
+  time: GameTime!
+  weather: Weather!
+  
+  # Admin queries
+  serverStatus: ServerStatus!
+  statistics: ServerStatistics!
+}
+
+type Mutation {
+  # Player actions
+  movePlayer(playerId: ID!, direction: Direction!): MoveResult!
+  sayMessage(playerId: ID!, message: String!): Boolean!
+  tellPlayer(from: ID!, to: ID!, message: String!): Boolean!
+  
+  # Admin actions
+  kickPlayer(playerId: ID!, reason: String): Boolean!
+  broadcastMessage(message: String!): Boolean!
+  shutdownServer(delay: Int): Boolean!
+}
+
+type Subscription {
+  # Real-time player events
+  playerJoined: Player!
+  playerLeft: Player!
+  playerMoved(playerId: ID): PlayerMovement!
+  
+  # Chat and communication
+  chatMessage(channel: String): ChatMessage!
+  systemMessage: SystemMessage!
+  
+  # Game events
+  combatEvent(playerId: ID): CombatEvent!
+  questUpdate(playerId: ID): QuestUpdate!
+  inventoryChanged(playerId: ID): InventoryChange!
+}
+
+type Player {
+  id: ID!
+  name: String!
+  title: String
+  level: Int!
+  experience: Int!
+  
+  # Character stats
+  stats: PlayerStats!
+  
+  # Current state
+  online: Boolean!
+  location: Room
+  lastLogin: String
+  
+  # Inventory and equipment
+  inventory: [Item!]!
+  equipment: Equipment!
+  
+  # Social information
+  guild: Guild
+  friends: [Player!]!
+}
+
+type PlayerStats {
+  health: Int!
+  maxHealth: Int!
+  mana: Int!
+  maxMana: Int!
+  stamina: Int!
+  maxStamina: Int!
+  
+  # Core attributes
+  strength: Int!
+  intelligence: Int!
+  dexterity: Int!
+  constitution: Int!
+  wisdom: Int!
+  charisma: Int!
+}
+
+type Room {
+  id: ID!
+  title: String!
+  description: String!
+  
+  # Geography
+  area: String!
+  coordinates: Coordinates
+  
+  # Navigation
+  exits: [Exit!]!
+  
+  # Contents
+  players: [Player!]!
+  npcs: [NPC!]!
+  items: [Item!]!
+  
+  # Environment
+  weather: Weather
+  lighting: LightLevel!
+  
+  # Properties
+  indoor: Boolean!
+  peaceful: Boolean!
+}
+
+type Exit {
+  direction: Direction!
+  destination: Room!
+  door: Door
+  hidden: Boolean!
+}
+
+type Door {
+  open: Boolean!
+  locked: Boolean!
+  key: Item
+}
+
+type Item {
+  id: ID!
+  name: String!
+  shortDescription: String!
+  longDescription: String!
+  
+  # Properties
+  type: ItemType!
+  weight: Float!
+  value: Int!
+  
+  # Equipment stats (if applicable)
+  armor: Int
+  damage: String
+  attackType: String
+  
+  # Magic properties
+  enchanted: Boolean!
+  spells: [String!]!
+}
+
+type Equipment {
+  weapon: Item
+  shield: Item
+  armor: Item
+  helmet: Item
+  gloves: Item
+  boots: Item
+  cloak: Item
+  jewelry: [Item!]!
+}
+
+type NPC {
+  id: ID!
+  name: String!
+  title: String
+  description: String!
+  
+  # Behavior
+  level: Int!
+  aggressive: Boolean!
+  vendor: Boolean!
+  
+  # Interaction
+  dialogue: [String!]!
+  quests: [Quest!]!
+  inventory: [Item!]!
+}
+
+type Guild {
+  id: ID!
+  name: String!
+  description: String!
+  leader: Player!
+  members: [Player!]!
+  level: Int!
+}
+
+type Quest {
+  id: ID!
+  title: String!
+  description: String!
+  objectives: [QuestObjective!]!
+  rewards: [QuestReward!]!
+  completed: Boolean!
+}
+
+type QuestObjective {
+  id: ID!
+  description: String!
+  completed: Boolean!
+  progress: Int!
+  required: Int!
+}
+
+type QuestReward {
+  type: RewardType!
+  amount: Int!
+  item: Item
+}
+
+type GameTime {
+  hour: Int!
+  minute: Int!
+  day: Int!
+  month: String!
+  year: Int!
+  season: Season!
+}
+
+type Weather {
+  condition: WeatherCondition!
+  temperature: Int!
+  description: String!
+}
+
+type ServerStatus {
+  uptime: Int!
+  players: ServerPlayerStats!
+  memory: MemoryStats!
+  network: NetworkStats!
+}
+
+type ServerPlayerStats {
+  online: Int!
+  peak: Int!
+  total: Int!
+}
+
+type MemoryStats {
+  used: Int!
+  free: Int!
+  total: Int!
+}
+
+type NetworkStats {
+  connections: Int!
+  bandwidth: BandwidthStats!
+}
+
+type BandwidthStats {
+  bytesIn: Int!
+  bytesOut: Int!
+  packetsIn: Int!
+  packetsOut: Int!
+}
+
+type ServerStatistics {
+  commandsExecuted: Int!
+  objectsLoaded: Int!
+  roomsLoaded: Int!
+  playersCreated: Int!
+  uptimeSeconds: Int!
+}
+
+# Movement and combat results
+type MoveResult {
+  success: Boolean!
+  message: String!
+  newLocation: Room
+}
+
+type PlayerMovement {
+  player: Player!
+  from: Room!
+  to: Room!
+  direction: Direction!
+}
+
+type ChatMessage {
+  id: ID!
+  channel: String!
+  sender: Player!
+  message: String!
+  timestamp: String!
+}
+
+type SystemMessage {
+  id: ID!
+  type: SystemMessageType!
+  message: String!
+  timestamp: String!
+}
+
+type CombatEvent {
+  id: ID!
+  attacker: Player!
+  defender: Player!
+  action: String!
+  damage: Int!
+  timestamp: String!
+}
+
+type QuestUpdate {
+  quest: Quest!
+  player: Player!
+  type: QuestUpdateType!
+  timestamp: String!
+}
+
+type InventoryChange {
+  player: Player!
+  item: Item!
+  action: InventoryAction!
+  quantity: Int!
+  timestamp: String!
+}
+
+type Coordinates {
+  x: Int!
+  y: Int!
+  z: Int!
+}
+
+# Enumerations
+enum Direction {
+  NORTH
+  SOUTH
+  EAST
+  WEST
+  NORTHEAST
+  NORTHWEST
+  SOUTHEAST
+  SOUTHWEST
+  UP
+  DOWN
+  IN
+  OUT
+}
+
+enum ItemType {
+  WEAPON
+  ARMOR
+  FOOD
+  DRINK
+  TREASURE
+  KEY
+  CONTAINER
+  BOOK
+  SCROLL
+  POTION
+  COMPONENT
+  TOOL
+  MISC
+}
+
+enum LightLevel {
+  DARK
+  DIM
+  NORMAL
+  BRIGHT
+  BRILLIANT
+}
+
+enum Season {
+  SPRING
+  SUMMER
+  AUTUMN
+  WINTER
+}
+
+enum WeatherCondition {
+  SUNNY
+  CLOUDY
+  RAINY
+  STORMY
+  SNOWY
+  FOGGY
+  WINDY
+}
+
+enum RewardType {
+  EXPERIENCE
+  GOLD
+  ITEM
+  SKILL
+}
+
+enum SystemMessageType {
+  INFO
+  WARNING
+  ERROR
+  ANNOUNCEMENT
+  MAINTENANCE
+}
+
+enum QuestUpdateType {
+  STARTED
+  COMPLETED
+  FAILED
+  OBJECTIVE_COMPLETED
+}
+
+enum InventoryAction {
+  ADDED
+  REMOVED
+  MOVED
+  EQUIPPED
+  UNEQUIPPED
+}

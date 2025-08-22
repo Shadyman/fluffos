@@ -61,6 +61,12 @@ void SocketOptionManager::initialize_descriptors() {
     // TLS options (320-339)
     register_tls_options();
     
+    // GraphQL options (400-419)
+    register_graphql_options();
+    
+    // gRPC options (420-439)
+    register_grpc_options();
+    
     // Internal options (1000+)
     register_internal_options();
     
@@ -250,6 +256,121 @@ void SocketOptionManager::register_tls_options() {
                    
     register_option(TLS_VERIFY_DEPTH, OPTION_TYPE_INTEGER, OPTION_CATEGORY_TLS,
                    OPTION_ACCESS_PRIVILEGED, 9, "Certificate verification depth", 1, 20);
+}
+
+void SocketOptionManager::register_graphql_options() {
+    register_option(GRAPHQL_SCHEMA, OPTION_TYPE_STRING, OPTION_CATEGORY_GRAPHQL,
+                   OPTION_ACCESS_OWNER, "", "GraphQL schema definition (SDL)");
+                   
+    register_option(GRAPHQL_INTROSPECTION, OPTION_TYPE_BOOLEAN, OPTION_CATEGORY_GRAPHQL,
+                   OPTION_ACCESS_PUBLIC, true, "Enable GraphQL introspection");
+                   
+    register_option(GRAPHQL_PLAYGROUND, OPTION_TYPE_BOOLEAN, OPTION_CATEGORY_GRAPHQL,
+                   OPTION_ACCESS_PUBLIC, true, "Enable GraphQL Playground");
+                   
+    register_option(GRAPHQL_MAX_QUERY_DEPTH, OPTION_TYPE_INTEGER, OPTION_CATEGORY_GRAPHQL,
+                   OPTION_ACCESS_PUBLIC, DEFAULT_GRAPHQL_MAX_QUERY_DEPTH, "Maximum query depth",
+                   MIN_GRAPHQL_QUERY_DEPTH, MAX_GRAPHQL_QUERY_DEPTH);
+                   
+    register_option(GRAPHQL_MAX_QUERY_COMPLEXITY, OPTION_TYPE_INTEGER, OPTION_CATEGORY_GRAPHQL,
+                   OPTION_ACCESS_PUBLIC, DEFAULT_GRAPHQL_MAX_QUERY_COMPLEXITY, "Maximum query complexity",
+                   MIN_GRAPHQL_QUERY_COMPLEXITY, MAX_GRAPHQL_QUERY_COMPLEXITY);
+                   
+    register_option(GRAPHQL_TIMEOUT, OPTION_TYPE_INTEGER, OPTION_CATEGORY_GRAPHQL,
+                   OPTION_ACCESS_PUBLIC, DEFAULT_GRAPHQL_TIMEOUT, "GraphQL operation timeout",
+                   MIN_GRAPHQL_TIMEOUT, MAX_GRAPHQL_TIMEOUT);
+                   
+    register_option(GRAPHQL_SUBSCRIPTIONS, OPTION_TYPE_BOOLEAN, OPTION_CATEGORY_GRAPHQL,
+                   OPTION_ACCESS_PUBLIC, true, "Enable GraphQL subscriptions");
+                   
+    register_option(GRAPHQL_CORS_ORIGINS, OPTION_TYPE_ARRAY, OPTION_CATEGORY_GRAPHQL,
+                   OPTION_ACCESS_PUBLIC, static_cast<void*>(nullptr), "CORS allowed origins");
+                   
+    register_option(GRAPHQL_RESOLVER_TIMEOUT, OPTION_TYPE_INTEGER, OPTION_CATEGORY_GRAPHQL,
+                   OPTION_ACCESS_PUBLIC, DEFAULT_GRAPHQL_RESOLVER_TIMEOUT, "Resolver timeout in milliseconds",
+                   1000, 60000);
+                   
+    register_option(GRAPHQL_QUERY_CACHE, OPTION_TYPE_BOOLEAN, OPTION_CATEGORY_GRAPHQL,
+                   OPTION_ACCESS_PUBLIC, false, "Enable query result caching");
+                   
+    register_option(GRAPHQL_SCHEMA_FILE, OPTION_TYPE_STRING, OPTION_CATEGORY_GRAPHQL,
+                   OPTION_ACCESS_OWNER, "", "Path to GraphQL schema file");
+                   
+    register_option(GRAPHQL_ENDPOINT_PATH, OPTION_TYPE_STRING, OPTION_CATEGORY_GRAPHQL,
+                   OPTION_ACCESS_PUBLIC, "/graphql", "GraphQL endpoint path");
+                   
+    register_option(GRAPHQL_WS_ENDPOINT, OPTION_TYPE_STRING, OPTION_CATEGORY_GRAPHQL,
+                   OPTION_ACCESS_PUBLIC, "/graphql/ws", "GraphQL WebSocket endpoint");
+                   
+    register_option(GRAPHQL_DEBUG_MODE, OPTION_TYPE_BOOLEAN, OPTION_CATEGORY_GRAPHQL,
+                   OPTION_ACCESS_PRIVILEGED, false, "Enable GraphQL debug mode");
+}
+
+void SocketOptionManager::register_grpc_options() {
+    register_option(GRPC_SERVICE_CONFIG, OPTION_TYPE_STRING, OPTION_CATEGORY_GRPC,
+                   OPTION_ACCESS_OWNER, "", "gRPC service configuration (Protocol Buffers definition)");
+                   
+    register_option(GRPC_MAX_MESSAGE_SIZE, OPTION_TYPE_INTEGER, OPTION_CATEGORY_GRPC,
+                   OPTION_ACCESS_PUBLIC, DEFAULT_GRPC_MAX_MESSAGE_SIZE, "Maximum message size in bytes",
+                   MIN_GRPC_MESSAGE_SIZE, MAX_GRPC_MESSAGE_SIZE);
+                   
+    register_option(GRPC_KEEPALIVE_TIME, OPTION_TYPE_INTEGER, OPTION_CATEGORY_GRPC,
+                   OPTION_ACCESS_PUBLIC, DEFAULT_GRPC_KEEPALIVE_TIME, "Keepalive time in milliseconds",
+                   MIN_GRPC_KEEPALIVE_TIME, MAX_GRPC_KEEPALIVE_TIME);
+                   
+    register_option(GRPC_KEEPALIVE_TIMEOUT, OPTION_TYPE_INTEGER, OPTION_CATEGORY_GRPC,
+                   OPTION_ACCESS_PUBLIC, DEFAULT_GRPC_KEEPALIVE_TIMEOUT, "Keepalive timeout in milliseconds",
+                   1000, 60000);
+                   
+    register_option(GRPC_REFLECTION_ENABLE, OPTION_TYPE_BOOLEAN, OPTION_CATEGORY_GRPC,
+                   OPTION_ACCESS_PUBLIC, true, "Enable gRPC server reflection");
+                   
+    register_option(GRPC_HEALTH_CHECK, OPTION_TYPE_BOOLEAN, OPTION_CATEGORY_GRPC,
+                   OPTION_ACCESS_PUBLIC, true, "Enable gRPC health check service");
+                   
+    register_option(GRPC_COMPRESSION, OPTION_TYPE_STRING, OPTION_CATEGORY_GRPC,
+                   OPTION_ACCESS_PUBLIC, "", "Compression algorithm (gzip, deflate, none)");
+                   
+    register_option(GRPC_METADATA, OPTION_TYPE_MAPPING, OPTION_CATEGORY_GRPC,
+                   OPTION_ACCESS_PUBLIC, static_cast<void*>(nullptr), "Custom gRPC metadata headers");
+                   
+    register_option(GRPC_DEADLINE, OPTION_TYPE_INTEGER, OPTION_CATEGORY_GRPC,
+                   OPTION_ACCESS_PUBLIC, DEFAULT_GRPC_DEADLINE, "Request deadline in milliseconds",
+                   MIN_GRPC_DEADLINE, MAX_GRPC_DEADLINE);
+                   
+    register_option(GRPC_RETRY_POLICY, OPTION_TYPE_STRING, OPTION_CATEGORY_GRPC,
+                   OPTION_ACCESS_PUBLIC, "", "Retry policy configuration (JSON)");
+                   
+    register_option(GRPC_TARGET_ADDRESS, OPTION_TYPE_STRING, OPTION_CATEGORY_GRPC,
+                   OPTION_ACCESS_PUBLIC, "", "Target server address (host:port)");
+                   
+    register_option(GRPC_PROTO_FILE, OPTION_TYPE_STRING, OPTION_CATEGORY_GRPC,
+                   OPTION_ACCESS_OWNER, "", "Protocol Buffers .proto file path");
+                   
+    register_option(GRPC_TLS_ENABLED, OPTION_TYPE_BOOLEAN, OPTION_CATEGORY_GRPC,
+                   OPTION_ACCESS_PUBLIC, false, "Enable TLS/SSL encryption");
+                   
+    register_option(GRPC_TLS_CERT_FILE, OPTION_TYPE_STRING, OPTION_CATEGORY_GRPC,
+                   OPTION_ACCESS_SYSTEM, "", "TLS certificate file path");
+                   
+    register_option(GRPC_TLS_KEY_FILE, OPTION_TYPE_STRING, OPTION_CATEGORY_GRPC,
+                   OPTION_ACCESS_SYSTEM, "", "TLS private key file path");
+                   
+    register_option(GRPC_TLS_CA_FILE, OPTION_TYPE_STRING, OPTION_CATEGORY_GRPC,
+                   OPTION_ACCESS_SYSTEM, "", "TLS CA certificate file path");
+                   
+    register_option(GRPC_MAX_CONNECTIONS, OPTION_TYPE_INTEGER, OPTION_CATEGORY_GRPC,
+                   OPTION_ACCESS_PUBLIC, 100, "Maximum concurrent connections", 1, 10000);
+                   
+    register_option(GRPC_CONNECTION_TIMEOUT, OPTION_TYPE_INTEGER, OPTION_CATEGORY_GRPC,
+                   OPTION_ACCESS_PUBLIC, DEFAULT_GRPC_CONNECTION_TIMEOUT, "Connection timeout in milliseconds",
+                   1000, 300000);
+                   
+    register_option(GRPC_LOAD_BALANCING, OPTION_TYPE_STRING, OPTION_CATEGORY_GRPC,
+                   OPTION_ACCESS_PUBLIC, "pick_first", "Load balancing policy (pick_first, round_robin)");
+                   
+    register_option(GRPC_DEBUG_MODE, OPTION_TYPE_BOOLEAN, OPTION_CATEGORY_GRPC,
+                   OPTION_ACCESS_PRIVILEGED, false, "Enable gRPC debug mode");
 }
 
 void SocketOptionManager::register_internal_options() {

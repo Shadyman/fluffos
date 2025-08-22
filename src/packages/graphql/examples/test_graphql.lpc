@@ -1,0 +1,279 @@
+/*
+ * GraphQL Package Test
+ * 
+ * Example LPC code demonstrating GraphQL socket usage in unified socket architecture.
+ * This file shows how to create and configure GraphQL servers and clients.
+ */
+
+// Test GraphQL server creation and configuration
+void test_graphql_server() {
+    int sock;
+    string schema;
+    
+    write("Testing GraphQL server creation...\n");
+    
+    // Create GraphQL server socket
+    sock = socket_create(GRAPHQL_SERVER, "graphql_read", "graphql_close");
+    if (sock < 0) {
+        write("ERROR: Failed to create GraphQL server socket\n");
+        return;
+    }
+    
+    write(sprintf("Created GraphQL server socket: %d\n", sock));
+    
+    // Load example schema
+    schema = read_file("/packages/graphql/examples/mud_schema.graphql");
+    if (!schema) {
+        write("WARNING: Could not load example schema file\n");
+        schema = "type Query { hello: String }";
+    }
+    
+    // Configure GraphQL server
+    socket_set_option(sock, GRAPHQL_SCHEMA, schema);
+    socket_set_option(sock, GRAPHQL_INTROSPECTION, 1);
+    socket_set_option(sock, GRAPHQL_PLAYGROUND, 1);
+    socket_set_option(sock, GRAPHQL_MAX_QUERY_DEPTH, 10);
+    socket_set_option(sock, GRAPHQL_MAX_QUERY_COMPLEXITY, 500);
+    socket_set_option(sock, GRAPHQL_TIMEOUT, 30000);
+    socket_set_option(sock, GRAPHQL_SUBSCRIPTIONS, 1);
+    socket_set_option(sock, GRAPHQL_ENDPOINT_PATH, "/api/graphql");
+    
+    write("Configured GraphQL server options\n");
+    
+    // Bind and listen on port 4000
+    if (socket_bind(sock, 4000, "0.0.0.0") < 0) {
+        write("ERROR: Failed to bind GraphQL server to port 4000\n");
+        socket_close(sock);
+        return;
+    }
+    
+    if (socket_listen(sock, "graphql_accept") < 0) {
+        write("ERROR: Failed to listen on GraphQL server socket\n");
+        socket_close(sock);
+        return;
+    }
+    
+    write("GraphQL server listening on port 4000\n");
+    write("GraphQL Playground available at: http://localhost:4000/api/graphql\n");
+    
+    // Store socket for later use
+    set_property("graphql_server_socket", sock);
+}
+
+// Test GraphQL client creation and queries
+void test_graphql_client() {
+    int sock;
+    string query;
+    
+    write("Testing GraphQL client creation...\n");
+    
+    // Create GraphQL client socket
+    sock = socket_create(GRAPHQL_CLIENT, "graphql_response", "graphql_close");
+    if (sock < 0) {
+        write("ERROR: Failed to create GraphQL client socket\n");
+        return;
+    }
+    
+    write(sprintf("Created GraphQL client socket: %d\n", sock));
+    
+    // Configure client
+    socket_set_option(sock, GRAPHQL_ENDPOINT_PATH, "/api/graphql");
+    socket_set_option(sock, GRAPHQL_TIMEOUT, 10000);
+    
+    // Connect to GraphQL server
+    if (socket_connect(sock, "localhost", 4000, "graphql_connected", "graphql_failed") < 0) {
+        write("ERROR: Failed to connect GraphQL client\n");
+        socket_close(sock);
+        return;
+    }
+    
+    write("GraphQL client connecting to localhost:4000\n");
+    
+    // Prepare test query
+    query = "{ hello }";
+    
+    // Store for sending after connection
+    set_property("graphql_client_socket", sock);
+    set_property("graphql_test_query", query);
+}
+
+// Test GraphQL subscription functionality
+void test_graphql_subscriptions() {
+    int sock;
+    string subscription;
+    
+    write("Testing GraphQL subscriptions...\n");
+    
+    sock = query_property("graphql_server_socket");
+    if (!sock) {
+        write("ERROR: No GraphQL server socket found. Run test_graphql_server() first.\n");
+        return;
+    }
+    
+    // Test subscription
+    subscription = "subscription { playerJoined { id name level } }";
+    
+    if (graphql_subscribe(sock, subscription, "")) {
+        write("Successfully created GraphQL subscription\n");
+    } else {
+        write("ERROR: Failed to create GraphQL subscription\n");
+    }
+}
+
+// Test GraphQL query execution
+void test_graphql_queries() {
+    int sock;
+    string query;
+    mapping variables;
+    
+    write("Testing GraphQL queries...\n");
+    
+    sock = query_property("graphql_server_socket");
+    if (!sock) {
+        write("ERROR: No GraphQL server socket found. Run test_graphql_server() first.\n");
+        return;
+    }
+    
+    // Test simple query
+    query = "{ hello }";
+    if (graphql_execute_query(sock, query, "")) {
+        write("Successfully executed simple query\n");
+    } else {
+        write("ERROR: Failed to execute simple query\n");
+    }
+    
+    // Test complex query with variables
+    query = "query GetPlayer($id: ID!) { player(id: $id) { name level stats { health maxHealth } } }";
+    variables = ([ "id": "player123" ]);
+    
+    if (graphql_execute_query(sock, query, sprintf("%O", variables))) {
+        write("Successfully executed complex query with variables\n");
+    } else {
+        write("ERROR: Failed to execute complex query\n");
+    }
+}
+
+// Test GraphQL event broadcasting
+void test_graphql_events() {
+    mapping player_data;
+    string event_data;
+    
+    write("Testing GraphQL event broadcasting...\n");
+    
+    // Simulate player joining
+    player_data = ([
+        "id": "player456",
+        "name": "TestPlayer",
+        "level": 5
+    ]);
+    
+    event_data = sprintf("{ \"player\": %s }", json_encode(player_data));
+    
+    graphql_broadcast_event("playerJoined", event_data);
+    write("Broadcasted playerJoined event\n");
+    
+    // Simulate player-specific event
+    graphql_broadcast_player_event("player123", "statsChanged", 
+        "{ \"health\": 95, \"maxHealth\": 100 }");
+    write("Broadcasted player-specific event\n");
+    
+    // Simulate room event
+    graphql_broadcast_room_event("room001", "playerEntered",
+        sprintf("{ \"player\": %s, \"room\": \"room001\" }", json_encode(player_data)));
+    write("Broadcasted room-specific event\n");
+}
+
+// Socket callback functions
+void graphql_read(int sock, mixed data) {
+    write(sprintf("GraphQL data received on socket %d: %O\n", sock, data));
+}
+
+void graphql_close(int sock) {
+    write(sprintf("GraphQL socket %d closed\n", sock));
+    
+    // Clean up properties
+    if (sock == query_property("graphql_server_socket")) {
+        remove_property("graphql_server_socket");
+    }
+    if (sock == query_property("graphql_client_socket")) {
+        remove_property("graphql_client_socket");
+    }
+}
+
+void graphql_accept(int sock, int client_sock) {
+    write(sprintf("GraphQL client connected: %d\n", client_sock));
+}
+
+void graphql_response(int sock, mixed data) {
+    write(sprintf("GraphQL response received: %O\n", data));
+}
+
+void graphql_connected(int sock) {
+    string query;
+    
+    write(sprintf("GraphQL client connected successfully: %d\n", sock));
+    
+    // Send test query
+    query = query_property("graphql_test_query");
+    if (query) {
+        socket_write(sock, sprintf("{ \"query\": \"%s\" }", query));
+        write("Sent test query to GraphQL server\n");
+    }
+}
+
+void graphql_failed(int sock) {
+    write(sprintf("GraphQL client connection failed: %d\n", sock));
+    socket_close(sock);
+}
+
+// Main test function
+void run_all_tests() {
+    write("=== GraphQL Package Test Suite ===\n");
+    
+    // Test server creation
+    test_graphql_server();
+    
+    // Wait a moment for server to initialize
+    call_out("test_graphql_client", 1);
+    call_out("test_graphql_subscriptions", 2);
+    call_out("test_graphql_queries", 3);
+    call_out("test_graphql_events", 4);
+    
+    write("\nAll tests initiated. Check output for results.\n");
+}
+
+// Cleanup function
+void cleanup_tests() {
+    int sock;
+    
+    write("Cleaning up GraphQL test resources...\n");
+    
+    sock = query_property("graphql_server_socket");
+    if (sock) {
+        socket_close(sock);
+        remove_property("graphql_server_socket");
+    }
+    
+    sock = query_property("graphql_client_socket");
+    if (sock) {
+        socket_close(sock);
+        remove_property("graphql_client_socket");
+    }
+    
+    remove_property("graphql_test_query");
+    
+    write("GraphQL test cleanup complete\n");
+}
+
+// Interactive functions for manual testing
+void help() {
+    write("GraphQL Package Test Functions:\n");
+    write("  run_all_tests()          - Run complete test suite\n");
+    write("  test_graphql_server()    - Test server creation\n");
+    write("  test_graphql_client()    - Test client creation\n");
+    write("  test_graphql_subscriptions() - Test subscriptions\n");
+    write("  test_graphql_queries()   - Test query execution\n");
+    write("  test_graphql_events()    - Test event broadcasting\n");
+    write("  cleanup_tests()          - Clean up test resources\n");
+    write("  help()                   - Show this help\n");
+}

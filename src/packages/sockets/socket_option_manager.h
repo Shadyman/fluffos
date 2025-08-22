@@ -158,6 +158,8 @@ private:
     void register_database_options();
     void register_cache_options();
     void register_tls_options();
+    void register_graphql_options();
+    void register_grpc_options();
     void register_internal_options();
     
     // Protocol mode management

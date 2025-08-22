@@ -21,55 +21,54 @@
  * 500-999:  Reserved for custom implementations
  */
 
-// Existing socket options (0-99) - preserve compatibility
+// Streamlined socket options with consistent SOCKET_OPT_ naming
 enum socket_options {
-    // Core TLS options (existing)
-    SO_TLS_VERIFY_PEER = 0,
-    SO_TLS_SNI_HOSTNAME = 1,
-    
-    // Basic socket configuration (2-19)
-    SO_SOCKET_KEEPALIVE = 2,
-    SO_SOCKET_NODELAY = 3,
-    SO_SOCKET_REUSEADDR = 4,
-    SO_SOCKET_RCVBUF = 5,
-    SO_SOCKET_SNDBUF = 6,
-    SO_SOCKET_TIMEOUT = 7,
-    SO_SOCKET_LINGER = 8,
-    SO_SOCKET_BROADCAST = 9,
+    // Core socket options with perfect backwards compatibility
+    SOCKET_OPT_INVALID = 0,            // Legacy: Original value 0
+    SOCKET_OPT_TLS_VERIFY_PEER = 1,     // Legacy: Original value 1
+    SOCKET_OPT_TLS_SNI_HOSTNAME = 2,    // Legacy: Original value 2
+    SOCKET_OPT_KEEPALIVE = 3,           // Core socket options start at 3
+    SOCKET_OPT_NODELAY = 4,
+    SOCKET_OPT_REUSEADDR = 5,
+    SOCKET_OPT_RCVBUF = 6,
+    SOCKET_OPT_SNDBUF = 7,
+    SOCKET_OPT_TIMEOUT = 8,
+    SOCKET_OPT_LINGER = 9,
+    SOCKET_OPT_BROADCAST = 10,
     
     // Authentication and security (20-39)
-    SO_AUTH_TOKEN = 20,
-    SO_AUTH_USERNAME = 21,
-    SO_AUTH_PASSWORD = 22,
-    SO_AUTH_REALM = 23,
-    SO_AUTH_DIGEST = 24,
-    SO_AUTH_BASIC = 25,
-    SO_AUTH_BEARER = 26,
-    SO_SECURITY_POLICY = 27,
+    SOCKET_OPT_AUTH_TOKEN = 20,
+    SOCKET_OPT_AUTH_USERNAME = 21,
+    SOCKET_OPT_AUTH_PASSWORD = 22,
+    SOCKET_OPT_AUTH_REALM = 23,
+    SOCKET_OPT_AUTH_DIGEST = 24,
+    SOCKET_OPT_AUTH_BASIC = 25,
+    SOCKET_OPT_AUTH_BEARER = 26,
+    SOCKET_OPT_SECURITY_POLICY = 27,
     
     // General protocol options (40-99)
-    SO_PROTOCOL_VERSION = 40,
-    SO_ENCODING = 41,
-    SO_COMPRESSION = 42,
-    SO_BUFFER_SIZE = 43,
-    SO_MAX_CONNECTIONS = 44,
-    SO_CONNECTION_POOL = 45,
-    SO_RETRY_COUNT = 46,
-    SO_RETRY_DELAY = 47,
-    SO_DEBUG_LEVEL = 48,
-    SO_LOG_REQUESTS = 49,
+    SOCKET_OPT_PROTOCOL_VERSION = 40,
+    SOCKET_OPT_ENCODING = 41,
+    SOCKET_OPT_COMPRESSION = 42,
+    SOCKET_OPT_BUFFER_SIZE = 43,
+    SOCKET_OPT_MAX_CONNECTIONS = 44,
+    SOCKET_OPT_CONNECTION_POOL = 45,
+    SOCKET_OPT_RETRY_COUNT = 46,
+    SOCKET_OPT_RETRY_DELAY = 47,
+    SOCKET_OPT_DEBUG_LEVEL = 48,
+    SOCKET_OPT_LOG_REQUESTS = 49,
     
-    // HTTP/HTTPS options: 100-119
-    SO_HTTP_HEADERS = 100,
-    SO_HTTP_METHOD = 101,
-    SO_HTTP_URL = 102,
-    SO_HTTP_BODY = 103,
-    SO_HTTP_TIMEOUT = 104,
-    SO_HTTP_USER_AGENT = 105,
-    SO_HTTP_FOLLOW_REDIRECTS = 106,
-    SO_HTTP_MAX_REDIRECTS = 107,
-    SO_HTTP_CONNECT_TIMEOUT = 108,
-    SO_HTTP_READ_TIMEOUT = 109,
+    // HTTP/HTTPS options: 100-119 (consistent protocol naming)
+    HTTP_HEADERS = 100,
+    HTTP_METHOD = 101,
+    HTTP_URL = 102,
+    HTTP_BODY = 103,
+    HTTP_TIMEOUT = 104,
+    HTTP_USER_AGENT = 105,
+    HTTP_FOLLOW_REDIRECTS = 106,
+    HTTP_MAX_REDIRECTS = 107,
+    HTTP_CONNECT_TIMEOUT = 108,
+    HTTP_READ_TIMEOUT = 109,
     
     // REST configuration: 110-119
     REST_ROUTER_CONFIG = 110,
@@ -155,23 +154,23 @@ enum socket_options {
     MQ_PRIORITY = 188,
     MQ_TTL = 189,
     
-    // Cache options: 200-219
-    SO_CACHE_ENABLE = 200,
-    SO_CACHE_TTL = 201,
-    SO_CACHE_MAX_SIZE = 202,
-    SO_CACHE_KEY_PATTERN = 203,
-    SO_CACHE_HEADERS = 204,
-    SO_CACHE_METHODS = 205,
-    SO_CACHE_EXCLUDE_PATTERNS = 206,
-    SO_CACHE_THREAD_POOL_SIZE = 207,
-    SO_CACHE_INVALIDATE_PATTERN = 208,
-    SO_CACHE_STATISTICS = 209,
-    SO_CACHE_COMPRESSION = 210,
-    SO_CACHE_STORAGE_BACKEND = 211,
-    SO_CACHE_CLEANUP_INTERVAL = 212,
-    SO_CACHE_MAX_MEMORY = 213,
-    SO_CACHE_PERSISTENCE = 214,
-    SO_CACHE_REPLICATION = 215,
+    // Cache options: 200-219 (consistent protocol naming)
+    CACHE_ENABLE = 200,
+    CACHE_TTL = 201,
+    CACHE_MAX_SIZE = 202,
+    CACHE_KEY_PATTERN = 203,
+    CACHE_HEADERS = 204,
+    CACHE_METHODS = 205,
+    CACHE_EXCLUDE_PATTERNS = 206,
+    CACHE_THREAD_POOL_SIZE = 207,
+    CACHE_INVALIDATE_PATTERN = 208,
+    CACHE_STATISTICS = 209,
+    CACHE_COMPRESSION = 210,
+    CACHE_STORAGE_BACKEND = 211,
+    CACHE_CLEANUP_INTERVAL = 212,
+    CACHE_MAX_MEMORY = 213,
+    CACHE_PERSISTENCE = 214,
+    CACHE_REPLICATION = 215,
     
     // Load balancing: 220-239
     LB_STRATEGY = 220,
@@ -300,10 +299,10 @@ enum socket_options {
     // 900-999: Experimental features
     
     // Internal/system options (1000+)
-    SO_SOCKET_MODE = 1000,
-    SO_HTTP_SERVER_MODE = 1001,
-    SO_HTTP_CLIENT_MODE = 1002,
-    REST_MODE = 1003,
+    SOCKET_OPT_SOCKET_MODE = 1000,       // Core socket mode (keep SOCKET_OPT_)
+    HTTP_SERVER_MODE = 1001,             // Protocol-specific modes
+    HTTP_CLIENT_MODE = 1002,
+    REST_MODE = 1003,                    // Keep existing protocol naming
     WS_MODE = 1004,
     MQTT_MODE = 1005,
     EXTERNAL_MODE = 1006
@@ -390,15 +389,17 @@ enum socket_mode_extended {
 /*
  * Utility macros for option management
  */
-#define IS_HTTP_OPTION(opt)     ((opt) >= 100 && (opt) <= 119)
-#define IS_REST_OPTION(opt)     ((opt) >= 110 && (opt) <= 119)
-#define IS_WS_OPTION(opt)       ((opt) >= 120 && (opt) <= 129)
-#define IS_MQTT_OPTION(opt)     ((opt) >= 130 && (opt) <= 139)
-#define IS_EXTERNAL_OPTION(opt) ((opt) >= 140 && (opt) <= 159)
-#define IS_CACHE_OPTION(opt)    ((opt) >= 200 && (opt) <= 219)
-#define IS_APACHE_OPTION(opt)   ((opt) >= 300 && (opt) <= 319)
-#define IS_TLS_OPTION(opt)      ((opt) >= 320 && (opt) <= 339)
-#define IS_INTERNAL_OPTION(opt) ((opt) >= 1000)
+#define IS_CORE_SOCKET_OPTION(opt)  ((opt) >= 1 && (opt) <= 99)   // All SOCKET_OPT_ options
+#define IS_LEGACY_OPTION(opt)       ((opt) >= 1 && (opt) <= 2)    // Legacy TLS only
+#define IS_HTTP_OPTION(opt)         ((opt) >= 100 && (opt) <= 119)
+#define IS_REST_OPTION(opt)         ((opt) >= 110 && (opt) <= 119)
+#define IS_WS_OPTION(opt)           ((opt) >= 120 && (opt) <= 129)
+#define IS_MQTT_OPTION(opt)         ((opt) >= 130 && (opt) <= 139)
+#define IS_EXTERNAL_OPTION(opt)     ((opt) >= 140 && (opt) <= 159)
+#define IS_CACHE_OPTION(opt)        ((opt) >= 200 && (opt) <= 219)
+#define IS_APACHE_OPTION(opt)       ((opt) >= 300 && (opt) <= 319)
+#define IS_TLS_OPTION(opt)          ((opt) >= 320 && (opt) <= 339)
+#define IS_INTERNAL_OPTION(opt)     ((opt) >= 1000)
 
 #define GET_OPTION_CATEGORY(opt) \
     (IS_HTTP_OPTION(opt) ? OPTION_CATEGORY_HTTP : \

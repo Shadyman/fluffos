@@ -9,6 +9,7 @@
 #include "packages/websocket/websocket.h"
 #include "base/internal/log.h"
 #include "vm/internal/simulate.h"
+#include "vm/internal/base/mapping.h"
 
 #include <cstring>
 #include <algorithm>
@@ -780,7 +781,14 @@ mapping_t* WebSocketFrameUtils::frame_to_mapping(const ws_frame& frame) {
     } else {
         buffer_t* buffer = allocate_buffer(frame.payload.size());
         memcpy(buffer->item, frame.payload.data(), frame.payload.size());
-        add_mapping_buffer(mapping, "payload", buffer);
+        
+        svalue_t key, *value;
+        key.type = T_STRING;
+        key.u.string = const_cast<char*>("payload");
+        
+        value = find_for_insert(mapping, &key, 1);
+        value->type = T_BUFFER;
+        value->u.buf = buffer;
     }
     
     return mapping;
@@ -793,24 +801,24 @@ bool WebSocketFrameUtils::mapping_to_frame(const mapping_t* mapping, ws_frame& f
     
     svalue_t* value;
     
-    if ((value = find_mapping_value(mapping, "fin")) && value->type == T_NUMBER) {
+    if ((value = find_string_in_mapping(mapping, "fin")) && value->type == T_NUMBER) {
         frame.fin = value->u.number != 0;
     }
     
-    if ((value = find_mapping_value(mapping, "opcode")) && value->type == T_NUMBER) {
+    if ((value = find_string_in_mapping(mapping, "opcode")) && value->type == T_NUMBER) {
         frame.opcode = static_cast<ws_frame_opcode>(value->u.number);
     }
     
-    if ((value = find_mapping_value(mapping, "masked")) && value->type == T_NUMBER) {
+    if ((value = find_string_in_mapping(mapping, "masked")) && value->type == T_NUMBER) {
         frame.masked = value->u.number != 0;
     }
     
-    if ((value = find_mapping_value(mapping, "mask_key")) && value->type == T_NUMBER) {
+    if ((value = find_string_in_mapping(mapping, "mask_key")) && value->type == T_NUMBER) {
         frame.mask_key = static_cast<uint32_t>(value->u.number);
     }
     
     // Extract payload
-    if ((value = find_mapping_value(mapping, "payload"))) {
+    if ((value = find_string_in_mapping(mapping, "payload"))) {
         if (value->type == T_STRING) {
             std::string text = value->u.string;
             frame.payload = std::vector<uint8_t>(text.begin(), text.end());

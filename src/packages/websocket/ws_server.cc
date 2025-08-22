@@ -9,6 +9,7 @@
 #include "packages/websocket/websocket.h"
 #include "base/internal/log.h"
 #include "vm/internal/simulate.h"
+#include "vm/internal/base/mapping.h"
 
 #include <libwebsockets.h>
 #include <cstring>
@@ -688,8 +689,13 @@ mapping_t* WebSocketServerManager::get_all_server_stats() {
     
     for (const auto& pair : servers_) {
         mapping_t* server_stats = pair.second->get_server_stats();
-        add_mapping_pair(all_stats, std::to_string(pair.first).c_str(), 
-                        server_stats);
+        svalue_t key, *value;
+        key.type = T_STRING;
+        key.u.string = const_cast<char*>(std::to_string(pair.first).c_str());
+        
+        value = find_for_insert(all_stats, &key, 1);
+        value->type = T_MAPPING;
+        value->u.map = server_stats;
     }
     
     return all_stats;
@@ -715,34 +721,34 @@ bool mapping_to_server_config(const mapping_t* options, ws_server_config& config
     svalue_t* value;
     
     // TLS configuration
-    if ((value = find_mapping_value(options, "tls_enabled")) && value->type == T_NUMBER) {
+    if ((value = find_string_in_mapping(options, "tls_enabled")) && value->type == T_NUMBER) {
         config.tls_enabled = value->u.number != 0;
     }
     
-    if ((value = find_mapping_value(options, "cert_file")) && value->type == T_STRING) {
+    if ((value = find_string_in_mapping(options, "cert_file")) && value->type == T_STRING) {
         config.cert_file = value->u.string;
     }
     
-    if ((value = find_mapping_value(options, "key_file")) && value->type == T_STRING) {
+    if ((value = find_string_in_mapping(options, "key_file")) && value->type == T_STRING) {
         config.key_file = value->u.string;
     }
     
     // Connection limits
-    if ((value = find_mapping_value(options, "max_connections")) && value->type == T_NUMBER) {
+    if ((value = find_string_in_mapping(options, "max_connections")) && value->type == T_NUMBER) {
         config.max_connections = value->u.number;
     }
     
-    if ((value = find_mapping_value(options, "max_message_size")) && value->type == T_NUMBER) {
+    if ((value = find_string_in_mapping(options, "max_message_size")) && value->type == T_NUMBER) {
         config.max_message_size = value->u.number;
     }
     
     // Timeouts
-    if ((value = find_mapping_value(options, "ping_interval")) && value->type == T_NUMBER) {
+    if ((value = find_string_in_mapping(options, "ping_interval")) && value->type == T_NUMBER) {
         config.ping_interval = value->u.number;
     }
     
     // Protocols
-    if ((value = find_mapping_value(options, "protocols")) && value->type == T_ARRAY) {
+    if ((value = find_string_in_mapping(options, "protocols")) && value->type == T_ARRAY) {
         config.supported_protocols.clear();
         for (int i = 0; i < value->u.arr->size; i++) {
             if (value->u.arr->item[i].type == T_STRING) {

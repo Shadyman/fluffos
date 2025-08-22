@@ -225,26 +225,26 @@ ValidationResult SocketOptionValidator::validate_integer_option(socket_options o
     
     // Option-specific validation
     switch (option) {
-        case SO_SOCKET_TIMEOUT:
-        case SO_HTTP_TIMEOUT:
-        case SO_HTTP_CONNECT_TIMEOUT:
-        case SO_HTTP_READ_TIMEOUT:
+        case SOCKET_OPT_TIMEOUT:
+        case HTTP_TIMEOUT:
+        case HTTP_CONNECT_TIMEOUT:
+        case HTTP_READ_TIMEOUT:
             if (!validate_timeout_value(value)) {
                 return ValidationResult(VALIDATION_ERROR_OUT_OF_RANGE,
                                       "Invalid timeout value: " + std::to_string(value) + "ms");
             }
             break;
             
-        case SO_SOCKET_RCVBUF:
-        case SO_SOCKET_SNDBUF:
-        case SO_BUFFER_SIZE:
+        case SOCKET_OPT_RCVBUF:
+        case SOCKET_OPT_SNDBUF:
+        case SOCKET_OPT_BUFFER_SIZE:
             if (value <= 0 || value > 16*1024*1024) { // 16MB max
                 return ValidationResult(VALIDATION_ERROR_OUT_OF_RANGE,
                                       "Buffer size must be between 1 and 16MB");
             }
             break;
             
-        case SO_MAX_CONNECTIONS:
+        case SOCKET_OPT_MAX_CONNECTIONS:
             if (value <= 0 || value > 10000) {
                 return ValidationResult(VALIDATION_ERROR_OUT_OF_RANGE,
                                       "Max connections must be between 1 and 10000");
@@ -328,7 +328,7 @@ ValidationResult SocketOptionValidator::validate_string_option(socket_options op
     
     // Option-specific validation
     switch (option) {
-        case SO_HTTP_URL:
+        case HTTP_URL:
             if (!validate_url_format(value)) {
                 ValidationResult result(VALIDATION_ERROR_INVALID_FORMAT, 
                                       "Invalid URL format: " + value);
@@ -337,7 +337,7 @@ ValidationResult SocketOptionValidator::validate_string_option(socket_options op
             }
             break;
             
-        case SO_HTTP_METHOD:
+        case HTTP_METHOD:
             {
                 std::vector<std::string> valid_methods = {
                     "GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS", "TRACE"
@@ -352,7 +352,7 @@ ValidationResult SocketOptionValidator::validate_string_option(socket_options op
             }
             break;
             
-        case SO_TLS_SNI_HOSTNAME:
+        case SOCKET_OPT_TLS_SNI_HOSTNAME:  // Use legacy constant (value 2)
             if (value.empty() || value.length() > 253) {
                 return ValidationResult(VALIDATION_ERROR_INVALID_FORMAT,
                                       "Invalid SNI hostname length");
@@ -405,7 +405,7 @@ ValidationResult SocketOptionValidator::validate_boolean_option(socket_options o
     // But we can add option-specific logic here if needed
     
     switch (option) {
-        case SO_TLS_VERIFY_PEER:
+        case SOCKET_OPT_TLS_VERIFY_PEER:  // Use legacy constant (value 1)
             // In strict security mode, always require peer verification
             if (context.security_mode && context.strict_mode && !value) {
                 ValidationResult result(VALIDATION_ERROR_SECURITY_VIOLATION,
@@ -664,10 +664,10 @@ void SocketOptionValidator::add_trusted_caller(const std::string& caller_id) {
 // Initialize metadata for different option categories
 
 void SocketOptionValidator::initialize_core_metadata() {
-    // Core TLS options
+    // Legacy TLS options (original values for backwards compatibility)
     {
         OptionMetadata metadata;
-        metadata.option_id = SO_TLS_VERIFY_PEER;
+        metadata.option_id = SOCKET_OPT_TLS_VERIFY_PEER;  // Value 1 (legacy)
         metadata.value_type = OPTION_TYPE_BOOLEAN;
         metadata.category = OPTION_CATEGORY_TLS;
         metadata.access_level = OPTION_ACCESS_OWNER;
@@ -678,10 +678,35 @@ void SocketOptionValidator::initialize_core_metadata() {
         register_option_metadata(metadata);
     }
     
-    // Socket timeout
     {
         OptionMetadata metadata;
-        metadata.option_id = SO_SOCKET_TIMEOUT;
+        metadata.option_id = SOCKET_OPT_TLS_SNI_HOSTNAME;  // Value 2 (legacy)
+        metadata.value_type = OPTION_TYPE_STRING;
+        metadata.category = OPTION_CATEGORY_TLS;
+        metadata.access_level = OPTION_ACCESS_PUBLIC;
+        metadata.has_string_constraints = true;
+        metadata.min_string_length = 1;
+        metadata.max_string_length = 253;
+        metadata.valid_socket_modes = {SOCKET_STREAM_TLS, SOCKET_STREAM_TLS_BINARY, HTTPS_CLIENT, WEBSOCKET_TLS_CLIENT};
+        register_option_metadata(metadata);
+    }
+    
+    // Core socket options (renumbered to start at 3)
+    {
+        OptionMetadata metadata;
+        metadata.option_id = SOCKET_OPT_KEEPALIVE;  // Value 3 (was 2)
+        metadata.value_type = OPTION_TYPE_BOOLEAN;
+        metadata.category = OPTION_CATEGORY_CORE;
+        metadata.access_level = OPTION_ACCESS_PUBLIC;
+        metadata.has_default = true;
+        metadata.default_value.type = T_NUMBER;
+        metadata.default_value.u.number = 0;
+        register_option_metadata(metadata);
+    }
+    
+    {
+        OptionMetadata metadata;
+        metadata.option_id = SOCKET_OPT_TIMEOUT;  // Value 8 (was 7)
         metadata.value_type = OPTION_TYPE_INTEGER;
         metadata.category = OPTION_CATEGORY_CORE;
         metadata.access_level = OPTION_ACCESS_PUBLIC;
@@ -701,7 +726,7 @@ void SocketOptionValidator::initialize_http_metadata() {
     // HTTP URL
     {
         OptionMetadata metadata;
-        metadata.option_id = SO_HTTP_URL;
+        metadata.option_id = HTTP_URL;
         metadata.value_type = OPTION_TYPE_STRING;
         metadata.category = OPTION_CATEGORY_HTTP;
         metadata.access_level = OPTION_ACCESS_PUBLIC;
@@ -715,7 +740,7 @@ void SocketOptionValidator::initialize_http_metadata() {
     // HTTP Method
     {
         OptionMetadata metadata;
-        metadata.option_id = SO_HTTP_METHOD;
+        metadata.option_id = HTTP_METHOD;
         metadata.value_type = OPTION_TYPE_STRING;
         metadata.category = OPTION_CATEGORY_HTTP;
         metadata.access_level = OPTION_ACCESS_PUBLIC;
@@ -827,21 +852,10 @@ void SocketOptionValidator::initialize_cache_metadata() {
 }
 
 void SocketOptionValidator::initialize_tls_metadata() {
-    // TLS SNI Hostname
-    {
-        OptionMetadata metadata;
-        metadata.option_id = SO_TLS_SNI_HOSTNAME;
-        metadata.value_type = OPTION_TYPE_STRING;
-        metadata.category = OPTION_CATEGORY_TLS;
-        metadata.access_level = OPTION_ACCESS_PUBLIC;
-        metadata.has_string_constraints = true;
-        metadata.min_string_length = 1;
-        metadata.max_string_length = 253;
-        metadata.valid_socket_modes = {SOCKET_STREAM_TLS, SOCKET_STREAM_TLS_BINARY, HTTPS_CLIENT, WEBSOCKET_TLS_CLIENT};
-        register_option_metadata(metadata);
-    }
+    // Legacy TLS options are handled in initialize_core_metadata()
+    // This function is for advanced TLS options (320-339 range)
     
-    // Add more TLS options...
+    // Add advanced TLS options when implemented...
 }
 
 void SocketOptionValidator::initialize_apache_metadata() {

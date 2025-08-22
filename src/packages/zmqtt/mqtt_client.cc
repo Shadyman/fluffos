@@ -1,6 +1,7 @@
 #include "mqtt_client.h"
 #include "mqtt_message.h"
 #include "base/package_api.h"
+#include "vm/internal/base/mapping.h"
 #include <random>
 #include <chrono>
 #include <sstream>
@@ -11,6 +12,9 @@
 MQTTClient::MQTTClient(int socket_fd) 
     : socket_fd_(socket_fd), state_(MQTT_STATE_DISCONNECTED),
       lws_wsi_(nullptr), lws_context_(nullptr), next_packet_id_(1) {
+    
+    // Initialize SocketOptionManager for unified socket architecture
+    option_manager_ = std::make_unique<SocketOptionManager>(socket_fd);
     
     memset(&stats_, 0, sizeof(stats_));
     stats_.connect_time = time(nullptr);
@@ -29,6 +33,10 @@ bool MQTTClient::set_config(const mqtt_connection_config& config) {
     }
     
     config_ = config;
+    
+    // Sync configuration to unified socket option system
+    sync_config_to_option_manager();
+    
     return validate_config();
 }
 
@@ -270,17 +278,68 @@ bool MQTTClient::clear_will() {
 
 mapping_t* MQTTClient::get_status_mapping() const {
     mapping_t* m = allocate_mapping(20);
+    svalue_t key, *value;
     
-    m = add_mapping_pair(m, "socket_fd", number(socket_fd_));
-    m = add_mapping_pair(m, "state", number(static_cast<int>(state_)));
-    m = add_mapping_string(m, "broker_host", config_.broker_host.c_str());
-    m = add_mapping_pair(m, "broker_port", number(config_.broker_port));
-    m = add_mapping_string(m, "client_id", config_.client_id.c_str());
-    m = add_mapping_string(m, "username", config_.username.c_str());
-    m = add_mapping_pair(m, "keep_alive", number(config_.keep_alive));
-    m = add_mapping_pair(m, "clean_session", number(config_.clean_session ? 1 : 0));
-    m = add_mapping_pair(m, "use_tls", number(config_.use_tls ? 1 : 0));
-    m = add_mapping_pair(m, "connected", number(is_connected() ? 1 : 0));
+    // Add socket_fd
+    key.type = T_STRING;
+    key.u.string = const_cast<char*>("socket_fd");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_NUMBER;
+    value->u.number = socket_fd_;
+    
+    // Add state
+    key.u.string = const_cast<char*>("state");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_NUMBER;
+    value->u.number = static_cast<int>(state_);
+    
+    // Add broker_host
+    key.u.string = const_cast<char*>("broker_host");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_STRING;
+    value->u.string = string_copy(config_.broker_host.c_str(), "mqtt broker_host");
+    
+    // Add broker_port
+    key.u.string = const_cast<char*>("broker_port");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_NUMBER;
+    value->u.number = config_.broker_port;
+    
+    // Add client_id
+    key.u.string = const_cast<char*>("client_id");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_STRING;
+    value->u.string = string_copy(config_.client_id.c_str(), "mqtt client_id");
+    
+    // Add username
+    key.u.string = const_cast<char*>("username");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_STRING;
+    value->u.string = string_copy(config_.username.c_str(), "mqtt username");
+    
+    // Add keep_alive
+    key.u.string = const_cast<char*>("keep_alive");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_NUMBER;
+    value->u.number = config_.keep_alive;
+    
+    // Add clean_session
+    key.u.string = const_cast<char*>("clean_session");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_NUMBER;
+    value->u.number = config_.clean_session ? 1 : 0;
+    
+    // Add use_tls
+    key.u.string = const_cast<char*>("use_tls");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_NUMBER;
+    value->u.number = config_.use_tls ? 1 : 0;
+    
+    // Add connected
+    key.u.string = const_cast<char*>("connected");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_NUMBER;
+    value->u.number = is_connected() ? 1 : 0;
     
     // Subscription information
     array_t* sub_topics = allocate_empty_array(subscriptions_.size());
@@ -297,28 +356,78 @@ mapping_t* MQTTClient::get_status_mapping() const {
         idx++;
     }
     
-    m = add_mapping_array(m, "subscribed_topics", sub_topics);
-    m = add_mapping_array(m, "subscription_qos", sub_qos);
+    // Add subscribed_topics array
+    key.u.string = const_cast<char*>("subscribed_topics");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_ARRAY;
+    value->u.arr = sub_topics;
+    
+    // Add subscription_qos array
+    key.u.string = const_cast<char*>("subscription_qos");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_ARRAY;
+    value->u.arr = sub_qos;
     
     // Statistics
-    m = add_mapping_pair(m, "messages_sent", number(stats_.messages_sent));
-    m = add_mapping_pair(m, "messages_received", number(stats_.messages_received));
-    m = add_mapping_pair(m, "bytes_sent", number(stats_.bytes_sent));
-    m = add_mapping_pair(m, "bytes_received", number(stats_.bytes_received));
-    m = add_mapping_pair(m, "connect_time", number(stats_.connect_time));
-    m = add_mapping_pair(m, "last_activity", number(stats_.last_activity));
+    key.u.string = const_cast<char*>("messages_sent");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_NUMBER;
+    value->u.number = stats_.messages_sent;
+    
+    key.u.string = const_cast<char*>("messages_received");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_NUMBER;
+    value->u.number = stats_.messages_received;
+    
+    key.u.string = const_cast<char*>("bytes_sent");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_NUMBER;
+    value->u.number = stats_.bytes_sent;
+    
+    key.u.string = const_cast<char*>("bytes_received");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_NUMBER;
+    value->u.number = stats_.bytes_received;
+    
+    key.u.string = const_cast<char*>("connect_time");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_NUMBER;
+    value->u.number = stats_.connect_time;
+    
+    key.u.string = const_cast<char*>("last_activity");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_NUMBER;
+    value->u.number = stats_.last_activity;
     
     // Last Will and Testament
     if (!config_.will.topic.empty()) {
-        m = add_mapping_string(m, "will_topic", config_.will.topic.c_str());
-        m = add_mapping_string(m, "will_message", config_.will.message.c_str());
-        m = add_mapping_pair(m, "will_qos", number(config_.will.qos));
-        m = add_mapping_pair(m, "will_retain", number(config_.will.retain ? 1 : 0));
+        key.u.string = const_cast<char*>("will_topic");
+        value = find_for_insert(m, &key, 1);
+        value->type = T_STRING;
+        value->u.string = string_copy(config_.will.topic.c_str(), "mqtt will_topic");
+        
+        key.u.string = const_cast<char*>("will_message");
+        value = find_for_insert(m, &key, 1);
+        value->type = T_STRING;
+        value->u.string = string_copy(config_.will.message.c_str(), "mqtt will_message");
+        
+        key.u.string = const_cast<char*>("will_qos");
+        value = find_for_insert(m, &key, 1);
+        value->type = T_NUMBER;
+        value->u.number = config_.will.qos;
+        
+        key.u.string = const_cast<char*>("will_retain");
+        value = find_for_insert(m, &key, 1);
+        value->type = T_NUMBER;
+        value->u.number = config_.will.retain ? 1 : 0;
     }
     
     // Error information
     if (!last_error_.empty()) {
-        m = add_mapping_string(m, "last_error", last_error_.c_str());
+        key.u.string = const_cast<char*>("last_error");
+        value = find_for_insert(m, &key, 1);
+        value->type = T_STRING;
+        value->u.string = string_copy(last_error_.c_str(), "mqtt last_error");
     }
     
     return m;
@@ -636,15 +745,57 @@ bool mapping_to_config(const mapping_t* m, mqtt_connection_config& config) {
 
 mapping_t* config_to_mapping(const mqtt_connection_config& config) {
     mapping_t* m = allocate_mapping(10);
+    svalue_t key, *value;
     
-    m = add_mapping_string(m, "broker_host", config.broker_host.c_str());
-    m = add_mapping_pair(m, "broker_port", number(config.broker_port));
-    m = add_mapping_string(m, "client_id", config.client_id.c_str());
-    m = add_mapping_string(m, "username", config.username.c_str());
-    m = add_mapping_string(m, "password", config.password.c_str());
-    m = add_mapping_pair(m, "keep_alive", number(config.keep_alive));
-    m = add_mapping_pair(m, "clean_session", number(config.clean_session ? 1 : 0));
-    m = add_mapping_pair(m, "use_tls", number(config.use_tls ? 1 : 0));
+    key.type = T_STRING;
+    
+    // Add broker_host
+    key.u.string = const_cast<char*>("broker_host");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_STRING;
+    value->u.string = string_copy(config.broker_host.c_str(), "mqtt config broker_host");
+    
+    // Add broker_port
+    key.u.string = const_cast<char*>("broker_port");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_NUMBER;
+    value->u.number = config.broker_port;
+    
+    // Add client_id
+    key.u.string = const_cast<char*>("client_id");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_STRING;
+    value->u.string = string_copy(config.client_id.c_str(), "mqtt config client_id");
+    
+    // Add username
+    key.u.string = const_cast<char*>("username");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_STRING;
+    value->u.string = string_copy(config.username.c_str(), "mqtt config username");
+    
+    // Add password
+    key.u.string = const_cast<char*>("password");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_STRING;
+    value->u.string = string_copy(config.password.c_str(), "mqtt config password");
+    
+    // Add keep_alive
+    key.u.string = const_cast<char*>("keep_alive");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_NUMBER;
+    value->u.number = config.keep_alive;
+    
+    // Add clean_session
+    key.u.string = const_cast<char*>("clean_session");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_NUMBER;
+    value->u.number = config.clean_session ? 1 : 0;
+    
+    // Add use_tls
+    key.u.string = const_cast<char*>("use_tls");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_NUMBER;
+    value->u.number = config.use_tls ? 1 : 0;
     
     return m;
 }
@@ -681,3 +832,69 @@ bool validate_qos_level(int qos) {
 }
 
 } // namespace mqtt
+
+// MQTTClient implementation methods
+
+void MQTTClient::sync_config_to_option_manager() {
+    if (!option_manager_) return;
+    
+    svalue_t value;
+    
+    // Sync MQTT_BROKER option
+    if (!config_.broker_host.empty()) {
+        value.type = T_STRING;
+        value.u.string = make_shared_string(config_.broker_host.c_str());
+        option_manager_->set_option(MQTT_BROKER, &value);
+        free_string(value.u.string);
+    }
+    
+    // Sync MQTT_CLIENT_ID option
+    if (!config_.client_id.empty()) {
+        value.type = T_STRING;
+        value.u.string = make_shared_string(config_.client_id.c_str());
+        option_manager_->set_option(MQTT_CLIENT_ID, &value);
+        free_string(value.u.string);
+    }
+    
+    // Sync MQTT_USERNAME option
+    if (!config_.username.empty()) {
+        value.type = T_STRING;
+        value.u.string = make_shared_string(config_.username.c_str());
+        option_manager_->set_option(MQTT_USERNAME, &value);
+        free_string(value.u.string);
+    }
+    
+    // Sync MQTT_PASSWORD option  
+    if (!config_.password.empty()) {
+        value.type = T_STRING;
+        value.u.string = make_shared_string(config_.password.c_str());
+        option_manager_->set_option(MQTT_PASSWORD, &value);
+        free_string(value.u.string);
+    }
+    
+    // Sync MQTT_KEEP_ALIVE option
+    value.type = T_NUMBER;
+    value.u.number = config_.keep_alive;
+    option_manager_->set_option(MQTT_KEEP_ALIVE, &value);
+    
+    // Sync MQTT_CLEAN_SESSION option
+    value.type = T_NUMBER;
+    value.u.number = config_.clean_session ? 1 : 0;
+    option_manager_->set_option(MQTT_CLEAN_SESSION, &value);
+    
+    // Sync MQTT_WILL_TOPIC option
+    if (!config_.will.topic.empty()) {
+        value.type = T_STRING;
+        value.u.string = make_shared_string(config_.will.topic.c_str());
+        option_manager_->set_option(MQTT_WILL_TOPIC, &value);
+        free_string(value.u.string);
+    }
+    
+    // Sync MQTT_WILL_MESSAGE option
+    if (!config_.will.message.empty()) {
+        value.type = T_STRING;
+        value.u.string = make_shared_string(config_.will.message.c_str());
+        option_manager_->set_option(MQTT_WILL_MESSAGE, &value);
+        free_string(value.u.string);
+    }
+}

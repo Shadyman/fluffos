@@ -16,7 +16,7 @@
 const debug_t levels[] = {E(call_out),      E(d_flag),     E(connections), E(mapping),  E(sockets),
                           E(comp_func_tab), E(LPC),        E(LPC_line),    E(event),    E(dns),
                           E(file),          E(add_action), E(telnet),      E(websocket),
-                          E(external_start)};
+                          E(external_start), E(external)};
 
 const int sizeof_levels = (sizeof(levels) / sizeof(levels[0]));
 

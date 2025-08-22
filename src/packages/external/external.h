@@ -11,6 +11,9 @@
 #include <unordered_map>
 #include <signal.h>
 
+// Forward declaration
+class SocketOptionManager;
+
 /*
  * External Process Constants and Limits
  */
@@ -78,6 +81,9 @@ struct ExternalProcessInfo {
     int stdout_fd;
     int stderr_fd;
     
+    // Socket option management
+    std::unique_ptr<SocketOptionManager> option_manager;
+    
     ExternalProcessInfo() :
         pid(-1), socket_fd(-1), timeout_seconds(30), buffer_size(4096),
         async_mode(false), start_time(0), is_running(false), exit_code(-1),
@@ -124,6 +130,10 @@ public:
     // I/O operations
     static int write_to_process(int socket_fd, const char* data, size_t length);
     static int read_from_process(int socket_fd, char* buffer, size_t max_length);
+    
+    // Public static data access (for package initialization)
+    static void initialize_security_context(const SecurityContext& context);
+    static void clear_all_processes();
     
 private:
     static std::unordered_map<int, std::unique_ptr<ExternalProcessInfo>> processes_;

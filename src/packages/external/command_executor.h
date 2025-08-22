@@ -154,7 +154,7 @@ private:
     // Thread management
     std::vector<std::thread> worker_threads_;
     std::atomic<bool> executor_running_;
-    std::mutex queue_mutex_;
+    mutable std::mutex queue_mutex_;
     std::condition_variable queue_cv_;
     mutable std::mutex results_mutex_;
     mutable std::mutex templates_mutex_;

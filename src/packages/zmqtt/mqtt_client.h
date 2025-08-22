@@ -2,6 +2,7 @@
 #define MQTT_CLIENT_H_
 
 #include "mqtt.h"
+#include "../sockets/socket_option_manager.h"
 #include <vector>
 #include <queue>
 #include <mutex>
@@ -102,11 +103,17 @@ private:
     // Validate configuration
     bool validate_config() const;
     
+    // Sync configuration with SocketOptionManager
+    void sync_config_to_option_manager();
+    
 private:
     int socket_fd_;
     mqtt_client_state state_;
     mqtt_connection_config config_;
     std::string last_error_;
+    
+    // Socket option management via unified architecture
+    std::unique_ptr<SocketOptionManager> option_manager_;
     
     // libwebsockets connection
     struct lws* lws_wsi_;

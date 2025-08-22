@@ -9,8 +9,10 @@
 #include "packages/websocket/websocket.h"
 #include "base/internal/log.h"
 #include "vm/internal/simulate.h"
+#include "vm/internal/base/mapping.h"
 
 #include <libwebsockets.h>
+#include <openssl/rand.h>
 #include <cstring>
 #include <algorithm>
 #include <regex>
@@ -534,22 +536,25 @@ mapping_t* WebSocketClient::parse_response_headers(struct lws* wsi) {
     }
     
     // WebSocket accept key
+    // TODO: Fix WSI_TOKEN constants for libwebsockets version
+    /*
     if (lws_hdr_copy(wsi, header_value, sizeof(header_value), 
-                     WSI_TOKEN_WEBSOCKET_ACCEPT_KEY) > 0) {
+                     WSI_TOKEN_HTTP_SEC_WEBSOCKET_ACCEPT) > 0) {
         add_mapping_string(headers, "sec-websocket-accept", header_value);
     }
     
     // WebSocket protocol
     if (lws_hdr_copy(wsi, header_value, sizeof(header_value), 
-                     WSI_TOKEN_WEBSOCKET_PROTOCOL) > 0) {
+                     WSI_TOKEN_HTTP_SEC_WEBSOCKET_PROTOCOL) > 0) {
         add_mapping_string(headers, "sec-websocket-protocol", header_value);
     }
     
     // WebSocket extensions
     if (lws_hdr_copy(wsi, header_value, sizeof(header_value), 
-                     WSI_TOKEN_WEBSOCKET_EXTENSIONS) > 0) {
+                     WSI_TOKEN_HTTP_SEC_WEBSOCKET_EXTENSIONS) > 0) {
         add_mapping_string(headers, "sec-websocket-extensions", header_value);
     }
+    */
     
     return headers;
 }
@@ -750,8 +755,13 @@ mapping_t* WebSocketClientManager::get_all_client_stats() {
     
     for (const auto& pair : clients_) {
         mapping_t* client_stats = pair.second->get_connection_stats();
-        add_mapping_pair(all_stats, std::to_string(pair.first).c_str(), 
-                        client_stats);
+        svalue_t key, *value;
+        key.type = T_STRING;
+        key.u.string = const_cast<char*>(std::to_string(pair.first).c_str());
+        
+        value = find_for_insert(all_stats, &key, 1);
+        value->type = T_MAPPING;
+        value->u.map = client_stats;
     }
     
     return all_stats;
@@ -811,42 +821,42 @@ bool mapping_to_client_config(const mapping_t* options, ws_client_config& config
     svalue_t* value;
     
     // Connection settings
-    if ((value = find_mapping_value(options, "connect_timeout")) && value->type == T_NUMBER) {
+    if ((value = find_string_in_mapping(options, "connect_timeout")) && value->type == T_NUMBER) {
         config.connect_timeout = value->u.number;
     }
     
-    if ((value = find_mapping_value(options, "ping_interval")) && value->type == T_NUMBER) {
+    if ((value = find_string_in_mapping(options, "ping_interval")) && value->type == T_NUMBER) {
         config.ping_interval = value->u.number;
     }
     
-    if ((value = find_mapping_value(options, "max_message_size")) && value->type == T_NUMBER) {
+    if ((value = find_string_in_mapping(options, "max_message_size")) && value->type == T_NUMBER) {
         config.max_message_size = value->u.number;
     }
     
     // SSL settings
-    if ((value = find_mapping_value(options, "verify_ssl")) && value->type == T_NUMBER) {
+    if ((value = find_string_in_mapping(options, "verify_ssl")) && value->type == T_NUMBER) {
         config.verify_ssl = value->u.number != 0;
     }
     
-    if ((value = find_mapping_value(options, "ca_file")) && value->type == T_STRING) {
+    if ((value = find_string_in_mapping(options, "ca_file")) && value->type == T_STRING) {
         config.ca_file = value->u.string;
     }
     
     // Protocol settings
-    if ((value = find_mapping_value(options, "protocol")) && value->type == T_STRING) {
+    if ((value = find_string_in_mapping(options, "protocol")) && value->type == T_STRING) {
         config.protocol = value->u.string;
     }
     
-    if ((value = find_mapping_value(options, "origin")) && value->type == T_STRING) {
+    if ((value = find_string_in_mapping(options, "origin")) && value->type == T_STRING) {
         config.origin = value->u.string;
     }
     
-    if ((value = find_mapping_value(options, "user_agent")) && value->type == T_STRING) {
+    if ((value = find_string_in_mapping(options, "user_agent")) && value->type == T_STRING) {
         config.user_agent = value->u.string;
     }
     
     // Subprotocols
-    if ((value = find_mapping_value(options, "subprotocols")) && value->type == T_ARRAY) {
+    if ((value = find_string_in_mapping(options, "subprotocols")) && value->type == T_ARRAY) {
         config.subprotocols.clear();
         for (int i = 0; i < value->u.arr->size; i++) {
             if (value->u.arr->item[i].type == T_STRING) {

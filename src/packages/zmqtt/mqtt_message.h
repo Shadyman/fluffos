@@ -3,6 +3,8 @@
 
 #include "mqtt.h"
 #include <ctime>
+#include <queue>
+#include <mutex>
 
 /*
  * MQTTMessage class - represents MQTT messages for publish/subscribe

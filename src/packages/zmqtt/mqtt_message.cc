@@ -1,10 +1,12 @@
 #include "mqtt_message.h"
 #include "base/package_api.h"
+#include "vm/internal/base/mapping.h"
 #include <algorithm>
 #include <random>
 #include <sstream>
 #include <iomanip>
 #include <cstring>
+#include <mutex>
 
 // MQTTMessage implementation
 
@@ -215,30 +217,94 @@ bool MQTTMessage::from_lws_publish_param(const lws_mqtt_publish_param_t& param) 
 
 mapping_t* MQTTMessage::to_lpc_mapping() const {
     mapping_t* m = allocate_mapping(16);
+    svalue_t key, *value;
     
-    m = add_mapping_string(m, "topic", topic_.c_str());
-    m = add_mapping_string(m, "payload", payload_.c_str());
-    m = add_mapping_pair(m, "qos", number(qos_));
-    m = add_mapping_pair(m, "retain", number(retain_ ? 1 : 0));
-    m = add_mapping_pair(m, "dup", number(dup_ ? 1 : 0));
-    m = add_mapping_pair(m, "packet_id", number(packet_id_));
-    m = add_mapping_pair(m, "timestamp", number(timestamp_));
-    m = add_mapping_string(m, "client_id", client_id_.c_str());
-    m = add_mapping_pair(m, "is_binary", number(is_binary_ ? 1 : 0));
-    m = add_mapping_pair(m, "payload_size", number(payload_.size()));
+    key.type = T_STRING;
+    
+    // Add topic
+    key.u.string = const_cast<char*>("topic");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_STRING;
+    value->u.string = string_copy(topic_.c_str(), "mqtt message topic");
+    
+    // Add payload
+    key.u.string = const_cast<char*>("payload");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_STRING;
+    value->u.string = string_copy(payload_.c_str(), "mqtt message payload");
+    
+    // Add qos
+    key.u.string = const_cast<char*>("qos");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_NUMBER;
+    value->u.number = qos_;
+    
+    // Add retain
+    key.u.string = const_cast<char*>("retain");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_NUMBER;
+    value->u.number = retain_ ? 1 : 0;
+    
+    // Add dup
+    key.u.string = const_cast<char*>("dup");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_NUMBER;
+    value->u.number = dup_ ? 1 : 0;
+    
+    // Add packet_id
+    key.u.string = const_cast<char*>("packet_id");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_NUMBER;
+    value->u.number = packet_id_;
+    
+    // Add timestamp
+    key.u.string = const_cast<char*>("timestamp");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_NUMBER;
+    value->u.number = timestamp_;
+    
+    // Add client_id
+    key.u.string = const_cast<char*>("client_id");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_STRING;
+    value->u.string = string_copy(client_id_.c_str(), "mqtt message client_id");
+    
+    // Add is_binary
+    key.u.string = const_cast<char*>("is_binary");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_NUMBER;
+    value->u.number = is_binary_ ? 1 : 0;
+    
+    // Add payload_size
+    key.u.string = const_cast<char*>("payload_size");
+    value = find_for_insert(m, &key, 1);
+    value->type = T_NUMBER;
+    value->u.number = payload_.size();
     
     // MQTT 5.0 properties
     if (!content_type_.empty()) {
-        m = add_mapping_string(m, "content_type", content_type_.c_str());
+        key.u.string = const_cast<char*>("content_type");
+        value = find_for_insert(m, &key, 1);
+        value->type = T_STRING;
+        value->u.string = string_copy(content_type_.c_str(), "mqtt message content_type");
     }
     if (!response_topic_.empty()) {
-        m = add_mapping_string(m, "response_topic", response_topic_.c_str());
+        key.u.string = const_cast<char*>("response_topic");
+        value = find_for_insert(m, &key, 1);
+        value->type = T_STRING;
+        value->u.string = string_copy(response_topic_.c_str(), "mqtt message response_topic");
     }
     if (!correlation_data_.empty()) {
-        m = add_mapping_string(m, "correlation_data", correlation_data_.c_str());
+        key.u.string = const_cast<char*>("correlation_data");
+        value = find_for_insert(m, &key, 1);
+        value->type = T_STRING;
+        value->u.string = string_copy(correlation_data_.c_str(), "mqtt message correlation_data");
     }
     if (message_expiry_interval_ > 0) {
-        m = add_mapping_pair(m, "message_expiry_interval", number(message_expiry_interval_));
+        key.u.string = const_cast<char*>("message_expiry_interval");
+        value = find_for_insert(m, &key, 1);
+        value->type = T_NUMBER;
+        value->u.number = message_expiry_interval_;
     }
     
     return m;
@@ -496,7 +562,7 @@ std::unique_ptr<MQTTMessage> create_will_message(
 }
 
 svalue_t* create_message_callback_args(const MQTTMessage& message) {
-    svalue_t* args = CALLOCATE(5, svalue_t, TAG_TEMPORARY, "mqtt message callback args");
+    svalue_t* args = reinterpret_cast<svalue_t*>(DCALLOC(5, sizeof(svalue_t), TAG_TEMPORARY, "mqtt message callback args"));
     
     args[0].type = T_STRING;
     args[0].u.string = string_copy(message.get_topic().c_str(), "mqtt topic");

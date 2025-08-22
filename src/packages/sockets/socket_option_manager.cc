@@ -68,61 +68,61 @@ void SocketOptionManager::initialize_descriptors() {
 }
 
 void SocketOptionManager::register_core_options() {
-    // TLS core options
-    register_option(SO_TLS_VERIFY_PEER, OPTION_TYPE_BOOLEAN, OPTION_CATEGORY_CORE, 
+    // Legacy TLS options (original values for backwards compatibility)
+    register_option(SOCKET_OPT_TLS_VERIFY_PEER, OPTION_TYPE_BOOLEAN, OPTION_CATEGORY_TLS, 
                    OPTION_ACCESS_PUBLIC, false, "Enable TLS peer certificate verification");
                    
-    register_option(SO_TLS_SNI_HOSTNAME, OPTION_TYPE_STRING, OPTION_CATEGORY_CORE,
+    register_option(SOCKET_OPT_TLS_SNI_HOSTNAME, OPTION_TYPE_STRING, OPTION_CATEGORY_TLS,
                    OPTION_ACCESS_PUBLIC, "", "TLS SNI hostname for certificate validation");
     
     // Basic socket configuration
-    register_option(SO_SOCKET_KEEPALIVE, OPTION_TYPE_BOOLEAN, OPTION_CATEGORY_CORE,
+    register_option(SOCKET_OPT_KEEPALIVE, OPTION_TYPE_BOOLEAN, OPTION_CATEGORY_CORE,
                    OPTION_ACCESS_PUBLIC, false, "Enable TCP keepalive");
                    
-    register_option(SO_SOCKET_NODELAY, OPTION_TYPE_BOOLEAN, OPTION_CATEGORY_CORE,
+    register_option(SOCKET_OPT_NODELAY, OPTION_TYPE_BOOLEAN, OPTION_CATEGORY_CORE,
                    OPTION_ACCESS_PUBLIC, false, "Disable Nagle algorithm");
                    
-    register_option(SO_SOCKET_TIMEOUT, OPTION_TYPE_INTEGER, OPTION_CATEGORY_CORE,
+    register_option(SOCKET_OPT_TIMEOUT, OPTION_TYPE_INTEGER, OPTION_CATEGORY_CORE,
                    OPTION_ACCESS_PUBLIC, 30000, "Socket timeout in milliseconds", 1000, 300000);
                    
-    register_option(SO_SOCKET_RCVBUF, OPTION_TYPE_INTEGER, OPTION_CATEGORY_CORE,
+    register_option(SOCKET_OPT_RCVBUF, OPTION_TYPE_INTEGER, OPTION_CATEGORY_CORE,
                    OPTION_ACCESS_PUBLIC, 8192, "Receive buffer size", 1024, 1048576);
                    
-    register_option(SO_SOCKET_SNDBUF, OPTION_TYPE_INTEGER, OPTION_CATEGORY_CORE,
+    register_option(SOCKET_OPT_SNDBUF, OPTION_TYPE_INTEGER, OPTION_CATEGORY_CORE,
                    OPTION_ACCESS_PUBLIC, 8192, "Send buffer size", 1024, 1048576);
     
     // Authentication options
-    register_option(SO_AUTH_TOKEN, OPTION_TYPE_STRING, OPTION_CATEGORY_AUTH,
+    register_option(SOCKET_OPT_AUTH_TOKEN, OPTION_TYPE_STRING, OPTION_CATEGORY_AUTH,
                    OPTION_ACCESS_OWNER, "", "Authentication token");
                    
-    register_option(SO_AUTH_USERNAME, OPTION_TYPE_STRING, OPTION_CATEGORY_AUTH,
+    register_option(SOCKET_OPT_AUTH_USERNAME, OPTION_TYPE_STRING, OPTION_CATEGORY_AUTH,
                    OPTION_ACCESS_OWNER, "", "Authentication username");
                    
-    register_option(SO_AUTH_PASSWORD, OPTION_TYPE_STRING, OPTION_CATEGORY_AUTH,
+    register_option(SOCKET_OPT_AUTH_PASSWORD, OPTION_TYPE_STRING, OPTION_CATEGORY_AUTH,
                    OPTION_ACCESS_PRIVILEGED, "", "Authentication password");
 }
 
 void SocketOptionManager::register_http_options() {
-    register_option(SO_HTTP_HEADERS, OPTION_TYPE_MAPPING, OPTION_CATEGORY_HTTP,
+    register_option(HTTP_HEADERS, OPTION_TYPE_MAPPING, OPTION_CATEGORY_HTTP,
                    OPTION_ACCESS_PUBLIC, static_cast<void*>(nullptr), "HTTP request/response headers");
                    
-    register_option(SO_HTTP_METHOD, OPTION_TYPE_STRING, OPTION_CATEGORY_HTTP,
+    register_option(HTTP_METHOD, OPTION_TYPE_STRING, OPTION_CATEGORY_HTTP,
                    OPTION_ACCESS_PUBLIC, "GET", "HTTP request method");
                    
-    register_option(SO_HTTP_URL, OPTION_TYPE_STRING, OPTION_CATEGORY_HTTP,
+    register_option(HTTP_URL, OPTION_TYPE_STRING, OPTION_CATEGORY_HTTP,
                    OPTION_ACCESS_PUBLIC, "", "HTTP request URL");
                    
-    register_option(SO_HTTP_TIMEOUT, OPTION_TYPE_INTEGER, OPTION_CATEGORY_HTTP,
+    register_option(HTTP_TIMEOUT, OPTION_TYPE_INTEGER, OPTION_CATEGORY_HTTP,
                    OPTION_ACCESS_PUBLIC, DEFAULT_HTTP_TIMEOUT, "HTTP request timeout", 
                    MIN_HTTP_TIMEOUT, MAX_HTTP_TIMEOUT);
                    
-    register_option(SO_HTTP_USER_AGENT, OPTION_TYPE_STRING, OPTION_CATEGORY_HTTP,
+    register_option(HTTP_USER_AGENT, OPTION_TYPE_STRING, OPTION_CATEGORY_HTTP,
                    OPTION_ACCESS_PUBLIC, DEFAULT_HTTP_USER_AGENT, "HTTP User-Agent header");
                    
-    register_option(SO_HTTP_FOLLOW_REDIRECTS, OPTION_TYPE_BOOLEAN, OPTION_CATEGORY_HTTP,
+    register_option(HTTP_FOLLOW_REDIRECTS, OPTION_TYPE_BOOLEAN, OPTION_CATEGORY_HTTP,
                    OPTION_ACCESS_PUBLIC, true, "Follow HTTP redirects");
                    
-    register_option(SO_HTTP_MAX_REDIRECTS, OPTION_TYPE_INTEGER, OPTION_CATEGORY_HTTP,
+    register_option(HTTP_MAX_REDIRECTS, OPTION_TYPE_INTEGER, OPTION_CATEGORY_HTTP,
                    OPTION_ACCESS_PUBLIC, DEFAULT_HTTP_MAX_REDIRECTS, "Maximum redirect count",
                    MIN_HTTP_MAX_REDIRECTS, MAX_HTTP_MAX_REDIRECTS);
 }
@@ -223,18 +223,18 @@ void SocketOptionManager::register_database_options() {
 }
 
 void SocketOptionManager::register_cache_options() {
-    // Cache options keep SO_ prefix per compliance requirements
-    register_option(SO_CACHE_ENABLE, OPTION_TYPE_BOOLEAN, OPTION_CATEGORY_CACHE,
+    // Cache options use consistent protocol naming
+    register_option(CACHE_ENABLE, OPTION_TYPE_BOOLEAN, OPTION_CATEGORY_CACHE,
                    OPTION_ACCESS_PUBLIC, false, "Enable response caching");
                    
-    register_option(SO_CACHE_TTL, OPTION_TYPE_INTEGER, OPTION_CATEGORY_CACHE,
+    register_option(CACHE_TTL, OPTION_TYPE_INTEGER, OPTION_CATEGORY_CACHE,
                    OPTION_ACCESS_PUBLIC, DEFAULT_CACHE_TTL, "Cache time-to-live",
                    MIN_CACHE_TTL, MAX_CACHE_TTL);
                    
-    register_option(SO_CACHE_MAX_SIZE, OPTION_TYPE_INTEGER, OPTION_CATEGORY_CACHE,
+    register_option(CACHE_MAX_SIZE, OPTION_TYPE_INTEGER, OPTION_CATEGORY_CACHE,
                    OPTION_ACCESS_PUBLIC, 1048576, "Maximum cache size in bytes", 1024, 1073741824);
                    
-    register_option(SO_CACHE_KEY_PATTERN, OPTION_TYPE_STRING, OPTION_CATEGORY_CACHE,
+    register_option(CACHE_KEY_PATTERN, OPTION_TYPE_STRING, OPTION_CATEGORY_CACHE,
                    OPTION_ACCESS_PUBLIC, "", "Cache key pattern template");
 }
 
@@ -497,7 +497,7 @@ mapping_t* SocketOptionManager::get_options_by_category(socket_option_category c
 }
 
 bool SocketOptionManager::is_http_mode() const {
-    auto it = options_.find(SO_HTTP_SERVER_MODE);
+    auto it = options_.find(HTTP_SERVER_MODE);
     return (it != options_.end() && it->second.type == T_NUMBER && it->second.u.number);
 }
 
@@ -522,7 +522,7 @@ bool SocketOptionManager::is_external_mode() const {
 }
 
 bool SocketOptionManager::is_cache_enabled() const {
-    auto it = options_.find(SO_CACHE_ENABLE);
+    auto it = options_.find(CACHE_ENABLE);
     return (it != options_.end() && it->second.type == T_NUMBER && it->second.u.number);
 }
 
@@ -911,7 +911,7 @@ bool SocketOptionManager::validate_array_structure(int option, const array_t* va
 }
 
 int SocketOptionManager::get_socket_mode_from_options() const {
-    auto it = options_.find(SO_SOCKET_MODE);
+    auto it = options_.find(SOCKET_OPT_SOCKET_MODE);
     if (it != options_.end() && it->second.type == T_NUMBER) {
         return it->second.u.number;
     }
@@ -1063,11 +1063,14 @@ bool validate_socket_option(int option, const svalue_t* value, const char** erro
 const char* socket_option_to_string(int option) {
     // Map option IDs to string names
     switch (option) {
-        case SO_TLS_VERIFY_PEER: return "SO_TLS_VERIFY_PEER";
-        case SO_TLS_SNI_HOSTNAME: return "SO_TLS_SNI_HOSTNAME";
-        case SO_HTTP_HEADERS: return "SO_HTTP_HEADERS";
-        case SO_HTTP_METHOD: return "SO_HTTP_METHOD";
-        case SO_HTTP_URL: return "SO_HTTP_URL";
+        case SOCKET_OPT_TLS_VERIFY_PEER: return "SOCKET_OPT_TLS_VERIFY_PEER";
+        case SOCKET_OPT_TLS_SNI_HOSTNAME: return "SOCKET_OPT_TLS_SNI_HOSTNAME";
+        case SOCKET_OPT_KEEPALIVE: return "SOCKET_OPT_KEEPALIVE";
+        case SOCKET_OPT_NODELAY: return "SOCKET_OPT_NODELAY";
+        case SOCKET_OPT_TIMEOUT: return "SOCKET_OPT_TIMEOUT";
+        case HTTP_HEADERS: return "HTTP_HEADERS";
+        case HTTP_METHOD: return "HTTP_METHOD";
+        case HTTP_URL: return "HTTP_URL";
         case REST_ADD_ROUTE: return "REST_ADD_ROUTE";
         case REST_JWT_SECRET: return "REST_JWT_SECRET";
         case WS_PROTOCOL: return "WS_PROTOCOL";
@@ -1075,8 +1078,8 @@ const char* socket_option_to_string(int option) {
         case MQTT_BROKER: return "MQTT_BROKER";
         case MQTT_CLIENT_ID: return "MQTT_CLIENT_ID";
         case EXTERNAL_COMMAND: return "EXTERNAL_COMMAND";
-        case SO_CACHE_ENABLE: return "SO_CACHE_ENABLE";
-        case SO_CACHE_TTL: return "SO_CACHE_TTL";
+        case CACHE_ENABLE: return "CACHE_ENABLE";
+        case CACHE_TTL: return "CACHE_TTL";
         default: return "UNKNOWN_OPTION";
     }
 }
@@ -1085,16 +1088,20 @@ int string_to_socket_option(const char* name) {
     if (!name) return -1;
     
     // Map string names to option IDs
-    if (strcmp(name, "SO_TLS_VERIFY_PEER") == 0) return SO_TLS_VERIFY_PEER;
-    if (strcmp(name, "SO_TLS_SNI_HOSTNAME") == 0) return SO_TLS_SNI_HOSTNAME;
-    if (strcmp(name, "SO_HTTP_HEADERS") == 0) return SO_HTTP_HEADERS;
-    if (strcmp(name, "SO_HTTP_METHOD") == 0) return SO_HTTP_METHOD;
+    if (strcmp(name, "SOCKET_OPT_TLS_VERIFY_PEER") == 0) return SOCKET_OPT_TLS_VERIFY_PEER;
+    if (strcmp(name, "SOCKET_OPT_TLS_SNI_HOSTNAME") == 0) return SOCKET_OPT_TLS_SNI_HOSTNAME;
+    if (strcmp(name, "SOCKET_OPT_KEEPALIVE") == 0) return SOCKET_OPT_KEEPALIVE;
+    if (strcmp(name, "SOCKET_OPT_NODELAY") == 0) return SOCKET_OPT_NODELAY;
+    if (strcmp(name, "SOCKET_OPT_TIMEOUT") == 0) return SOCKET_OPT_TIMEOUT;
+    if (strcmp(name, "HTTP_HEADERS") == 0) return HTTP_HEADERS;
+    if (strcmp(name, "HTTP_METHOD") == 0) return HTTP_METHOD;
+    if (strcmp(name, "HTTP_URL") == 0) return HTTP_URL;
     if (strcmp(name, "REST_ADD_ROUTE") == 0) return REST_ADD_ROUTE;
     if (strcmp(name, "WS_PROTOCOL") == 0) return WS_PROTOCOL;
     if (strcmp(name, "MQTT_BROKER") == 0) return MQTT_BROKER;
     if (strcmp(name, "EXTERNAL_COMMAND") == 0) return EXTERNAL_COMMAND;
-    if (strcmp(name, "SO_CACHE_ENABLE") == 0) return SO_CACHE_ENABLE;
-    if (strcmp(name, "SO_CACHE_TTL") == 0) return SO_CACHE_TTL;
+    if (strcmp(name, "CACHE_ENABLE") == 0) return CACHE_ENABLE;
+    if (strcmp(name, "CACHE_TTL") == 0) return CACHE_TTL;
     
     return -1; // Unknown option
 }

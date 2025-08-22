@@ -8,6 +8,7 @@
 #define _SOCKET_EFUNS_H_
 
 #include <event2/util.h>
+#include "socket_options.h"
 
 // Forward declaration for SocketOptionManager
 class SocketOptionManager;

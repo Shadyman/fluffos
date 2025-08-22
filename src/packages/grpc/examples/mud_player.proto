@@ -1,0 +1,136 @@
+syntax = "proto3";
+
+package mudlib.player;
+
+// Player Management Service
+service PlayerService {
+  // Basic player operations
+  rpc GetPlayer(PlayerRequest) returns (PlayerResponse);
+  rpc UpdatePlayer(UpdatePlayerRequest) returns (PlayerResponse);
+  rpc CreatePlayer(CreatePlayerRequest) returns (PlayerResponse);
+  rpc DeletePlayer(PlayerRequest) returns (StatusResponse);
+  
+  // Player authentication
+  rpc AuthenticatePlayer(AuthRequest) returns (AuthResponse);
+  rpc ValidateSession(SessionRequest) returns (SessionResponse);
+  
+  // Player queries
+  rpc FindPlayers(PlayerSearchRequest) returns (PlayerListResponse);
+  rpc GetPlayerStats(PlayerRequest) returns (PlayerStatsResponse);
+  rpc GetOnlinePlayers(OnlinePlayersRequest) returns (PlayerListResponse);
+}
+
+// Basic player identification
+message PlayerRequest {
+  string player_name = 1;
+  optional string player_id = 2;
+}
+
+// Player data response
+message PlayerResponse {
+  string player_name = 1;
+  string player_id = 2;
+  int32 level = 3;
+  string race = 4;
+  string class = 5;
+  int64 experience = 6;
+  repeated string guilds = 7;
+  string location = 8;
+  bool online = 9;
+  int64 login_time = 10;
+  map<string, string> properties = 11;
+}
+
+// Player creation request
+message CreatePlayerRequest {
+  string player_name = 1;
+  string password = 2;
+  string email = 3;
+  string race = 4;
+  string class = 5;
+  map<string, string> initial_properties = 6;
+}
+
+// Player update request
+message UpdatePlayerRequest {
+  string player_name = 1;
+  optional int32 level = 2;
+  optional int64 experience = 3;
+  optional string location = 4;
+  map<string, string> properties = 5;
+}
+
+// Authentication request
+message AuthRequest {
+  string player_name = 1;
+  string password = 2;
+  string client_info = 3;
+}
+
+// Authentication response
+message AuthResponse {
+  bool success = 1;
+  string session_token = 2;
+  string error_message = 3;
+  PlayerResponse player_data = 4;
+}
+
+// Session validation
+message SessionRequest {
+  string session_token = 1;
+  string player_name = 2;
+}
+
+message SessionResponse {
+  bool valid = 1;
+  string player_name = 2;
+  int64 expires_at = 3;
+}
+
+// Player search
+message PlayerSearchRequest {
+  optional string name_pattern = 1;
+  optional int32 min_level = 2;
+  optional int32 max_level = 3;
+  optional string race = 4;
+  optional string class = 5;
+  optional bool online_only = 6;
+  int32 limit = 7;
+}
+
+message PlayerListResponse {
+  repeated PlayerResponse players = 1;
+  int32 total_count = 2;
+}
+
+// Player statistics
+message PlayerStatsResponse {
+  string player_name = 1;
+  int64 total_playtime = 2;
+  int32 deaths = 3;
+  int32 kills = 4;
+  int64 wealth = 5;
+  repeated Achievement achievements = 6;
+  map<string, int32> skill_levels = 7;
+}
+
+message Achievement {
+  string name = 1;
+  string description = 2;
+  int64 earned_date = 3;
+  int32 points = 4;
+}
+
+// Online players request
+message OnlinePlayersRequest {
+  optional string location_filter = 1;
+  optional int32 min_level = 2;
+  optional int32 max_level = 3;
+}
+
+// Generic status response
+message StatusResponse {
+  bool success = 1;
+  string message = 2;
+  int32 error_code = 3;
+}

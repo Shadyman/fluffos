@@ -1,0 +1,221 @@
+/*
+ * Example LPC test file for gRPC World Service
+ * 
+ * This demonstrates how to use the FluffOS unified socket system 
+ * to interact with gRPC world/room management services.
+ */
+
+#include <lib.h>
+#include <socket_modes.h>
+#include <socket_options.h>
+
+inherit LIB_DAEMON;
+
+void create() {
+    ::create();
+    SetClean(30);
+    test_grpc_world_service();
+}
+
+void test_grpc_world_service() {
+    int socket_fd;
+    mapping options;
+    
+    write("Testing gRPC World Service...\n");
+    
+    socket_fd = socket_create(SOCKET_GRPC_CLIENT);
+    if (socket_fd < 0) {
+        write("Failed to create gRPC client socket: " + socket_fd + "\n");
+        return;
+    }
+    
+    write("Created gRPC client socket: " + socket_fd + "\n");
+    
+    options = ([
+        GRPC_TARGET_ADDRESS: "localhost:50052",
+        GRPC_PROTO_FILE: "/packages/grpc/examples/mud_world.proto", 
+        GRPC_SERVICE_CONFIG: "mudlib.world.WorldService",
+        GRPC_DEADLINE: 5000,
+        GRPC_DEBUG_MODE: 1,
+        GRPC_MAX_MESSAGE_SIZE: 1048576  // 1MB for large room data
+    ]);
+    
+    if (!socket_configure(socket_fd, options)) {
+        write("Failed to configure gRPC world socket\n");
+        socket_close(socket_fd);
+        return;
+    }
+    
+    write("World socket configured successfully\n");
+    call_out("test_get_room", 1, socket_fd);
+}
+
+void test_get_room(int socket_fd) {
+    mapping request_data;
+    string response;
+    
+    write("Testing GetRoom RPC call...\n");
+    
+    request_data = ([
+        "service_name": "mudlib.world.WorldService",
+        "method_name": "GetRoom", 
+        "request_data": json_encode(([
+            "room_id": "void_001",
+            "room_path": "/domains/void/rooms/void"
+        ]))
+    ]);
+    
+    response = socket_write(socket_fd, json_encode(request_data));
+    
+    if (response) {
+        write("GetRoom response: " + response + "\n");
+        call_out("test_find_rooms", 1, socket_fd);
+    } else {
+        write("GetRoom request failed\n");
+        socket_close(socket_fd);
+    }
+}
+
+void test_find_rooms(int socket_fd) {
+    mapping request_data;
+    string response;
+    
+    write("Testing FindRooms RPC call...\n");
+    
+    request_data = ([
+        "service_name": "mudlib.world.WorldService",
+        "method_name": "FindRooms",
+        "request_data": json_encode(([
+            "area": "void",
+            "terrain": "indoor",
+            "safe_rooms_only": 1,
+            "description_pattern": "*temple*",
+            "limit": 5
+        ]))
+    ]);
+    
+    response = socket_write(socket_fd, json_encode(request_data));
+    
+    if (response) {
+        write("FindRooms response: " + response + "\n");
+        call_out("test_room_objects", 1, socket_fd);
+    } else {
+        write("FindRooms request failed\n");
+        socket_close(socket_fd);
+    }
+}
+
+void test_room_objects(int socket_fd) {
+    mapping request_data;
+    string response;
+    
+    write("Testing GetRoomObjects RPC call...\n");
+    
+    request_data = ([
+        "service_name": "mudlib.world.WorldService", 
+        "method_name": "GetRoomObjects",
+        "request_data": json_encode(([
+            "room_id": "void_001"
+        ]))
+    ]);
+    
+    response = socket_write(socket_fd, json_encode(request_data));
+    
+    if (response) {
+        write("GetRoomObjects response: " + response + "\n");
+        call_out("test_move_player", 1, socket_fd);
+    } else {
+        write("GetRoomObjects request failed\n");
+        socket_close(socket_fd);
+    }
+}
+
+void test_move_player(int socket_fd) {
+    mapping request_data;
+    string response;
+    
+    write("Testing MovePlayer RPC call...\n");
+    
+    request_data = ([
+        "service_name": "mudlib.world.WorldService",
+        "method_name": "MovePlayer",
+        "request_data": json_encode(([
+            "player_name": "testuser",
+            "from_room": "/domains/void/rooms/void",
+            "to_room": "/domains/town/rooms/square",
+            "movement_type": "walk",
+            "force_move": 0
+        ]))
+    ]);
+    
+    response = socket_write(socket_fd, json_encode(request_data));
+    
+    if (response) {
+        write("MovePlayer response: " + response + "\n");
+        call_out("test_create_room", 1, socket_fd);
+    } else {
+        write("MovePlayer request failed\n");
+        socket_close(socket_fd);
+    }
+}
+
+void test_create_room(int socket_fd) {
+    mapping request_data;
+    string response;
+    
+    write("Testing CreateRoom RPC call...\n");
+    
+    request_data = ([
+        "service_name": "mudlib.world.WorldService",
+        "method_name": "CreateRoom",
+        "request_data": json_encode(([
+            "room_path": "/domains/test/rooms/grpc_test_room",
+            "short_description": "A gRPC Test Room",
+            "long_description": "This is a test room created via gRPC service call. " +
+                               "It demonstrates dynamic room creation capabilities.",
+            "area": "test",
+            "exits": ({
+                ([
+                    "direction": "out",
+                    "destination": "/domains/void/rooms/void",
+                    "description": "A way back to the void",
+                    "blocked": 0,
+                    "hidden": 0
+                ])
+            }),
+            "climate": "temperate",
+            "terrain": "indoor",
+            "properties": ([
+                "test_room": "1",
+                "created_by": "grpc_service",
+                "creation_time": time()
+            ])
+        ]))
+    ]);
+    
+    response = socket_write(socket_fd, json_encode(request_data));
+    
+    if (response) {
+        write("CreateRoom response: " + response + "\n");
+        write("World service tests completed successfully!\n");
+    } else {
+        write("CreateRoom request failed\n");
+    }
+    
+    socket_close(socket_fd);
+    write("World socket closed\n");
+}
+
+void socket_read_callback(int socket_fd, mixed data) {
+    write("Received async world response on socket " + socket_fd + ": " + data + "\n");
+}
+
+void socket_error_callback(int socket_fd, string error) {
+    write("World socket " + socket_fd + " error: " + error + "\n");
+    socket_close(socket_fd);
+}
+
+void clean_up() {
+    write("Cleaning up gRPC world test daemon\n");
+    ::clean_up();
+}

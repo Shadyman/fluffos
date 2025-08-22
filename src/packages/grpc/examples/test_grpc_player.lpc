@@ -1,0 +1,182 @@
+/*
+ * Example LPC test file for gRPC Player Service
+ * 
+ * This demonstrates how to use the FluffOS unified socket system 
+ * to interact with gRPC player management services.
+ */
+
+#include <lib.h>
+#include <socket_modes.h>
+#include <socket_options.h>
+
+inherit LIB_DAEMON;
+
+void create() {
+    ::create();
+    SetClean(30);
+    test_grpc_player_service();
+}
+
+void test_grpc_player_service() {
+    int socket_fd;
+    mapping options;
+    
+    write("Testing gRPC Player Service...\n");
+    
+    // Create gRPC socket
+    socket_fd = socket_create(SOCKET_GRPC_CLIENT);
+    if (socket_fd < 0) {
+        write("Failed to create gRPC client socket: " + socket_fd + "\n");
+        return;
+    }
+    
+    write("Created gRPC client socket: " + socket_fd + "\n");
+    
+    // Configure socket options
+    options = ([
+        GRPC_TARGET_ADDRESS: "localhost:50051",
+        GRPC_PROTO_FILE: "/packages/grpc/examples/mud_player.proto",
+        GRPC_SERVICE_CONFIG: "mudlib.player.PlayerService",
+        GRPC_DEADLINE: 5000,
+        GRPC_DEBUG_MODE: 1
+    ]);
+    
+    if (!socket_configure(socket_fd, options)) {
+        write("Failed to configure gRPC socket\n");
+        socket_close(socket_fd);
+        return;
+    }
+    
+    write("Socket configured successfully\n");
+    
+    // Test player operations
+    call_out("test_get_player", 1, socket_fd);
+}
+
+void test_get_player(int socket_fd) {
+    mapping request_data;
+    string response;
+    
+    write("Testing GetPlayer RPC call...\n");
+    
+    // Prepare GetPlayer request
+    request_data = ([
+        "service_name": "mudlib.player.PlayerService",
+        "method_name": "GetPlayer",
+        "request_data": json_encode(([
+            "player_name": "testuser",
+            "player_id": "12345"
+        ]))
+    ]);
+    
+    // Make the RPC call (in real implementation, this would use actual gRPC protocol)
+    response = socket_write(socket_fd, json_encode(request_data));
+    
+    if (response) {
+        write("GetPlayer response: " + response + "\n");
+        call_out("test_authenticate_player", 1, socket_fd);
+    } else {
+        write("GetPlayer request failed\n");
+        socket_close(socket_fd);
+    }
+}
+
+void test_authenticate_player(int socket_fd) {
+    mapping request_data;
+    string response;
+    
+    write("Testing AuthenticatePlayer RPC call...\n");
+    
+    request_data = ([
+        "service_name": "mudlib.player.PlayerService", 
+        "method_name": "AuthenticatePlayer",
+        "request_data": json_encode(([
+            "player_name": "testuser",
+            "password": "testpass",
+            "client_info": "FluffOS Test Client"
+        ]))
+    ]);
+    
+    response = socket_write(socket_fd, json_encode(request_data));
+    
+    if (response) {
+        write("AuthenticatePlayer response: " + response + "\n");
+        call_out("test_find_players", 1, socket_fd);
+    } else {
+        write("AuthenticatePlayer request failed\n");
+        socket_close(socket_fd);
+    }
+}
+
+void test_find_players(int socket_fd) {
+    mapping request_data;
+    string response;
+    
+    write("Testing FindPlayers RPC call...\n");
+    
+    request_data = ([
+        "service_name": "mudlib.player.PlayerService",
+        "method_name": "FindPlayers", 
+        "request_data": json_encode(([
+            "name_pattern": "test*",
+            "online_only": 1,
+            "min_level": 1,
+            "max_level": 50,
+            "limit": 10
+        ]))
+    ]);
+    
+    response = socket_write(socket_fd, json_encode(request_data));
+    
+    if (response) {
+        write("FindPlayers response: " + response + "\n");
+        call_out("test_player_stats", 1, socket_fd);
+    } else {
+        write("FindPlayers request failed\n");
+        socket_close(socket_fd);
+    }
+}
+
+void test_player_stats(int socket_fd) {
+    mapping request_data;
+    string response;
+    
+    write("Testing GetPlayerStats RPC call...\n");
+    
+    request_data = ([
+        "service_name": "mudlib.player.PlayerService",
+        "method_name": "GetPlayerStats",
+        "request_data": json_encode(([
+            "player_name": "testuser"
+        ]))
+    ]);
+    
+    response = socket_write(socket_fd, json_encode(request_data));
+    
+    if (response) {
+        write("GetPlayerStats response: " + response + "\n");
+        write("Player service tests completed successfully!\n");
+    } else {
+        write("GetPlayerStats request failed\n");
+    }
+    
+    // Clean up
+    socket_close(socket_fd);
+    write("Socket closed\n");
+}
+
+// Helper function to handle asynchronous responses
+void socket_read_callback(int socket_fd, mixed data) {
+    write("Received async response on socket " + socket_fd + ": " + data + "\n");
+}
+
+// Error handling callback
+void socket_error_callback(int socket_fd, string error) {
+    write("Socket " + socket_fd + " error: " + error + "\n");
+    socket_close(socket_fd);
+}
+
+void clean_up() {
+    write("Cleaning up gRPC player test daemon\n");
+    ::clean_up();
+}

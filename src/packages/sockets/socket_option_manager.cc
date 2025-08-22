@@ -374,7 +374,7 @@ void SocketOptionManager::register_grpc_options() {
 }
 
 void SocketOptionManager::register_internal_options() {
-    register_option(SO_SOCKET_MODE, OPTION_TYPE_INTEGER, OPTION_CATEGORY_INTERNAL,
+    register_option(SOCKET_OPT_SOCKET_MODE, OPTION_TYPE_INTEGER, OPTION_CATEGORY_INTERNAL,
                    OPTION_ACCESS_SYSTEM, 0, "Socket mode identifier");
                    
     register_option(REST_MODE, OPTION_TYPE_BOOLEAN, OPTION_CATEGORY_INTERNAL,

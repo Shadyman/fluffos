@@ -471,7 +471,7 @@ ValidationResult SocketOptionValidator::validate_mapping_option(socket_options o
     // TODO: Implement proper FluffOS mapping_t validation
     // This is a stub to allow compilation
     switch (option) {
-        case SO_HTTP_HEADERS:
+        case HTTP_HEADERS:
         case REST_OPENAPI_INFO:
         case REST_CORS_CONFIG:
         case EXTERNAL_ENV:
@@ -835,7 +835,7 @@ void SocketOptionValidator::initialize_cache_metadata() {
     // Cache TTL
     {
         OptionMetadata metadata;
-        metadata.option_id = SO_CACHE_TTL;
+        metadata.option_id = CACHE_TTL;
         metadata.value_type = OPTION_TYPE_INTEGER;
         metadata.category = OPTION_CATEGORY_CACHE;
         metadata.access_level = OPTION_ACCESS_OWNER;

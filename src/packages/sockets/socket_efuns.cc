@@ -794,15 +794,15 @@ int socket_connect(int fd, const char *name, svalue_t *read_callback, svalue_t *
 
     SSL_set_fd(ssl, lpc_socks[fd].fd);
 
-    if (lpc_socks[fd].options[SO_TLS_VERIFY_PEER].type == T_NUMBER &&
-        lpc_socks[fd].options[SO_TLS_VERIFY_PEER].u.number != 0) {
+    if (lpc_socks[fd].options[SOCKET_OPT_TLS_VERIFY_PEER].type == T_NUMBER &&
+        lpc_socks[fd].options[SOCKET_OPT_TLS_VERIFY_PEER].u.number != 0) {
       SSL_set_verify(ssl, SSL_VERIFY_PEER, tls_verify_callback);
     } else {
       SSL_set_verify(ssl, SSL_VERIFY_NONE, nullptr);
     }
 
-    if (lpc_socks[fd].options[SO_TLS_SNI_HOSTNAME].type == T_STRING) {
-      SSL_set_tlsext_host_name(ssl, lpc_socks[fd].options[SO_TLS_SNI_HOSTNAME].u.string);
+    if (lpc_socks[fd].options[SOCKET_OPT_TLS_SNI_HOSTNAME].type == T_STRING) {
+      SSL_set_tlsext_host_name(ssl, lpc_socks[fd].options[SOCKET_OPT_TLS_SNI_HOSTNAME].u.string);
     }
   }
 

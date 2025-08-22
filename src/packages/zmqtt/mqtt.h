@@ -123,22 +123,7 @@ struct mqtt_subscription {
     mqtt_subscription(const std::string& t, int q) : topic(t), qos(q), subscribed(false) {}
 };
 
-// MQTT package functions - these will be exposed as efuns
-extern "C" {
-    // Core MQTT functions
-    void f_socket_mqtt_connect(void);
-    void f_socket_mqtt_disconnect(void);
-    void f_socket_mqtt_publish(void);
-    void f_socket_mqtt_subscribe(void);
-    void f_socket_mqtt_unsubscribe(void);
-    void f_socket_mqtt_status(void);
-    
-    // MQTT configuration functions
-    void f_socket_mqtt_set_config(void);
-    void f_socket_mqtt_get_config(void);
-    void f_socket_mqtt_set_will(void);
-    void f_socket_mqtt_clear_will(void);
-}
+// MQTT package functions are declared in efuns.autogen.h
 
 // MQTT package initialization and management
 namespace mqtt {

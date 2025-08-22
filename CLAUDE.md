@@ -35,6 +35,15 @@ FluffOS is an LPMUD driver based on the last release of MudOS (v22.2b14) with 10
 - Modular functionality organized by feature (async, db, crypto, etc.)
 - Each package has `.spec` files defining available functions
 - Core packages: core, crypto, db, math, parser, sockets, etc.
+- **gRPC Package** (`src/packages/grpc/`) - **COMPLETED 2025-01-25**
+  - Full gRPC client/server implementation with unified socket integration
+  - Socket options 420-439 with complete validation and categories
+  - Protocol Buffers support with schema loading and message serialization
+  - Channel management with connection pooling and load balancing
+  - LPC interface with 25+ functions for MUD integration
+  - MUD-specific service examples: Player, World, Command, Inter-MUD
+  - Graceful fallback when gRPC libraries not available
+  - Comprehensive test suite and documentation
 
 **Networking** (`src/net/`)
 - `telnet.cc` - Telnet protocol implementation

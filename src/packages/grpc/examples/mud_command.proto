@@ -1,0 +1,140 @@
+syntax = "proto3";
+
+package mudlib.command;
+
+// Command Execution Service
+service CommandService {
+  // Command execution
+  rpc ExecuteCommand(CommandRequest) returns (CommandResponse);
+  rpc ExecuteRemoteCommand(RemoteCommandRequest) returns (CommandResponse);
+  
+  // Command validation and parsing
+  rpc ValidateCommand(CommandRequest) returns (ValidationResponse);
+  rpc ParseCommand(ParseRequest) returns (ParseResponse);
+  
+  // Command information
+  rpc GetAvailableCommands(CommandListRequest) returns (CommandListResponse);
+  rpc GetCommandHelp(HelpRequest) returns (HelpResponse);
+  
+  // Batch operations
+  rpc ExecuteBatch(BatchCommandRequest) returns (BatchCommandResponse);
+}
+
+// Command execution request
+message CommandRequest {
+  string player_name = 1;
+  string command = 2;
+  repeated string arguments = 3;
+  string context = 4; // room, object context
+  map<string, string> environment = 5;
+  int32 priority = 6;
+  bool async_execution = 7;
+}
+
+// Remote command execution (inter-MUD)
+message RemoteCommandRequest {
+  string source_mud = 1;
+  string target_mud = 2;
+  CommandRequest command = 3;
+  string authentication_token = 4;
+}
+
+// Command execution response
+message CommandResponse {
+  bool success = 1;
+  string output = 2;
+  string error_message = 3;
+  int32 execution_time_ms = 4;
+  repeated string side_effects = 5;
+  map<string, string> result_data = 6;
+  CommandStatus status = 7;
+}
+
+enum CommandStatus {
+  COMMAND_SUCCESS = 0;
+  COMMAND_FAILED = 1;
+  COMMAND_INVALID = 2;
+  COMMAND_UNAUTHORIZED = 3;
+  COMMAND_PARTIAL = 4;
+  COMMAND_QUEUED = 5;
+}
+
+// Command validation
+message ValidationResponse {
+  bool valid = 1;
+  string error_message = 2;
+  repeated string suggestions = 3;
+  string canonical_form = 4;
+}
+
+// Command parsing
+message ParseRequest {
+  string raw_command = 1;
+  string player_context = 2;
+}
+
+message ParseResponse {
+  string command_name = 1;
+  repeated string arguments = 2;
+  repeated string objects = 3;
+  string preposition = 4;
+  map<string, string> modifiers = 5;
+}
+
+// Available commands
+message CommandListRequest {
+  string player_name = 1;
+  optional string category = 2;
+  optional int32 privilege_level = 3;
+  bool include_aliases = 4;
+}
+
+message CommandListResponse {
+  repeated CommandInfo commands = 1;
+  int32 total_count = 2;
+}
+
+message CommandInfo {
+  string name = 1;
+  string category = 2;
+  string description = 3;
+  string syntax = 4;
+  repeated string aliases = 5;
+  int32 required_level = 6;
+  repeated string examples = 7;
+  bool admin_only = 8;
+}
+
+// Command help
+message HelpRequest {
+  string command_name = 1;
+  string player_name = 2;
+  bool detailed = 3;
+}
+
+message HelpResponse {
+  string command_name = 1;
+  string description = 2;
+  string syntax = 3;
+  repeated string examples = 4;
+  repeated string aliases = 5;
+  string category = 6;
+  repeated string related_commands = 7;
+  string detailed_help = 8;
+}
+
+// Batch command execution
+message BatchCommandRequest {
+  string player_name = 1;
+  repeated CommandRequest commands = 2;
+  bool stop_on_error = 3;
+  int32 max_execution_time_ms = 4;
+}
+
+message BatchCommandResponse {
+  repeated CommandResponse results = 1;
+  int32 executed_count = 2;
+  int32 failed_count = 3;
+  bool completed = 4;
+  string summary = 5;
+}

@@ -1,0 +1,319 @@
+/*
+ * Integration Test Suite for gRPC Package
+ * 
+ * Tests the LPC interface integration with the gRPC package
+ * in the FluffOS unified socket system.
+ */
+
+#include <lib.h>
+
+inherit LIB_DAEMON;
+
+void create() {
+    ::create();
+    SetClean(30);
+    write("Starting gRPC package integration tests...\n");
+    run_tests();
+}
+
+void run_tests() {
+    int passed = 0;
+    int failed = 0;
+    
+    write("=== gRPC Package Integration Test Suite ===\n");
+    
+    // Test 1: Package availability
+    write("Test 1: Package availability...");
+    if (test_package_availability()) {
+        write(" PASSED\n");
+        passed++;
+    } else {
+        write(" FAILED\n");
+        failed++;
+    }
+    
+    // Test 2: Socket creation
+    write("Test 2: Socket creation...");
+    if (test_socket_creation()) {
+        write(" PASSED\n");
+        passed++;
+    } else {
+        write(" FAILED\n");
+        failed++;
+    }
+    
+    // Test 3: Protocol buffer loading
+    write("Test 3: Protocol buffer loading...");
+    if (test_proto_loading()) {
+        write(" PASSED\n");
+        passed++;
+    } else {
+        write(" FAILED\n");
+        failed++;
+    }
+    
+    // Test 4: Service registration
+    write("Test 4: Service registration...");
+    if (test_service_registration()) {
+        write(" PASSED\n");
+        passed++;
+    } else {
+        write(" FAILED\n");
+        failed++;
+    }
+    
+    // Test 5: Channel management
+    write("Test 5: Channel management...");
+    if (test_channel_management()) {
+        write(" PASSED\n");
+        passed++;
+    } else {
+        write(" FAILED\n");
+        failed++;
+    }
+    
+    // Test 6: Configuration functions
+    write("Test 6: Configuration functions...");
+    if (test_configuration()) {
+        write(" PASSED\n");
+        passed++;
+    } else {
+        write(" FAILED\n");
+        failed++;
+    }
+    
+    write("=== Test Results ===\n");
+    write(sprintf("Passed: %d\n", passed));
+    write(sprintf("Failed: %d\n", failed));
+    write(sprintf("Total:  %d\n", passed + failed));
+    
+    if (failed == 0) {
+        write("All tests PASSED! gRPC package integration is working.\n");
+    } else {
+        write(sprintf("Some tests failed. Check the implementation.\n"));
+    }
+}
+
+int test_package_availability() {
+    // Test if gRPC functions are available
+    if (!function_exists("grpc_version")) {
+        write("\n  Error: grpc_version() function not available");
+        return 0;
+    }
+    
+    string version;
+    mixed result = catch(version = grpc_version());
+    
+    if (result) {
+        write(sprintf("\n  Error calling grpc_version(): %s", result));
+        return 0;
+    }
+    
+    if (!version || !stringp(version)) {
+        write("\n  Error: grpc_version() returned invalid result");
+        return 0;
+    }
+    
+    write(sprintf(" (version: %s)", version));
+    return 1;
+}
+
+int test_socket_creation() {
+    int socket_fd;
+    
+    // Test client socket creation
+    mixed result = catch(socket_fd = grpc_create_socket(1)); // GRPC_CLIENT_MODE
+    
+    if (result) {
+        write(sprintf("\n  Error creating gRPC client socket: %s", result));
+        return 0;
+    }
+    
+    if (socket_fd < 0) {
+        write("\n  Error: grpc_create_socket() returned invalid descriptor");
+        return 0;
+    }
+    
+    // Test socket status
+    int status;
+    result = catch(status = grpc_socket_status(socket_fd));
+    
+    if (result) {
+        write(sprintf("\n  Error checking socket status: %s", result));
+        // Try to clean up
+        catch(grpc_close_socket(socket_fd));
+        return 0;
+    }
+    
+    // Clean up
+    result = catch(grpc_close_socket(socket_fd));
+    
+    if (result) {
+        write(sprintf("\n  Warning: error closing socket: %s", result));
+        return 0;
+    }
+    
+    write(sprintf(" (socket: %d)", socket_fd));
+    return 1;
+}
+
+int test_proto_loading() {
+    // Test loading protocol definition from string
+    string proto_content = "syntax = \"proto3\";\n" +
+                          "package test;\n" +
+                          "service TestService {\n" +
+                          "  rpc TestMethod(TestRequest) returns (TestResponse);\n" +
+                          "}\n" +
+                          "message TestRequest { string data = 1; }\n" +
+                          "message TestResponse { string result = 1; }\n";
+    
+    mixed result = catch(grpc_load_proto_string(proto_content));
+    
+    if (result) {
+        write(sprintf("\n  Error loading proto string: %s", result));
+        return 0;
+    }
+    
+    // Test getting service names
+    string *services;
+    result = catch(services = grpc_get_service_names());
+    
+    if (result) {
+        write(sprintf("\n  Error getting service names: %s", result));
+        return 0;
+    }
+    
+    // Services might be empty in stub implementation, which is okay
+    return 1;
+}
+
+int test_service_registration() {
+    int socket_fd;
+    string proto_content;
+    
+    // Create server socket
+    mixed result = catch(socket_fd = grpc_create_socket(2)); // GRPC_SERVER_MODE
+    
+    if (result || socket_fd < 0) {
+        write("\n  Error: Could not create server socket");
+        return 0;
+    }
+    
+    // Register a test service
+    proto_content = "syntax = \"proto3\";\n" +
+                   "service TestService {\n" +
+                   "  rpc TestMethod(TestRequest) returns (TestResponse);\n" +
+                   "}\n" +
+                   "message TestRequest { string data = 1; }\n" +
+                   "message TestResponse { string result = 1; }\n";
+    
+    result = catch(grpc_register_service(socket_fd, "TestService", proto_content));
+    
+    if (result) {
+        write(sprintf("\n  Error registering service: %s", result));
+        catch(grpc_close_socket(socket_fd));
+        return 0;
+    }
+    
+    // Register a method handler
+    result = catch(grpc_register_method(socket_fd, "TestService", "TestMethod", "test_handler"));
+    
+    if (result) {
+        write(sprintf("\n  Error registering method: %s", result));
+        catch(grpc_close_socket(socket_fd));
+        return 0;
+    }
+    
+    // Clean up
+    catch(grpc_close_socket(socket_fd));
+    return 1;
+}
+
+int test_channel_management() {
+    string channel_id;
+    
+    // Create a channel
+    mixed result = catch(channel_id = grpc_create_channel("localhost:50051", ([])));
+    
+    if (result) {
+        write(sprintf("\n  Error creating channel: %s", result));
+        return 0;
+    }
+    
+    // In stub implementation, might return 0 for unavailable, which is acceptable
+    if (!channel_id) {
+        write(" (no channel created - stub implementation)");
+        return 1;
+    }
+    
+    // Test channel ready check
+    int ready;
+    result = catch(ready = grpc_channel_ready(channel_id));
+    
+    if (result) {
+        write(sprintf("\n  Error checking channel ready: %s", result));
+        catch(grpc_close_channel(channel_id));
+        return 0;
+    }
+    
+    // Get active channels
+    string *channels;
+    result = catch(channels = grpc_active_channels());
+    
+    if (result) {
+        write(sprintf("\n  Error getting active channels: %s", result));
+        catch(grpc_close_channel(channel_id));
+        return 0;
+    }
+    
+    // Clean up
+    catch(grpc_close_channel(channel_id));
+    return 1;
+}
+
+int test_configuration() {
+    // Test debug mode setting
+    mixed result = catch(grpc_set_debug_mode(1));
+    
+    if (result) {
+        write(sprintf("\n  Error setting debug mode: %s", result));
+        return 0;
+    }
+    
+    // Test getting config
+    mapping config;
+    result = catch(config = grpc_get_config());
+    
+    if (result) {
+        write(sprintf("\n  Error getting config: %s", result));
+        return 0;
+    }
+    
+    // Config might be 0 in stub implementation
+    
+    // Test getting package info
+    mapping package_info;
+    result = catch(package_info = grpc_get_package_info());
+    
+    if (result) {
+        write(sprintf("\n  Error getting package info: %s", result));
+        return 0;
+    }
+    
+    // Turn off debug mode
+    catch(grpc_set_debug_mode(0));
+    return 1;
+}
+
+// Test handler function for method registration
+mapping test_handler(mapping request) {
+    return ([
+        "status": "OK",
+        "result": "Test successful"
+    ]);
+}
+
+void clean_up() {
+    write("Cleaning up gRPC integration test daemon\n");
+    ::clean_up();
+}

@@ -1,0 +1,270 @@
+syntax = "proto3";
+
+package mudlib.intermud;
+
+// Inter-MUD Communication Service
+service IntermudService {
+  // MUD discovery and registration
+  rpc RegisterMud(MudRegistrationRequest) returns (RegistrationResponse);
+  rpc GetMudList(MudListRequest) returns (MudListResponse);
+  rpc GetMudInfo(MudInfoRequest) returns (MudInfoResponse);
+  rpc UpdateMudStatus(MudStatusUpdate) returns (StatusResponse);
+  
+  // Player communication
+  rpc SendTell(IntermudTell) returns (MessageResponse);
+  rpc SendWho(WhoRequest) returns (WhoResponse);
+  rpc SendFinger(FingerRequest) returns (FingerResponse);
+  
+  // Channel communication
+  rpc JoinChannel(ChannelJoinRequest) returns (ChannelResponse);
+  rpc LeaveChannel(ChannelLeaveRequest) returns (ChannelResponse);
+  rpc SendChannelMessage(ChannelMessage) returns (MessageResponse);
+  rpc GetChannelList(ChannelListRequest) returns (ChannelListResponse);
+  
+  // File transfers
+  rpc RequestFile(FileRequest) returns (stream FileChunk);
+  rpc SendFile(stream FileChunk) returns (FileTransferResponse);
+  
+  // Game integration
+  rpc QueryGameData(GameDataRequest) returns (GameDataResponse);
+  rpc SyncGameEvent(GameEvent) returns (EventResponse);
+}
+
+// MUD registration and discovery
+message MudRegistrationRequest {
+  string mud_name = 1;
+  string host = 2;
+  int32 port = 3;
+  string mudlib = 4;
+  string driver = 5;
+  string admin_email = 6;
+  string description = 7;
+  repeated string supported_protocols = 8;
+  MudType mud_type = 9;
+  map<string, string> capabilities = 10;
+}
+
+enum MudType {
+  LP_MUD = 0;
+  DGD_MUD = 1;
+  FLUFFOS_MUD = 2;
+  DEAD_SOULS = 3;
+  LIB_MUD = 4;
+  OTHER = 5;
+}
+
+message RegistrationResponse {
+  bool success = 1;
+  string mud_id = 2;
+  string error_message = 3;
+  repeated string warnings = 4;
+}
+
+message MudListRequest {
+  optional MudType type_filter = 1;
+  optional bool active_only = 2;
+  int32 limit = 3;
+}
+
+message MudListResponse {
+  repeated MudInfo muds = 1;
+  int32 total_count = 2;
+}
+
+message MudInfoRequest {
+  string mud_name = 1;
+}
+
+message MudInfoResponse {
+  MudInfo mud_info = 1;
+  bool found = 2;
+}
+
+message MudInfo {
+  string mud_name = 1;
+  string host = 2;
+  int32 port = 3;
+  string mudlib = 4;
+  string driver = 5;
+  string admin_email = 6;
+  string description = 7;
+  int32 online_players = 8;
+  int64 uptime_seconds = 9;
+  bool accepting_connections = 10;
+  repeated string features = 11;
+  int64 last_seen = 12;
+}
+
+message MudStatusUpdate {
+  string mud_name = 1;
+  int32 online_players = 2;
+  int64 uptime_seconds = 3;
+  bool accepting_connections = 4;
+  map<string, string> status_data = 5;
+}
+
+// Player communication
+message IntermudTell {
+  string source_mud = 1;
+  string source_player = 2;
+  string target_mud = 3;
+  string target_player = 4;
+  string message = 5;
+  int64 timestamp = 6;
+}
+
+message MessageResponse {
+  bool delivered = 1;
+  string error_message = 2;
+  string delivery_status = 3;
+}
+
+message WhoRequest {
+  string source_mud = 1;
+  string requesting_player = 2;
+  string target_mud = 3;
+}
+
+message WhoResponse {
+  repeated PlayerInfo players = 1;
+  int32 total_online = 2;
+  string mud_info = 3;
+}
+
+message PlayerInfo {
+  string name = 1;
+  string title = 2;
+  int32 level = 3;
+  string race = 4;
+  string class = 5;
+  string location = 6;
+  bool idle = 7;
+  int32 idle_time = 8;
+}
+
+message FingerRequest {
+  string source_mud = 1;
+  string requesting_player = 2;
+  string target_mud = 3;
+  string target_player = 4;
+}
+
+message FingerResponse {
+  bool player_found = 1;
+  PlayerInfo player_info = 2;
+  string last_login = 3;
+  string total_playtime = 4;
+  string player_description = 5;
+  map<string, string> extended_info = 6;
+}
+
+// Channel communication
+message ChannelJoinRequest {
+  string mud_name = 1;
+  string player_name = 2;
+  string channel_name = 3;
+  string auth_token = 4;
+}
+
+message ChannelLeaveRequest {
+  string mud_name = 1;
+  string player_name = 2;
+  string channel_name = 3;
+}
+
+message ChannelResponse {
+  bool success = 1;
+  string error_message = 2;
+  repeated string channel_members = 3;
+}
+
+message ChannelMessage {
+  string channel_name = 1;
+  string sender_mud = 2;
+  string sender_player = 3;
+  string message = 4;
+  int64 timestamp = 5;
+  MessageType type = 6;
+}
+
+enum MessageType {
+  NORMAL = 0;
+  EMOTE = 1;
+  SYSTEM = 2;
+  ADMIN = 3;
+}
+
+message ChannelListRequest {
+  optional bool active_only = 1;
+  optional string mud_filter = 2;
+}
+
+message ChannelListResponse {
+  repeated ChannelInfo channels = 1;
+}
+
+message ChannelInfo {
+  string name = 1;
+  string description = 2;
+  int32 member_count = 3;
+  repeated string moderators = 4;
+  bool public = 5;
+  bool moderated = 6;
+}
+
+// File transfers
+message FileRequest {
+  string source_mud = 1;
+  string target_mud = 2;
+  string file_path = 3;
+  string auth_token = 4;
+}
+
+message FileChunk {
+  bytes data = 1;
+  int32 chunk_number = 2;
+  bool is_last = 3;
+  string checksum = 4;
+}
+
+message FileTransferResponse {
+  bool success = 1;
+  string error_message = 2;
+  int64 bytes_transferred = 3;
+  string file_checksum = 4;
+}
+
+// Game integration
+message GameDataRequest {
+  string source_mud = 1;
+  string target_mud = 2;
+  string data_type = 3; // "economy", "quests", "areas", etc.
+  map<string, string> parameters = 4;
+}
+
+message GameDataResponse {
+  string data_type = 1;
+  bytes data = 2;
+  string format = 3; // "json", "xml", "binary"
+  int64 timestamp = 4;
+}
+
+message GameEvent {
+  string source_mud = 1;
+  string event_type = 2;
+  string event_data = 3;
+  int64 timestamp = 4;
+  repeated string affected_players = 5;
+}
+
+message EventResponse {
+  bool acknowledged = 1;
+  string response_data = 2;
+}
+
+// Generic responses
+message StatusResponse {
+  bool success = 1;
+  string message = 2;
+  int32 error_code = 3;
+}

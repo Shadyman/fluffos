@@ -1,0 +1,427 @@
+/*
+ * Example LPC test file for gRPC Server
+ * 
+ * This demonstrates how to create and run a gRPC server using 
+ * the FluffOS unified socket system.
+ */
+
+#include <lib.h>
+#include <socket_modes.h>
+#include <socket_options.h>
+
+inherit LIB_DAEMON;
+
+private int server_socket;
+private mapping active_clients;
+
+void create() {
+    ::create();
+    SetClean(30);
+    active_clients = ([]);
+    test_grpc_server();
+}
+
+void test_grpc_server() {
+    mapping options;
+    
+    write("Testing gRPC Server creation...\n");
+    
+    // Create gRPC server socket
+    server_socket = socket_create(SOCKET_GRPC_SERVER);
+    if (server_socket < 0) {
+        write("Failed to create gRPC server socket: " + server_socket + "\n");
+        return;
+    }
+    
+    write("Created gRPC server socket: " + server_socket + "\n");
+    
+    // Configure server options
+    options = ([
+        GRPC_SERVICE_CONFIG: load_service_definitions(),
+        GRPC_MAX_MESSAGE_SIZE: 1048576,  // 1MB
+        GRPC_COMPRESSION: "gzip",
+        GRPC_KEEPALIVE_TIME: 30000,      // 30 seconds
+        GRPC_KEEPALIVE_TIMEOUT: 5000,    // 5 seconds
+        GRPC_REFLECTION_ENABLE: 1,       // Enable gRPC reflection
+        GRPC_HEALTH_CHECK: 1,            // Enable health check service
+        GRPC_TLS_ENABLED: 0,             // Disable TLS for testing
+        GRPC_DEBUG_MODE: 1
+    ]);
+    
+    if (!socket_configure(server_socket, options)) {
+        write("Failed to configure gRPC server socket\n");
+        socket_close(server_socket);
+        return;
+    }
+    
+    write("Server socket configured successfully\n");
+    
+    // Register service methods
+    register_service_methods();
+    
+    // Bind to address and start listening
+    if (socket_bind(server_socket, "0.0.0.0", 50051)) {
+        write("Server bound to 0.0.0.0:50051\n");
+        
+        if (socket_listen(server_socket, 10)) {
+            write("gRPC server started and listening on port 50051\n");
+            write("Server ready to accept connections...\n");
+        } else {
+            write("Failed to start listening on gRPC server\n");
+            socket_close(server_socket);
+        }
+    } else {
+        write("Failed to bind gRPC server to port 50051\n");
+        socket_close(server_socket);
+    }
+}
+
+string load_service_definitions() {
+    string definitions = "";
+    
+    // Load all service definitions
+    definitions += read_file("/packages/grpc/examples/mud_player.proto") || "";
+    definitions += "\n" + (read_file("/packages/grpc/examples/mud_world.proto") || "");
+    definitions += "\n" + (read_file("/packages/grpc/examples/mud_command.proto") || "");
+    
+    return definitions;
+}
+
+void register_service_methods() {
+    write("Registering gRPC service methods...\n");
+    
+    // Register Player Service methods
+    socket_register_service_method(server_socket, "mudlib.player.PlayerService", 
+                                   "GetPlayer", (: handle_get_player :));
+    socket_register_service_method(server_socket, "mudlib.player.PlayerService",
+                                   "AuthenticatePlayer", (: handle_authenticate_player :));
+    socket_register_service_method(server_socket, "mudlib.player.PlayerService",
+                                   "FindPlayers", (: handle_find_players :));
+    
+    // Register World Service methods  
+    socket_register_service_method(server_socket, "mudlib.world.WorldService",
+                                   "GetRoom", (: handle_get_room :));
+    socket_register_service_method(server_socket, "mudlib.world.WorldService", 
+                                   "FindRooms", (: handle_find_rooms :));
+    socket_register_service_method(server_socket, "mudlib.world.WorldService",
+                                   "MovePlayer", (: handle_move_player :));
+    
+    // Register Command Service methods
+    socket_register_service_method(server_socket, "mudlib.command.CommandService",
+                                   "ExecuteCommand", (: handle_execute_command :));
+    socket_register_service_method(server_socket, "mudlib.command.CommandService",
+                                   "ValidateCommand", (: handle_validate_command :));
+    
+    write("Service methods registered successfully\n");
+}
+
+// Player service handlers
+mapping handle_get_player(mapping request) {
+    string player_name;
+    object player_ob;
+    mapping response;
+    
+    player_name = request["player_name"];
+    
+    if (!player_name) {
+        return ([
+            "status": "INVALID_ARGUMENT",
+            "error_message": "Player name required"
+        ]);
+    }
+    
+    player_ob = find_player(player_name);
+    
+    if (player_ob) {
+        response = ([
+            "status": "OK",
+            "response_data": json_encode(([
+                "player_name": player_ob->GetCapName(),
+                "player_id": player_ob->GetKeyName(),
+                "level": player_ob->GetLevel(),
+                "race": player_ob->GetRace(),
+                "class": player_ob->GetClass(),
+                "experience": player_ob->GetExp(),
+                "location": file_name(environment(player_ob)),
+                "online": 1,
+                "login_time": player_ob->GetLoginTime()
+            ]))
+        ]);
+    } else {
+        response = ([
+            "status": "NOT_FOUND",
+            "error_message": "Player not found: " + player_name
+        ]);
+    }
+    
+    return response;
+}
+
+mapping handle_authenticate_player(mapping request) {
+    string player_name, password;
+    object player_ob;
+    
+    player_name = request["player_name"];
+    password = request["password"];
+    
+    if (!player_name || !password) {
+        return ([
+            "status": "INVALID_ARGUMENT",
+            "error_message": "Player name and password required"
+        ]);
+    }
+    
+    // In a real implementation, this would validate credentials
+    player_ob = find_player(player_name);
+    
+    if (player_ob) {
+        return ([
+            "status": "OK",
+            "response_data": json_encode(([
+                "success": 1,
+                "session_token": generate_session_token(),
+                "player_data": ([
+                    "player_name": player_ob->GetCapName(),
+                    "level": player_ob->GetLevel(),
+                    "race": player_ob->GetRace()
+                ])
+            ]))
+        ]);
+    } else {
+        return ([
+            "status": "UNAUTHENTICATED", 
+            "error_message": "Authentication failed"
+        ]);
+    }
+}
+
+mapping handle_find_players(mapping request) {
+    string pattern;
+    int min_level, max_level, limit;
+    object *players;
+    mapping *player_data;
+    
+    pattern = request["name_pattern"];
+    min_level = request["min_level"] || 1;
+    max_level = request["max_level"] || 999;
+    limit = request["limit"] || 10;
+    
+    players = users();
+    if (pattern) {
+        players = filter(players, (: regexp($1->GetCapName(), $2) :), pattern);
+    }
+    
+    players = filter(players, (: $1->GetLevel() >= $2 && $1->GetLevel() <= $3 :), 
+                     min_level, max_level);
+    
+    if (sizeof(players) > limit) {
+        players = players[0..limit-1];
+    }
+    
+    player_data = map(players, (: ([
+        "player_name": $1->GetCapName(),
+        "level": $1->GetLevel(), 
+        "race": $1->GetRace(),
+        "location": file_name(environment($1)),
+        "online": 1
+    ]) :));
+    
+    return ([
+        "status": "OK",
+        "response_data": json_encode(([
+            "players": player_data,
+            "total_count": sizeof(player_data)
+        ]))
+    ]);
+}
+
+// World service handlers
+mapping handle_get_room(mapping request) {
+    string room_id, room_path;
+    object room_ob;
+    
+    room_id = request["room_id"];
+    room_path = request["room_path"];
+    
+    if (room_path) {
+        room_ob = load_object(room_path);
+    } else if (room_id) {
+        // In a real implementation, this would lookup room by ID
+        room_ob = 0;
+    }
+    
+    if (room_ob) {
+        return ([
+            "status": "OK",
+            "response_data": json_encode(([
+                "room_id": room_id || file_name(room_ob),
+                "room_path": file_name(room_ob),
+                "short_description": room_ob->GetShort(),
+                "long_description": room_ob->GetLong(),
+                "exits": get_room_exits(room_ob),
+                "players": map(all_inventory(room_ob), 
+                             (: living($1) ? $1->GetCapName() : 0 :)) - ({ 0 })
+            ]))
+        ]);
+    } else {
+        return ([
+            "status": "NOT_FOUND",
+            "error_message": "Room not found"
+        ]);
+    }
+}
+
+mapping handle_find_rooms(mapping request) {
+    // Simplified room search implementation
+    return ([
+        "status": "OK", 
+        "response_data": json_encode(([
+            "rooms": ({}),
+            "total_count": 0
+        ]))
+    ]);
+}
+
+mapping handle_move_player(mapping request) {
+    string player_name, to_room;
+    object player_ob, dest_ob;
+    
+    player_name = request["player_name"];
+    to_room = request["to_room"];
+    
+    player_ob = find_player(player_name);
+    if (!player_ob) {
+        return ([
+            "status": "NOT_FOUND",
+            "error_message": "Player not found"
+        ]);
+    }
+    
+    dest_ob = load_object(to_room);
+    if (!dest_ob) {
+        return ([
+            "status": "NOT_FOUND", 
+            "error_message": "Destination room not found"
+        ]);
+    }
+    
+    if (player_ob->eventMoveLiving(dest_ob)) {
+        return ([
+            "status": "OK",
+            "response_data": json_encode(([
+                "success": 1,
+                "final_location": file_name(environment(player_ob)),
+                "movement_messages": ({ "You have been moved." })
+            ]))
+        ]);
+    } else {
+        return ([
+            "status": "FAILED_PRECONDITION",
+            "error_message": "Move failed"
+        ]);
+    }
+}
+
+// Command service handlers
+mapping handle_execute_command(mapping request) {
+    string player_name, command;
+    object player_ob;
+    
+    player_name = request["player_name"];
+    command = request["command"];
+    
+    player_ob = find_player(player_name);
+    if (!player_ob) {
+        return ([
+            "status": "NOT_FOUND",
+            "error_message": "Player not found"
+        ]);
+    }
+    
+    // Execute command (simplified)
+    catch(command_exist(command, player_ob));
+    
+    return ([
+        "status": "OK",
+        "response_data": json_encode(([
+            "success": 1,
+            "output": "Command executed",
+            "execution_time_ms": 50
+        ]))
+    ]);
+}
+
+mapping handle_validate_command(mapping request) {
+    string command = request["command"];
+    
+    return ([
+        "status": "OK",
+        "response_data": json_encode(([
+            "valid": 1,
+            "canonical_form": command
+        ]))
+    ]);
+}
+
+// Helper functions
+string generate_session_token() {
+    return sprintf("%x%x%x", random(0xFFFF), random(0xFFFF), time());
+}
+
+mixed *get_room_exits(object room) {
+    mapping exits;
+    string *directions;
+    mixed *result = ({});
+    
+    if (!room) return result;
+    
+    exits = room->GetExits();
+    if (!exits) return result;
+    
+    directions = keys(exits);
+    
+    foreach(string dir in directions) {
+        result += ({ ([
+            "direction": dir,
+            "destination": exits[dir],
+            "blocked": 0,
+            "hidden": 0
+        ]) });
+    }
+    
+    return result;
+}
+
+void socket_accept_callback(int server_fd, int client_fd, string client_ip) {
+    write("New gRPC client connected: " + client_fd + " from " + client_ip + "\n");
+    active_clients[client_fd] = client_ip;
+}
+
+void socket_close_callback(int socket_fd) {
+    if (socket_fd == server_socket) {
+        write("gRPC server socket closed\n");
+    } else {
+        write("gRPC client " + socket_fd + " disconnected\n");
+        m_delete(active_clients, socket_fd);
+    }
+}
+
+void socket_error_callback(int socket_fd, string error) {
+    write("gRPC socket " + socket_fd + " error: " + error + "\n");
+    if (member_array(socket_fd, keys(active_clients)) != -1) {
+        m_delete(active_clients, socket_fd);
+    }
+}
+
+string query_server_status() {
+    return sprintf("gRPC Server (socket %d) with %d active clients",
+                   server_socket, sizeof(active_clients));
+}
+
+void clean_up() {
+    if (server_socket >= 0) {
+        socket_close(server_socket);
+    }
+    write("Cleaning up gRPC server test daemon\n");
+    ::clean_up();
+}

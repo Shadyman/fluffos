@@ -8,6 +8,7 @@
 #include <fstream>
 #include <sstream>
 #include <regex>
+#include <set>
 
 /*
  * GraphQL Schema Implementation

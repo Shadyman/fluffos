@@ -350,34 +350,46 @@ bool GraphQLServer::configure(std::unique_ptr<SocketOptionManager> option_manage
     }
     
     // Sync configuration from socket options
-    std::string schema_text;
-    if (option_manager_->get_option(GRAPHQL_SCHEMA, schema_text)) {
-        set_schema(schema_text);
+    svalue_t schema_val;
+    if (option_manager_->get_option(GRAPHQL_SCHEMA, &schema_val)) {
+        if (schema_val.type == T_STRING) {
+            set_schema(schema_val.u.string);
+        }
     }
     
-    int introspection;
-    if (option_manager_->get_option(GRAPHQL_INTROSPECTION, introspection)) {
-        enable_introspection(introspection != 0);
+    svalue_t introspection_val;
+    if (option_manager_->get_option(GRAPHQL_INTROSPECTION, &introspection_val)) {
+        if (introspection_val.type == T_NUMBER) {
+            enable_introspection(introspection_val.u.number != 0);
+        }
     }
     
-    int playground;
-    if (option_manager_->get_option(GRAPHQL_PLAYGROUND, playground)) {
-        enable_playground(playground != 0);
+    svalue_t playground_val;
+    if (option_manager_->get_option(GRAPHQL_PLAYGROUND, &playground_val)) {
+        if (playground_val.type == T_NUMBER) {
+            enable_playground(playground_val.u.number != 0);
+        }
     }
     
-    int max_depth;
-    if (option_manager_->get_option(GRAPHQL_MAX_QUERY_DEPTH, max_depth)) {
-        set_max_query_depth(max_depth);
+    svalue_t max_depth_val;
+    if (option_manager_->get_option(GRAPHQL_MAX_QUERY_DEPTH, &max_depth_val)) {
+        if (max_depth_val.type == T_NUMBER) {
+            set_max_query_depth(max_depth_val.u.number);
+        }
     }
     
-    int max_complexity;
-    if (option_manager_->get_option(GRAPHQL_MAX_QUERY_COMPLEXITY, max_complexity)) {
-        set_max_query_complexity(max_complexity);
+    svalue_t max_complexity_val;
+    if (option_manager_->get_option(GRAPHQL_MAX_QUERY_COMPLEXITY, &max_complexity_val)) {
+        if (max_complexity_val.type == T_NUMBER) {
+            set_max_query_complexity(max_complexity_val.u.number);
+        }
     }
     
-    int timeout;
-    if (option_manager_->get_option(GRAPHQL_TIMEOUT, timeout)) {
-        set_timeout(timeout);
+    svalue_t timeout_val;
+    if (option_manager_->get_option(GRAPHQL_TIMEOUT, &timeout_val)) {
+        if (timeout_val.type == T_NUMBER) {
+            set_timeout(timeout_val.u.number);
+        }
     }
     
     configured_ = true;

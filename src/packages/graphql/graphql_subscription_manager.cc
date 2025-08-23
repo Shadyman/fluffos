@@ -10,6 +10,7 @@
 #include <sstream>
 #include <iomanip>
 #include <chrono>
+#include <regex>
 
 /*
  * GraphQL Subscription Manager Implementation

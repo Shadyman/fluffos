@@ -2224,6 +2224,7 @@ lvalue:
           break;
         case NODE_TERNARY_OP:
           $$->v.number = $$->r.expr->v.number;
+          [[fallthrough]];
         case NODE_OPCODE_1:
         case NODE_UNARY_OP_1:
         case NODE_BINARY_OP:
@@ -2241,6 +2242,7 @@ lvalue:
                   break;
                 case NODE_TERNARY_OP:
                   node->v.number = node->r.expr->v.number;
+                  [[fallthrough]];
                 case NODE_OPCODE_1:
                 case NODE_UNARY_OP_1:
                 case NODE_BINARY_OP:
@@ -2306,6 +2308,7 @@ lvalue:
                     node = node->r.expr->r.expr;
                     continue;
                   }
+                  break;
                 default:
                   yyerror("Illegal lvalue");
                   flag = LV_ILLEGAL;
@@ -2531,6 +2534,7 @@ expr4:
         switch($1->type) {
           case TYPE_MAPPING:
             yyerror("Illegal index for mapping.");
+            [[fallthrough]];
           case TYPE_ANY:
             $$->type = TYPE_ANY;
             break;

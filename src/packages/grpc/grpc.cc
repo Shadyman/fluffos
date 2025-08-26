@@ -260,7 +260,7 @@ bool GrpcManager::validate_message(const std::string& type_name, const std::stri
     return !type_name.empty() && !data.empty();
 }
 
-std::string GrpcManager::serialize_message(const std::string& type_name, const mapping& data) {
+std::string GrpcManager::serialize_message(const std::string& type_name, const mapping_t& data) {
     if (!protobuf_manager_) {
         return "";
     }
@@ -268,9 +268,9 @@ std::string GrpcManager::serialize_message(const std::string& type_name, const m
     return protobuf_manager_->serialize_from_mapping(type_name, data);
 }
 
-mapping GrpcManager::deserialize_message(const std::string& type_name, const std::string& data) {
+mapping_t GrpcManager::deserialize_message(const std::string& type_name, const std::string& data) {
     if (!protobuf_manager_) {
-        return mapping();
+        return mapping_t();
     }
     
     return protobuf_manager_->deserialize_to_mapping(type_name, data);

@@ -1174,7 +1174,45 @@ bool validate_socket_option(int option, const svalue_t* value, const char** erro
                     return false;
                 }
                 break;
-            // Add other type checks as needed
+            case OPTION_TYPE_BOOLEAN:
+                if (value->type != T_NUMBER) {
+                    if (error_msg) {
+                        static std::string error_str = "Expected boolean (integer) value for option " + std::to_string(option);
+                        *error_msg = error_str.c_str();
+                    }
+                    return false;
+                }
+                break;
+            case OPTION_TYPE_FLOAT:
+                if (value->type != T_REAL && value->type != T_NUMBER) {
+                    if (error_msg) {
+                        static std::string error_str = "Expected float value for option " + std::to_string(option);
+                        *error_msg = error_str.c_str();
+                    }
+                    return false;
+                }
+                break;
+            case OPTION_TYPE_MAPPING:
+                if (value->type != T_MAPPING) {
+                    if (error_msg) {
+                        static std::string error_str = "Expected mapping value for option " + std::to_string(option);
+                        *error_msg = error_str.c_str();
+                    }
+                    return false;
+                }
+                break;
+            case OPTION_TYPE_ARRAY:
+                if (value->type != T_ARRAY) {
+                    if (error_msg) {
+                        static std::string error_str = "Expected array value for option " + std::to_string(option);
+                        *error_msg = error_str.c_str();
+                    }
+                    return false;
+                }
+                break;
+            case OPTION_TYPE_MIXED:
+                // Mixed type accepts any value type
+                break;
         }
     }
     

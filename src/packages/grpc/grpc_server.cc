@@ -34,36 +34,51 @@ bool GrpcServer::configure(std::unique_ptr<SocketOptionManager> option_manager) 
     GRPC_DEBUG_F("Configuring gRPC server for socket %d", socket_fd_);
     
     // Sync configuration from socket options
-    std::string service_config;
-    if (option_manager_->get_option(GRPC_SERVICE_CONFIG, service_config)) {
-        set_service_config(service_config);
+    svalue_t service_config_val;
+    if (option_manager_->get_option(GRPC_SERVICE_CONFIG, &service_config_val)) {
+        if (service_config_val.type == T_STRING) {
+            set_service_config(service_config_val.u.string);
+        }
     }
     
-    int max_size;
-    if (option_manager_->get_option(GRPC_MAX_MESSAGE_SIZE, max_size)) {
-        set_max_message_size(static_cast<size_t>(max_size));
+    svalue_t max_size_val;
+    if (option_manager_->get_option(GRPC_MAX_MESSAGE_SIZE, &max_size_val)) {
+        if (max_size_val.type == T_NUMBER) {
+            set_max_message_size(static_cast<size_t>(max_size_val.u.number));
+        }
     }
     
-    std::string compression;
-    if (option_manager_->get_option(GRPC_COMPRESSION, compression)) {
-        set_compression_algorithm(compression);
+    svalue_t compression_val;
+    if (option_manager_->get_option(GRPC_COMPRESSION, &compression_val)) {
+        if (compression_val.type == T_STRING) {
+            set_compression_algorithm(compression_val.u.string);
+        }
     }
     
-    int keepalive_time;
-    if (option_manager_->get_option(GRPC_KEEPALIVE_TIME, keepalive_time)) {
-        int keepalive_timeout;
-        option_manager_->get_option(GRPC_KEEPALIVE_TIMEOUT, keepalive_timeout);
-        enable_keepalive(true, static_cast<uint32_t>(keepalive_time), static_cast<uint32_t>(keepalive_timeout));
+    svalue_t keepalive_time_val;
+    if (option_manager_->get_option(GRPC_KEEPALIVE_TIME, &keepalive_time_val)) {
+        if (keepalive_time_val.type == T_NUMBER) {
+            svalue_t keepalive_timeout_val;
+            if (option_manager_->get_option(GRPC_KEEPALIVE_TIMEOUT, &keepalive_timeout_val) &&
+                keepalive_timeout_val.type == T_NUMBER) {
+                enable_keepalive(true, static_cast<uint32_t>(keepalive_time_val.u.number), 
+                                static_cast<uint32_t>(keepalive_timeout_val.u.number));
+            }
+        }
     }
     
-    int reflection;
-    if (option_manager_->get_option(GRPC_REFLECTION_ENABLE, reflection)) {
-        reflection_enabled_ = (reflection != 0);
+    svalue_t reflection_val;
+    if (option_manager_->get_option(GRPC_REFLECTION_ENABLE, &reflection_val)) {
+        if (reflection_val.type == T_NUMBER) {
+            reflection_enabled_ = (reflection_val.u.number != 0);
+        }
     }
     
-    int health_check;
-    if (option_manager_->get_option(GRPC_HEALTH_CHECK, health_check)) {
-        health_check_enabled_ = (health_check != 0);
+    svalue_t health_check_val;
+    if (option_manager_->get_option(GRPC_HEALTH_CHECK, &health_check_val)) {
+        if (health_check_val.type == T_NUMBER) {
+            health_check_enabled_ = (health_check_val.u.number != 0);
+        }
     }
     
     configured_ = true;

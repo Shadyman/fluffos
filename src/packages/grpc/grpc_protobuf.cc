@@ -98,7 +98,7 @@ bool GrpcProtobufManager::create_message_type(const std::string& type_name) {
     return false;
 }
 
-std::string GrpcProtobufManager::serialize_from_mapping(const std::string& type_name, const mapping& data) {
+std::string GrpcProtobufManager::serialize_from_mapping(const std::string& type_name, const mapping_t& data) {
     GRPC_DEBUG_F("Serializing message type %s from mapping", type_name.c_str());
     
     // Placeholder implementation - in real implementation would use protobuf
@@ -117,10 +117,10 @@ std::string GrpcProtobufManager::serialize_from_mapping(const std::string& type_
     return oss.str();
 }
 
-mapping GrpcProtobufManager::deserialize_to_mapping(const std::string& type_name, const std::string& data) {
+mapping_t GrpcProtobufManager::deserialize_to_mapping(const std::string& type_name, const std::string& data) {
     GRPC_DEBUG_F("Deserializing message type %s to mapping", type_name.c_str());
     
-    mapping result;
+    mapping_t result;
     
     // Placeholder implementation - in real implementation would use protobuf
     if (!data.empty()) {
@@ -176,7 +176,7 @@ GrpcMethodInfo GrpcProtobufManager::get_method_details(const std::string& servic
     return GrpcMethodInfo();
 }
 
-bool GrpcProtobufManager::validate_message_data(const std::string& type_name, const mapping& data) {
+bool GrpcProtobufManager::validate_message_data(const std::string& type_name, const mapping_t& data) {
     GRPC_DEBUG_F("Validating message data for type %s", type_name.c_str());
     
     // Basic validation - check that the type exists

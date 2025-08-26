@@ -143,8 +143,8 @@ public:
     // Protocol buffer management
     bool load_protobuf_schema(const std::string& proto_file);
     bool validate_message(const std::string& type_name, const std::string& data);
-    std::string serialize_message(const std::string& type_name, const mapping& data);
-    mapping deserialize_message(const std::string& type_name, const std::string& data);
+    std::string serialize_message(const std::string& type_name, const mapping_t& data);
+    mapping_t deserialize_message(const std::string& type_name, const std::string& data);
     
     // Server reflection
     bool enable_reflection(int socket_fd, bool enabled);
@@ -352,8 +352,8 @@ public:
     
     // Message operations
     bool create_message_type(const std::string& type_name);
-    std::string serialize_from_mapping(const std::string& type_name, const mapping& data);
-    mapping deserialize_to_mapping(const std::string& type_name, const std::string& data);
+    std::string serialize_from_mapping(const std::string& type_name, const mapping_t& data);
+    mapping_t deserialize_to_mapping(const std::string& type_name, const std::string& data);
     
     // Service introspection
     std::vector<std::string> get_service_names() const;
@@ -362,7 +362,7 @@ public:
                                      const std::string& method_name) const;
     
     // Type validation
-    bool validate_message_data(const std::string& type_name, const mapping& data);
+    bool validate_message_data(const std::string& type_name, const mapping_t& data);
     std::vector<std::string> get_message_field_names(const std::string& type_name) const;
     std::string get_field_type(const std::string& type_name, const std::string& field_name) const;
     

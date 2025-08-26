@@ -271,6 +271,10 @@ ValidationResult SocketOptionValidator::validate_integer_option(socket_options o
                                       "MQTT QoS must be 0, 1, or 2");
             }
             break;
+            
+        default:
+            // No specific validation needed for other options
+            break;
     }
     
     return ValidationResult(); // Success
@@ -394,6 +398,10 @@ ValidationResult SocketOptionValidator::validate_string_option(socket_options op
                                       "Invalid JWT secret format");
             }
             break;
+            
+        default:
+            // No specific string validation needed for other options
+            break;
     }
     
     return ValidationResult(); // Success
@@ -426,6 +434,10 @@ ValidationResult SocketOptionValidator::validate_boolean_option(socket_options o
                 result.suggestion = "Monitor process resource usage";
                 return result;
             }
+            break;
+            
+        default:
+            // No specific boolean validation needed for other options
             break;
     }
     

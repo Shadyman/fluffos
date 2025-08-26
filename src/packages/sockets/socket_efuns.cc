@@ -1036,6 +1036,7 @@ int socket_write(int fd, svalue_t *message, const char *name) {
               should_continue = true;
               break;
           }
+          break;
         default:
           debug(sockets, "ssl_write: lpc socket %d (real fd %" FMT_SOCKET_FD ") error: %s.\n",
                 fd, lpc_socks[fd].fd, ERR_error_string(e, nullptr));
@@ -1225,6 +1226,7 @@ void socket_read_select_handler(int fd) {
           break;
       }
     }
+    [[fallthrough]];
 
     case STATE_DATA_XFER:
       switch (lpc_socks[fd].mode) {

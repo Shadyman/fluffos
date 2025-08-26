@@ -72,28 +72,27 @@ FluffOS is an LPMUD driver based on the last release of MudOS (v22.2b14) with 10
 ### Development Build
 ```bash
 # Standard development build
-mkdir build && cd build
-cmake ..
-make -j$(nproc) install
+cmake -S . -B build
+cd build && make -j$(nproc) install
 
 # Debug build with sanitizer
-cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_SANITIZER=ON
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DENABLE_SANITIZER=ON
 ```
 
 ### Production Build
 ```bash
 # Production-ready static build
-cmake .. -DCMAKE_BUILD_TYPE=Release -DSTATIC=ON -DMARCH_NATIVE=OFF
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSTATIC=ON -DMARCH_NATIVE=OFF
 make install
 ```
 
 ### Package-Specific Builds
 ```bash
 # Build without database support
-cmake .. -DPACKAGE_DB=OFF
+cmake -S . -B build -DPACKAGE_DB=OFF
 
 # Build with specific packages disabled
-cmake .. -DPACKAGE_CRYPTO=OFF -DPACKAGE_COMPRESS=OFF
+cmake -S . -B build -DPACKAGE_CRYPTO=OFF -DPACKAGE_COMPRESS=OFF
 ```
 
 ## Testing
@@ -140,7 +139,7 @@ Several source files are auto-generated during build:
 ### Debugging
 ```bash
 # Build with debug symbols and sanitizer
-cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_SANITIZER=ON
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DENABLE_SANITIZER=ON
 
 # Run with GDB
 gdb --args ./build/bin/driver config.test
@@ -164,7 +163,7 @@ sudo apt install build-essential bison libmysqlclient-dev libpcre3-dev \
 brew install cmake pkg-config mysql pcre libgcrypt libevent openssl jemalloc icu4c
 
 # Build with environment variables
-OPENSSL_ROOT_DIR="/usr/local/opt/openssl" ICU_ROOT="/usr/local/opt/icu4c" cmake ..
+OPENSSL_ROOT_DIR="/usr/local/opt/openssl" ICU_ROOT="/usr/local/opt/icu4c" cmake -S . -B build
 ```
 
 ### Windows (MSYS2)

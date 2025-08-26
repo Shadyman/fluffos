@@ -25,7 +25,6 @@ if(${PACKAGE_EXTERNAL})
     
     # Link dependencies
     target_link_libraries(package_external 
-        PRIVATE base_lib
         PRIVATE package_sockets  # Required for unified socket architecture
     )
     

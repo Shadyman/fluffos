@@ -33,24 +33,32 @@ bool GrpcClient::configure(std::unique_ptr<SocketOptionManager> option_manager) 
     GRPC_DEBUG_F("Configuring gRPC client for socket %d", socket_fd_);
     
     // Sync configuration from socket options
-    std::string target;
-    if (option_manager_->get_option(GRPC_TARGET_ADDRESS, target)) {
-        set_target(target);
+    svalue_t target_val;
+    if (option_manager_->get_option(GRPC_TARGET_ADDRESS, &target_val)) {
+        if (target_val.type == T_STRING) {
+            set_target(target_val.u.string);
+        }
     }
     
-    int deadline;
-    if (option_manager_->get_option(GRPC_DEADLINE, deadline)) {
-        set_deadline(static_cast<uint32_t>(deadline));
+    svalue_t deadline_val;
+    if (option_manager_->get_option(GRPC_DEADLINE, &deadline_val)) {
+        if (deadline_val.type == T_NUMBER) {
+            set_deadline(static_cast<uint32_t>(deadline_val.u.number));
+        }
     }
     
-    std::string retry_policy;
-    if (option_manager_->get_option(GRPC_RETRY_POLICY, retry_policy)) {
-        set_retry_policy(retry_policy);
+    svalue_t retry_policy_val;
+    if (option_manager_->get_option(GRPC_RETRY_POLICY, &retry_policy_val)) {
+        if (retry_policy_val.type == T_STRING) {
+            set_retry_policy(retry_policy_val.u.string);
+        }
     }
     
-    std::string compression;
-    if (option_manager_->get_option(GRPC_COMPRESSION, compression)) {
-        set_compression(compression);
+    svalue_t compression_val;
+    if (option_manager_->get_option(GRPC_COMPRESSION, &compression_val)) {
+        if (compression_val.type == T_STRING) {
+            set_compression(compression_val.u.string);
+        }
     }
     
     configured_ = true;

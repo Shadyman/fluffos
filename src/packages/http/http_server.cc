@@ -30,11 +30,11 @@ HTTPHandler::HTTPHandler(int socket_id)
     // Set HTTP/1.1 as default version
     default_val.type = T_STRING;
     default_val.u.string = "HTTP/1.1";
-    option_manager_->set_option(SO_PROTOCOL_VERSION, &default_val);
+    option_manager_->set_option(SOCKET_OPT_PROTOCOL_VERSION, &default_val);
     
     // Set default User-Agent
     default_val.u.string = DEFAULT_HTTP_USER_AGENT;
-    option_manager_->set_option(SO_HTTP_USER_AGENT, &default_val);
+    option_manager_->set_option(HTTP_USER_AGENT, &default_val);
     
     // Set default timeout
     default_val.type = T_NUMBER;

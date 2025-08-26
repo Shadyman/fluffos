@@ -31,7 +31,7 @@ option(PACKAGE_TRIM "trim package" ON)
 option(PACKAGE_UIDS "uids package" ON)
 option(PACKAGE_EXTERNAL "external package" ON)
 option(PACKAGE_WEBSOCKET "websocket package" ON)
-option(PACKAGE_ZMQTT "zmqtt package" ON)
+option(PACKAGE_ZMQTT "zmqtt package" OFF)
 option(DEBUG OFF)
 option(DEBUGMALLOC ${DEBUG})
 # End of list of compile options.

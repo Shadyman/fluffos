@@ -103,7 +103,7 @@ int func_present;
 int yyparse (void);
 
 
-#line 107 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 107 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -706,14 +706,14 @@ static const yytype_int16 yyrline[] =
     1830,  1834,  1929,  1950,  1971,  1993,  2002,  2013,  2037,  2059,
     2080,  2081,  2082,  2083,  2084,  2085,  2089,  2095,  2116,  2119,
     2123,  2130,  2134,  2141,  2146,  2159,  2163,  2167,  2174,  2184,
-    2202,  2209,  2325,  2326,  2333,  2334,  2377,  2394,  2399,  2398,
-    2428,  2452,  2476,  2487,  2491,  2498,  2505,  2509,  2513,  2558,
-    2614,  2615,  2619,  2620,  2622,  2621,  2678,  2716,  2811,  2834,
-    2843,  2855,  2859,  2867,  2866,  2879,  2886,  2896,  2905,  2916,
-    2915,  2929,  2934,  2948,  2956,  2957,  2961,  2968,  2969,  2976,
-    2987,  2990,  2999,  2998,  3012,  3011,  3042,  3077,  3096,  3095,
-    3156,  3155,  3224,  3223,  3275,  3274,  3305,  3325,  3341,  3342,
-    3356,  3371,  3386,  3420,  3424
+    2202,  2209,  2328,  2329,  2336,  2337,  2380,  2397,  2402,  2401,
+    2431,  2455,  2479,  2490,  2494,  2501,  2508,  2512,  2516,  2562,
+    2618,  2619,  2623,  2624,  2626,  2625,  2682,  2720,  2815,  2838,
+    2847,  2859,  2863,  2871,  2870,  2883,  2890,  2900,  2909,  2920,
+    2919,  2933,  2938,  2952,  2960,  2961,  2965,  2972,  2973,  2980,
+    2991,  2994,  3003,  3002,  3016,  3015,  3046,  3081,  3100,  3099,
+    3160,  3159,  3228,  3227,  3279,  3278,  3309,  3329,  3345,  3346,
+    3360,  3375,  3390,  3424,  3428
 };
 #endif
 
@@ -2362,55 +2362,55 @@ yyreduce:
   case 2: /* all: program  */
 #line 216 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
           { rule_program((yyval.node)); }
-#line 2366 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2366 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 3: /* program: program def possible_semi_colon  */
 #line 220 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
                                   { CREATE_TWO_VALUES((yyval.node), 0, (yyvsp[-2].node), (yyvsp[-1].node)); }
-#line 2372 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2372 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 4: /* program: %empty  */
 #line 221 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
                         { (yyval.node) = 0; }
-#line 2378 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2378 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 6: /* possible_semi_colon: ';'  */
 #line 226 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
         { yywarn("Extra ';'. Ignored."); }
-#line 2384 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2384 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 7: /* inheritance: type_modifier_list L_INHERIT string_con1 ';'  */
 #line 230 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
                                                { if (rule_inheritence(&(yyval.node), (yyvsp[-3].number), (yyvsp[-1].string))) { YYACCEPT; } }
-#line 2390 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2390 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 8: /* real: L_REAL  */
 #line 234 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
          { CREATE_REAL((yyval.node), (yyvsp[0].real)); }
-#line 2396 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2396 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 9: /* number: L_NUMBER  */
 #line 238 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
            { CREATE_NUMBER((yyval.node), (yyvsp[0].number)); }
-#line 2402 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2402 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 10: /* optional_star: %empty  */
 #line 242 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
                         { (yyval.number) = 0; }
-#line 2408 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2408 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 11: /* optional_star: '*'  */
 #line 243 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
                 { (yyval.number) = TYPE_MOD_ARRAY; }
-#line 2414 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2414 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 12: /* block_or_semi: block  */
@@ -2421,43 +2421,43 @@ yyreduce:
               CREATE_RETURN((yyval.node), 0);
             }
           }
-#line 2425 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2425 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 13: /* block_or_semi: ';'  */
 #line 254 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
           { (yyval.node) = 0; }
-#line 2431 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2431 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 14: /* block_or_semi: error  */
 #line 255 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
           { (yyval.node) = 0; }
-#line 2437 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2437 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 15: /* identifier: L_DEFINED_NAME  */
 #line 259 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
                                   { (yyval.string) = scratch_copy((yyvsp[0].ihe)->name); }
-#line 2443 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2443 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 17: /* $@1: %empty  */
 #line 264 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
                                   { (yyvsp[-2].number) = rule_func_type((yyvsp[-2].number), (yyvsp[-1].number), (yyvsp[0].string)); }
-#line 2449 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2449 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 18: /* @2: %empty  */
 #line 265 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
                                   { (yyval.number) = rule_func_proto((yyvsp[-6].number), (yyvsp[-5].number), &(yyvsp[-4].string), (yyvsp[-1].argument)); }
-#line 2455 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2455 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 19: /* function: type optional_star identifier $@1 '(' argument ')' @2 block_or_semi  */
 #line 266 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
                                   { rule_func(&(yyval.node), (yyvsp[-8].number), (yyvsp[-7].number), (yyvsp[-6].string), (yyvsp[-3].argument), &(yyvsp[-1].number), &(yyvsp[0].node)); }
-#line 2461 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2461 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 21: /* def: type name_list ';'  */
@@ -2467,7 +2467,7 @@ yyreduce:
                                       yyerror("Missing type for global variable declaration");
                                     (yyval.node) = 0;
                                   }
-#line 2471 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2471 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 25: /* modifier_change: type_modifier_list ':'  */
@@ -2485,7 +2485,7 @@ yyreduce:
                                     global_modifiers = (yyvsp[-1].number);
                                     (yyval.node) = 0;
                                   }
-#line 2489 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2489 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 26: /* member_name: optional_star identifier  */
@@ -2499,25 +2499,25 @@ yyreduce:
                                     add_local_name((yyvsp[0].string), current_type | (yyvsp[-1].number));
                                     scratch_free((yyvsp[0].string));
                                   }
-#line 2503 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2503 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 30: /* $@3: %empty  */
 #line 319 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
                            { current_type = (yyvsp[0].number); }
-#line 2509 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2509 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 32: /* @4: %empty  */
 #line 324 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
                                              { (yyvsp[-2].ihe) = rule_define_class(&(yyval.number), (yyvsp[-1].string)); }
-#line 2515 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2515 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 33: /* type_decl: type_modifier_list L_CLASS identifier '{' @4 member_list '}'  */
 #line 325 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
                                              { rule_define_class_members((yyvsp[-5].ihe), (yyvsp[-2].number)); (yyval.node) = 0; }
-#line 2521 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2521 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 35: /* new_local_name: L_DEFINED_NAME  */
@@ -2528,7 +2528,7 @@ yyreduce:
                                               }
                                               (yyval.string) = scratch_copy((yyvsp[0].ihe)->name);
                                             }
-#line 2532 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2532 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 37: /* atomic_type: L_CLASS L_DEFINED_NAME  */
@@ -2541,7 +2541,7 @@ yyreduce:
                                                 (yyval.number) = (yyvsp[0].ihe)->dn.class_num | TYPE_MOD_CLASS;
                                               }
                                             }
-#line 2545 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2545 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 38: /* atomic_type: L_CLASS L_IDENTIFIER  */
@@ -2550,31 +2550,31 @@ yyreduce:
                                               yyerror("Undefined class '%s'", (yyvsp[0].string));
                                               (yyval.number) = TYPE_ANY;
                                             }
-#line 2554 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2554 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 40: /* opt_atomic_type: %empty  */
 #line 359 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
                         { (yyval.number) = TYPE_ANY; }
-#line 2560 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2560 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 42: /* basic_type: opt_atomic_type L_ARRAY  */
 #line 364 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
                             { (yyval.number) = (yyvsp[-1].number) | TYPE_MOD_ARRAY; }
-#line 2566 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2566 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 44: /* arg_type: basic_type ref  */
 #line 369 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
                    { (yyval.number) = (yyvsp[-1].number) | LOCAL_MOD_REF; }
-#line 2572 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2572 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 45: /* optional_default_arg_value: %empty  */
 #line 373 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
          { (yyval.node) = 0; }
-#line 2578 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2578 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 46: /* optional_default_arg_value: ':' L_FUNCTION_OPEN comma_expr ':' ')'  */
@@ -2597,7 +2597,7 @@ yyreduce:
     (yyval.node)->r.expr = nullptr; // no arguments
     (yyval.node)->v.number = FP_FUNCTIONAL + 0 /* args */;
 }
-#line 2601 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2601 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 47: /* new_arg: arg_type optional_star  */
@@ -2607,7 +2607,7 @@ yyreduce:
                                                 if ((yyvsp[-1].number) != TYPE_VOID)
                                                   add_local_name("", (yyvsp[-1].number) | (yyvsp[0].number));
                                               }
-#line 2611 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2611 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 48: /* new_arg: arg_type optional_star new_local_name optional_default_arg_value  */
@@ -2619,7 +2619,7 @@ yyreduce:
                                                 scratch_free((yyvsp[-1].string));
                                                 (yyval.number) = (yyvsp[-3].number) | (yyvsp[-2].number);
                                               }
-#line 2623 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2623 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 49: /* new_arg: new_local_name  */
@@ -2632,7 +2632,7 @@ yyreduce:
                                                 scratch_free((yyvsp[0].string));
                                                 (yyval.number) = TYPE_ANY;
                                               }
-#line 2636 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2636 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 50: /* argument: %empty  */
@@ -2641,7 +2641,7 @@ yyreduce:
       (yyval.argument).num_arg = 0;
       (yyval.argument).flags = 0;
     }
-#line 2645 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2645 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 52: /* argument: argument_list L_DOT_DOT_DOT  */
@@ -2660,7 +2660,7 @@ yyreduce:
       if (lt != TYPE_ANY && !(lt & TYPE_MOD_ARRAY))
         yywarn("Variable to hold remainder of arguments should be an array.");
     }
-#line 2664 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2664 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 53: /* argument_list: new_arg  */
@@ -2675,7 +2675,7 @@ yyreduce:
       }
       (yyval.argument).flags = 0;
     }
-#line 2679 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2679 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 54: /* argument_list: argument_list ',' new_arg  */
@@ -2689,7 +2689,7 @@ yyreduce:
       (yyval.argument) = (yyvsp[-2].argument);
       (yyval.argument).num_arg++;
     }
-#line 2693 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2693 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 55: /* type_modifier_list: %empty  */
@@ -2697,7 +2697,7 @@ yyreduce:
             {
       (yyval.number) = 0;
     }
-#line 2701 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2701 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 56: /* type_modifier_list: L_TYPE_MODIFIER type_modifier_list  */
@@ -2715,7 +2715,7 @@ yyreduce:
       }
 #endif
     }
-#line 2719 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2719 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 57: /* type: type_modifier_list opt_basic_type  */
@@ -2724,7 +2724,7 @@ yyreduce:
       (yyval.number) = ((yyvsp[-1].number) << 16) | (yyvsp[0].number);
       current_type = (yyval.number);
     }
-#line 2728 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2728 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 58: /* cast: '(' basic_type optional_star ')'  */
@@ -2732,7 +2732,7 @@ yyreduce:
     {
       (yyval.number) = (yyvsp[-2].number) | (yyvsp[-1].number);
     }
-#line 2736 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2736 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 60: /* opt_basic_type: %empty  */
@@ -2740,7 +2740,7 @@ yyreduce:
             {
       (yyval.number) = TYPE_UNKNOWN;
     }
-#line 2744 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2744 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 63: /* new_name: optional_star identifier  */
@@ -2769,7 +2769,7 @@ yyreduce:
       define_new_variable((yyvsp[0].string), current_type | (yyvsp[-1].number));
       scratch_free((yyvsp[0].string));
     }
-#line 2773 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2773 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 64: /* new_name: optional_star identifier L_ASSIGN expr0  */
@@ -2825,7 +2825,7 @@ yyreduce:
           newnode, expr);
       scratch_free((yyvsp[-2].string));
     }
-#line 2829 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2829 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 65: /* block: '{' local_declarations statements '}'  */
@@ -2836,7 +2836,7 @@ yyreduce:
       } else (yyval.decl).node = ((yyvsp[-2].decl).node ? (yyvsp[-2].decl).node : (yyvsp[-1].node));
       (yyval.decl).num = (yyvsp[-2].decl).num;
     }
-#line 2840 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2840 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 69: /* local_declarations: %empty  */
@@ -2845,7 +2845,7 @@ yyreduce:
       (yyval.decl).node = 0;
       (yyval.decl).num = 0;
     }
-#line 2849 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2849 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 70: /* $@5: %empty  */
@@ -2858,7 +2858,7 @@ yyreduce:
        */
       current_type = (yyvsp[0].number);
     }
-#line 2862 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2862 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 71: /* local_declarations: local_declarations basic_type $@5 local_name_list ';'  */
@@ -2869,7 +2869,7 @@ yyreduce:
       } else (yyval.decl).node = ((yyvsp[-4].decl).node ? (yyvsp[-4].decl).node : (yyvsp[-1].decl).node);
       (yyval.decl).num = (yyvsp[-4].decl).num + (yyvsp[-1].decl).num;
     }
-#line 2873 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2873 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 72: /* new_local_def: optional_star new_local_name  */
@@ -2884,7 +2884,7 @@ yyreduce:
       scratch_free((yyvsp[0].string));
       (yyval.node) = 0;
     }
-#line 2888 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2888 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 73: /* new_local_def: optional_star new_local_name L_ASSIGN expr0  */
@@ -2919,7 +2919,7 @@ yyreduce:
           add_local_name((yyvsp[-2].string), current_type | (yyvsp[-3].number) | LOCAL_MOD_UNUSED));
       scratch_free((yyvsp[-2].string));
     }
-#line 2923 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2923 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 74: /* single_new_local_def: arg_type optional_star new_local_name  */
@@ -2931,7 +2931,7 @@ yyreduce:
       (yyval.number) = add_local_name((yyvsp[0].string), (yyvsp[-2].number) | (yyvsp[-1].number));
       scratch_free((yyvsp[0].string));
     }
-#line 2935 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2935 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 75: /* single_new_local_def_with_init: single_new_local_def L_ASSIGN expr0  */
@@ -2964,7 +2964,7 @@ yyreduce:
       CREATE_BINARY_OP((yyval.node), F_ASSIGN, 0, (yyvsp[0].node), 0);
       CREATE_OPCODE_1((yyval.node)->r.expr, F_LOCAL_LVALUE, 0, (yyvsp[-2].number));
     }
-#line 2968 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2968 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 76: /* local_name_list: new_local_def  */
@@ -2973,7 +2973,7 @@ yyreduce:
       (yyval.decl).node = (yyvsp[0].node);
       (yyval.decl).num = 1;
     }
-#line 2977 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2977 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 77: /* local_name_list: new_local_def ',' local_name_list  */
@@ -2984,7 +2984,7 @@ yyreduce:
       } else (yyval.decl).node = ((yyvsp[-2].node) ? (yyvsp[-2].node) : (yyvsp[0].decl).node);
       (yyval.decl).num = 1 + (yyvsp[0].decl).num;
     }
-#line 2988 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2988 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 78: /* statements: %empty  */
@@ -2992,7 +2992,7 @@ yyreduce:
             {
       (yyval.node) = 0;
     }
-#line 2996 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 2996 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 79: /* statements: statement statements  */
@@ -3002,7 +3002,7 @@ yyreduce:
         CREATE_STATEMENTS((yyval.node), (yyvsp[-1].node), (yyvsp[0].node));
       } else (yyval.node) = ((yyvsp[-1].node) ? (yyvsp[-1].node) : (yyvsp[0].node));
     }
-#line 3006 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3006 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 80: /* statements: error ';'  */
@@ -3010,7 +3010,7 @@ yyreduce:
     {
       (yyval.node) = 0;
     }
-#line 3014 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3014 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 81: /* statement: comma_expr ';'  */
@@ -3026,7 +3026,7 @@ yyreduce:
       }
 #endif
     }
-#line 3030 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3030 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 87: /* statement: decl_block  */
@@ -3035,7 +3035,7 @@ yyreduce:
       (yyval.node) = (yyvsp[0].decl).node;
       pop_n_locals((yyvsp[0].decl).num);
     }
-#line 3039 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3039 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 88: /* statement: ';'  */
@@ -3043,7 +3043,7 @@ yyreduce:
     {
       (yyval.node) = 0;
     }
-#line 3047 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3047 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 89: /* statement: L_BREAK ';'  */
@@ -3069,7 +3069,7 @@ yyreduce:
             (yyval.node) = 0;
           }
     }
-#line 3073 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3073 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 90: /* statement: L_CONTINUE ';'  */
@@ -3082,7 +3082,7 @@ yyreduce:
           yyerror("continue statement outside loop");
       CREATE_CONTROL_JUMP((yyval.node), CJ_CONTINUE);
     }
-#line 3086 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3086 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 91: /* $@6: %empty  */
@@ -3091,7 +3091,7 @@ yyreduce:
       (yyvsp[-3].number) = context;
       context = LOOP_CONTEXT;
     }
-#line 3095 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3095 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 92: /* while: L_WHILE '(' comma_expr ')' $@6 statement  */
@@ -3100,7 +3100,7 @@ yyreduce:
       CREATE_LOOP((yyval.node), 1, (yyvsp[0].node), 0, optimize_loop_test((yyvsp[-3].node)));
       context = (yyvsp[-5].number);
     }
-#line 3104 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3104 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 93: /* $@7: %empty  */
@@ -3109,7 +3109,7 @@ yyreduce:
       (yyvsp[0].number) = context;
       context = LOOP_CONTEXT;
     }
-#line 3113 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3113 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 94: /* do: L_DO $@7 statement L_WHILE '(' comma_expr ')' ';'  */
@@ -3118,7 +3118,7 @@ yyreduce:
       CREATE_LOOP((yyval.node), 0, (yyvsp[-5].node), 0, optimize_loop_test((yyvsp[-2].node)));
       context = (yyvsp[-7].number);
     }
-#line 3122 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3122 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 95: /* $@8: %empty  */
@@ -3128,7 +3128,7 @@ yyreduce:
       (yyvsp[-7].number) = context;
       context = LOOP_CONTEXT;
     }
-#line 3132 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3132 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 96: /* for: L_FOR '(' first_for_expr ';' for_expr ';' for_expr ')' $@8 statement  */
@@ -3148,7 +3148,7 @@ yyreduce:
 
       context = (yyvsp[-9].number);
     }
-#line 3152 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3152 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 97: /* foreach_var: L_DEFINED_NAME  */
@@ -3173,7 +3173,7 @@ yyreduce:
         }
       (yyval.decl).num = 0;
     }
-#line 3177 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3177 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 98: /* foreach_var: single_new_local_def  */
@@ -3187,7 +3187,7 @@ yyreduce:
       }
       (yyval.decl).num = 1;
     }
-#line 3191 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3191 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 99: /* foreach_var: L_IDENTIFIER  */
@@ -3205,7 +3205,7 @@ yyreduce:
       scratch_free((yyvsp[0].string));
       (yyval.decl).num = 0;
     }
-#line 3209 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3209 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 100: /* foreach_vars: foreach_var  */
@@ -3214,7 +3214,7 @@ yyreduce:
       CREATE_FOREACH((yyval.decl).node, (yyvsp[0].decl).node, 0);
       (yyval.decl).num = (yyvsp[0].decl).num;
     }
-#line 3218 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3218 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 101: /* foreach_vars: foreach_var ',' foreach_var  */
@@ -3225,7 +3225,7 @@ yyreduce:
       if ((yyvsp[-2].decl).node->v.number == F_REF_LVALUE)
         yyerror("Mapping key may not be a reference in foreach()");
     }
-#line 3229 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3229 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 102: /* $@9: %empty  */
@@ -3235,7 +3235,7 @@ yyreduce:
       (yyvsp[-5].number) = context;
       context = LOOP_CONTEXT | LOOP_FOREACH;
     }
-#line 3239 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3239 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 103: /* foreach: L_FOREACH '(' foreach_vars L_IN expr0 ')' $@9 statement  */
@@ -3249,7 +3249,7 @@ yyreduce:
 
       context = (yyvsp[-7].number);
     }
-#line 3253 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3253 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 104: /* for_expr: %empty  */
@@ -3257,7 +3257,7 @@ yyreduce:
             {
       (yyval.node) = 0;
     }
-#line 3261 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3261 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 106: /* first_for_expr: for_expr  */
@@ -3266,7 +3266,7 @@ yyreduce:
       (yyval.decl).node = (yyvsp[0].node);
       (yyval.decl).num = 0;
     }
-#line 3270 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3270 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 107: /* first_for_expr: single_new_local_def_with_init  */
@@ -3275,7 +3275,7 @@ yyreduce:
       (yyval.decl).node = (yyvsp[0].node);
       (yyval.decl).num = 1;
     }
-#line 3279 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3279 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 108: /* $@10: %empty  */
@@ -3286,7 +3286,7 @@ yyreduce:
       context |= SWITCH_CONTEXT;
       (yyvsp[-2].number) = mem_block[A_CASES].current_size;
     }
-#line 3290 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3290 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 109: /* switch: L_SWITCH '(' comma_expr ')' $@10 '{' local_declarations case switch_block '}'  */
@@ -3319,7 +3319,7 @@ yyreduce:
         (yyval.node) = node2;
         pop_n_locals((yyvsp[-3].decl).num);
       }
-#line 3323 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3323 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 110: /* switch_block: case switch_block  */
@@ -3329,7 +3329,7 @@ yyreduce:
         CREATE_STATEMENTS((yyval.node), (yyvsp[-1].node), (yyvsp[0].node));
       } else (yyval.node) = (yyvsp[-1].node);
     }
-#line 3333 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3333 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 111: /* switch_block: statement switch_block  */
@@ -3339,7 +3339,7 @@ yyreduce:
         CREATE_STATEMENTS((yyval.node), (yyvsp[-1].node), (yyvsp[0].node));
       } else (yyval.node) = (yyvsp[-1].node);
     }
-#line 3343 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3343 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 112: /* switch_block: %empty  */
@@ -3347,7 +3347,7 @@ yyreduce:
             {
       (yyval.node) = 0;
     }
-#line 3351 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3351 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 113: /* case: L_CASE case_label ':'  */
@@ -3358,7 +3358,7 @@ yyreduce:
 
       add_to_mem_block(A_CASES, (char *)&((yyvsp[-1].node)), sizeof((yyvsp[-1].node)));
     }
-#line 3362 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3362 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 114: /* case: L_CASE case_label L_RANGE case_label ':'  */
@@ -3376,7 +3376,7 @@ yyreduce:
 
       add_to_mem_block(A_CASES, (char *)&((yyvsp[-3].node)), sizeof((yyvsp[-3].node)));
     }
-#line 3380 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3380 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 115: /* case: L_CASE case_label L_RANGE ':'  */
@@ -3394,7 +3394,7 @@ yyreduce:
 
       add_to_mem_block(A_CASES, (char *)&((yyvsp[-2].node)), sizeof((yyvsp[-2].node)));
     }
-#line 3398 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3398 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 116: /* case: L_CASE L_RANGE case_label ':'  */
@@ -3411,7 +3411,7 @@ yyreduce:
 
       add_to_mem_block(A_CASES, (char *)&((yyval.node)), sizeof((yyval.node)));
     }
-#line 3415 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3415 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 117: /* case: L_DEFAULT ':'  */
@@ -3428,7 +3428,7 @@ yyreduce:
       add_to_mem_block(A_CASES, (char *)&((yyval.node)), sizeof((yyval.node)));
       context |= SWITCH_DEFAULT;
     }
-#line 3432 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3432 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 118: /* case_label: constant  */
@@ -3446,7 +3446,7 @@ yyreduce:
       (yyval.node)->kind = NODE_CASE_NUMBER;
       (yyval.node)->r.number = (LPC_INT)(yyvsp[0].number);
     }
-#line 3450 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3450 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 119: /* case_label: string_con1  */
@@ -3462,7 +3462,7 @@ yyreduce:
       (yyval.node)->kind = NODE_CASE_STRING;
       (yyval.node)->r.number = (LPC_INT)str;
     }
-#line 3466 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3466 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 120: /* constant: constant '|' constant  */
@@ -3470,7 +3470,7 @@ yyreduce:
     {
       (yyval.number) = (yyvsp[-2].number) | (yyvsp[0].number);
     }
-#line 3474 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3474 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 121: /* constant: constant '^' constant  */
@@ -3478,7 +3478,7 @@ yyreduce:
     {
       (yyval.number) = (yyvsp[-2].number) ^ (yyvsp[0].number);
     }
-#line 3482 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3482 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 122: /* constant: constant '&' constant  */
@@ -3486,7 +3486,7 @@ yyreduce:
     {
       (yyval.number) = (yyvsp[-2].number) & (yyvsp[0].number);
     }
-#line 3490 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3490 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 123: /* constant: constant L_EQ constant  */
@@ -3494,7 +3494,7 @@ yyreduce:
     {
       (yyval.number) = (yyvsp[-2].number) == (yyvsp[0].number);
     }
-#line 3498 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3498 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 124: /* constant: constant L_NE constant  */
@@ -3502,7 +3502,7 @@ yyreduce:
     {
       (yyval.number) = (yyvsp[-2].number) != (yyvsp[0].number);
     }
-#line 3506 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3506 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 125: /* constant: constant L_ORDER constant  */
@@ -3514,7 +3514,7 @@ yyreduce:
         case F_GT: (yyval.number) = (yyvsp[-2].number) >  (yyvsp[0].number); break;
       }
     }
-#line 3518 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3518 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 126: /* constant: constant '<' constant  */
@@ -3522,7 +3522,7 @@ yyreduce:
     {
       (yyval.number) = (yyvsp[-2].number) < (yyvsp[0].number);
     }
-#line 3526 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3526 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 127: /* constant: constant L_LSH constant  */
@@ -3530,7 +3530,7 @@ yyreduce:
     {
       (yyval.number) = (yyvsp[-2].number) << (yyvsp[0].number);
     }
-#line 3534 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3534 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 128: /* constant: constant L_RSH constant  */
@@ -3538,7 +3538,7 @@ yyreduce:
     {
       (yyval.number) = (yyvsp[-2].number) >> (yyvsp[0].number);
     }
-#line 3542 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3542 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 129: /* constant: constant '+' constant  */
@@ -3546,7 +3546,7 @@ yyreduce:
     {
       (yyval.number) = (yyvsp[-2].number) + (yyvsp[0].number);
     }
-#line 3550 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3550 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 130: /* constant: constant '-' constant  */
@@ -3554,7 +3554,7 @@ yyreduce:
     {
       (yyval.number) = (yyvsp[-2].number) - (yyvsp[0].number);
     }
-#line 3558 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3558 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 131: /* constant: constant '*' constant  */
@@ -3562,7 +3562,7 @@ yyreduce:
     {
       (yyval.number) = (yyvsp[-2].number) * (yyvsp[0].number);
     }
-#line 3566 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3566 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 132: /* constant: constant '%' constant  */
@@ -3570,7 +3570,7 @@ yyreduce:
     {
       if ((yyvsp[0].number)) (yyval.number) = (yyvsp[-2].number) % (yyvsp[0].number); else yyerror("Modulo by zero");
     }
-#line 3574 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3574 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 133: /* constant: constant '/' constant  */
@@ -3578,7 +3578,7 @@ yyreduce:
     {
       if ((yyvsp[0].number)) (yyval.number) = (yyvsp[-2].number) / (yyvsp[0].number); else yyerror("Division by zero");
     }
-#line 3582 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3582 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 134: /* constant: '(' constant ')'  */
@@ -3586,7 +3586,7 @@ yyreduce:
     {
       (yyval.number) = (yyvsp[-1].number);
     }
-#line 3590 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3590 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 135: /* constant: L_NUMBER  */
@@ -3594,7 +3594,7 @@ yyreduce:
     {
       (yyval.number) = (yyvsp[0].number);
     }
-#line 3598 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3598 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 136: /* constant: '-' L_NUMBER  */
@@ -3602,7 +3602,7 @@ yyreduce:
     {
       (yyval.number) = -(yyvsp[0].number);
     }
-#line 3606 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3606 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 137: /* constant: L_NOT L_NUMBER  */
@@ -3610,7 +3610,7 @@ yyreduce:
     {
       (yyval.number) = !(yyvsp[0].number);
     }
-#line 3614 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3614 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 138: /* constant: '~' L_NUMBER  */
@@ -3618,7 +3618,7 @@ yyreduce:
     {
       (yyval.number) = ~(yyvsp[0].number);
     }
-#line 3622 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3622 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 139: /* comma_expr: expr0  */
@@ -3626,7 +3626,7 @@ yyreduce:
     {
       (yyval.node) = (yyvsp[0].node);
     }
-#line 3630 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3630 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 140: /* comma_expr: comma_expr ',' expr0  */
@@ -3634,7 +3634,7 @@ yyreduce:
     {
       CREATE_TWO_VALUES((yyval.node), (yyvsp[0].node)->type, pop_value((yyvsp[-2].node)), (yyvsp[0].node));
     }
-#line 3638 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3638 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 142: /* expr0: ref lvalue  */
@@ -3665,7 +3665,7 @@ yyreduce:
       }
       CREATE_UNARY_OP_1((yyval.node), F_MAKE_REF, TYPE_ANY, (yyvsp[0].node), op);
     }
-#line 3669 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3669 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 143: /* expr0: lvalue L_ASSIGN expr0  */
@@ -3694,7 +3694,7 @@ yyreduce:
       if ((yyvsp[-1].number) == F_ASSIGN)
         (yyval.node)->l.expr = do_promotions(r, l->type);
     }
-#line 3698 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3698 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 144: /* expr0: error L_ASSIGN expr0  */
@@ -3703,7 +3703,7 @@ yyreduce:
       yyerror("Illegal LHS");
       CREATE_ERROR((yyval.node));
     }
-#line 3707 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3707 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 145: /* expr0: expr0 '?' expr0 ':' expr0  */
@@ -3731,7 +3731,7 @@ yyreduce:
       }
       (yyval.node)->type = ((p1->type == p2->type) ? p1->type : TYPE_ANY);
     }
-#line 3735 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3735 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 146: /* expr0: expr0 L_LOR expr0  */
@@ -3741,7 +3741,7 @@ yyreduce:
       if (IS_NODE((yyvsp[-2].node), NODE_LAND_LOR, F_LOR))
         (yyvsp[-2].node)->kind = NODE_BRANCH_LINK;
     }
-#line 3745 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3745 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 147: /* expr0: expr0 L_LAND expr0  */
@@ -3751,7 +3751,7 @@ yyreduce:
       if (IS_NODE((yyvsp[-2].node), NODE_LAND_LOR, F_LAND))
         (yyvsp[-2].node)->kind = NODE_BRANCH_LINK;
     }
-#line 3755 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3755 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 148: /* expr0: expr0 '|' expr0  */
@@ -3780,7 +3780,7 @@ yyreduce:
       }
       else (yyval.node) = binary_int_op((yyvsp[-2].node), (yyvsp[0].node), F_OR, "|");
     }
-#line 3784 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3784 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 149: /* expr0: expr0 '^' expr0  */
@@ -3788,7 +3788,7 @@ yyreduce:
     {
       (yyval.node) = binary_int_op((yyvsp[-2].node), (yyvsp[0].node), F_XOR, "^");
     }
-#line 3792 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3792 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 150: /* expr0: expr0 '&' expr0  */
@@ -3815,7 +3815,7 @@ yyreduce:
         CREATE_BINARY_OP((yyval.node), F_AND, t1, (yyvsp[-2].node), (yyvsp[0].node));
       } else (yyval.node) = binary_int_op((yyvsp[-2].node), (yyvsp[0].node), F_AND, "&");
     }
-#line 3819 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3819 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 151: /* expr0: expr0 L_EQ expr0  */
@@ -3841,7 +3841,7 @@ yyreduce:
           CREATE_BINARY_OP((yyval.node), F_EQ, TYPE_NUMBER, (yyvsp[-2].node), (yyvsp[0].node));
         }
     }
-#line 3845 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3845 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 152: /* expr0: expr0 L_NE expr0  */
@@ -3859,7 +3859,7 @@ yyreduce:
       }
       CREATE_BINARY_OP((yyval.node), F_NE, TYPE_NUMBER, (yyvsp[-2].node), (yyvsp[0].node));
     }
-#line 3863 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3863 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 153: /* expr0: expr0 L_ORDER expr0  */
@@ -3907,7 +3907,7 @@ yyreduce:
       }
       CREATE_BINARY_OP((yyval.node), (yyvsp[-1].number), TYPE_NUMBER, (yyvsp[-2].node), (yyvsp[0].node));
     }
-#line 3911 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3911 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 154: /* expr0: expr0 '<' expr0  */
@@ -3948,7 +3948,7 @@ yyreduce:
       }
       CREATE_BINARY_OP((yyval.node), F_LT, TYPE_NUMBER, (yyvsp[-2].node), (yyvsp[0].node));
     }
-#line 3952 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3952 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 155: /* expr0: expr0 L_LSH expr0  */
@@ -3956,7 +3956,7 @@ yyreduce:
     {
       (yyval.node) = binary_int_op((yyvsp[-2].node), (yyvsp[0].node), F_LSH, "<<");
     }
-#line 3960 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3960 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 156: /* expr0: expr0 L_RSH expr0  */
@@ -3964,7 +3964,7 @@ yyreduce:
     {
       (yyval.node) = binary_int_op((yyvsp[-2].node), (yyvsp[0].node), F_RSH, ">>");
     }
-#line 3968 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 3968 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 157: /* expr0: expr0 '+' expr0  */
@@ -4138,7 +4138,7 @@ yyreduce:
           break;
       }
     }
-#line 4142 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4142 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 158: /* expr0: expr0 '-' expr0  */
@@ -4236,7 +4236,7 @@ yyreduce:
           CREATE_BINARY_OP((yyval.node), F_SUBTRACT, result_type, (yyvsp[-2].node), (yyvsp[0].node));
       }
     }
-#line 4240 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4240 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 159: /* expr0: expr0 '*' expr0  */
@@ -4320,7 +4320,7 @@ yyreduce:
           CREATE_BINARY_OP((yyval.node), F_MULTIPLY, result_type, (yyvsp[-2].node), (yyvsp[0].node));
       }
     }
-#line 4324 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4324 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 160: /* expr0: expr0 '%' expr0  */
@@ -4328,7 +4328,7 @@ yyreduce:
     {
       (yyval.node) = binary_int_op((yyvsp[-2].node), (yyvsp[0].node), F_MOD, "%");
     }
-#line 4332 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4332 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 161: /* expr0: expr0 '/' expr0  */
@@ -4427,7 +4427,7 @@ yyreduce:
           CREATE_BINARY_OP((yyval.node), F_DIVIDE, result_type, (yyvsp[-2].node), (yyvsp[0].node));
       }
     }
-#line 4431 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4431 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 162: /* expr0: cast expr0  */
@@ -4452,7 +4452,7 @@ yyreduce:
         yyerror(buf);
       }
     }
-#line 4456 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4456 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 163: /* expr0: L_INC lvalue  */
@@ -4477,7 +4477,7 @@ yyreduce:
         }
       } else (yyval.node)->type = TYPE_ANY;
     }
-#line 4481 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4481 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 164: /* expr0: L_DEC lvalue  */
@@ -4503,7 +4503,7 @@ yyreduce:
       } else (yyval.node)->type = TYPE_ANY;
 
     }
-#line 4507 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4507 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 165: /* expr0: L_NOT expr0  */
@@ -4516,7 +4516,7 @@ yyreduce:
         CREATE_UNARY_OP((yyval.node), F_NOT, TYPE_NUMBER, (yyvsp[0].node));
       }
     }
-#line 4520 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4520 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 166: /* expr0: '~' expr0  */
@@ -4531,7 +4531,7 @@ yyreduce:
         CREATE_UNARY_OP((yyval.node), F_COMPL, TYPE_NUMBER, (yyvsp[0].node));
       }
     }
-#line 4535 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4535 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 167: /* expr0: '-' expr0  */
@@ -4559,7 +4559,7 @@ yyreduce:
           CREATE_UNARY_OP((yyval.node), F_NEGATE, result_type, (yyvsp[0].node));
       }
     }
-#line 4563 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4563 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 168: /* expr0: lvalue L_INC  */
@@ -4585,7 +4585,7 @@ yyreduce:
         }
       } else (yyval.node)->type = TYPE_ANY;
     }
-#line 4589 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4589 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 169: /* expr0: lvalue L_DEC  */
@@ -4610,7 +4610,7 @@ yyreduce:
         }
       } else (yyval.node)->type = TYPE_ANY;
     }
-#line 4614 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4614 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 176: /* return: L_RETURN ';'  */
@@ -4620,7 +4620,7 @@ yyreduce:
         yywarn("Non-void functions must return a value.");
       CREATE_RETURN((yyval.node), 0);
     }
-#line 4624 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4624 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 177: /* return: L_RETURN comma_expr ';'  */
@@ -4641,7 +4641,7 @@ yyreduce:
         CREATE_RETURN((yyval.node), (yyvsp[-1].node));
       }
     }
-#line 4645 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4645 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 178: /* expr_list: %empty  */
@@ -4649,7 +4649,7 @@ yyreduce:
             {
       CREATE_EXPR_LIST((yyval.node), 0);
     }
-#line 4653 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4653 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 179: /* expr_list: expr_list2  */
@@ -4657,7 +4657,7 @@ yyreduce:
     {
       CREATE_EXPR_LIST((yyval.node), (yyvsp[0].node));
     }
-#line 4661 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4661 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 180: /* expr_list: expr_list2 ','  */
@@ -4665,7 +4665,7 @@ yyreduce:
     {
       CREATE_EXPR_LIST((yyval.node), (yyvsp[-1].node));
     }
-#line 4669 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4669 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 181: /* expr_list_node: expr0  */
@@ -4673,7 +4673,7 @@ yyreduce:
     {
       CREATE_EXPR_NODE((yyval.node), (yyvsp[0].node), 0);
     }
-#line 4677 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4677 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 182: /* expr_list_node: expr0 L_DOT_DOT_DOT  */
@@ -4681,7 +4681,7 @@ yyreduce:
     {
       CREATE_EXPR_NODE((yyval.node), (yyvsp[-1].node), 1);
     }
-#line 4685 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4685 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 183: /* expr_list2: expr_list_node  */
@@ -4690,7 +4690,7 @@ yyreduce:
       (yyvsp[0].node)->kind = 1;
       (yyval.node) = (yyvsp[0].node);
     }
-#line 4694 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4694 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 184: /* expr_list2: expr_list2 ',' expr_list_node  */
@@ -4703,7 +4703,7 @@ yyreduce:
       (yyval.node)->l.expr->r.expr = (yyvsp[0].node);
       (yyval.node)->l.expr = (yyvsp[0].node);
     }
-#line 4707 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4707 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 185: /* expr_list3: %empty  */
@@ -4712,7 +4712,7 @@ yyreduce:
       /* this is a dummy node */
       CREATE_EXPR_LIST((yyval.node), 0);
     }
-#line 4716 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4716 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 186: /* expr_list3: expr_list4  */
@@ -4720,7 +4720,7 @@ yyreduce:
     {
       CREATE_EXPR_LIST((yyval.node), (yyvsp[0].node));
     }
-#line 4724 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4724 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 187: /* expr_list3: expr_list4 ','  */
@@ -4728,7 +4728,7 @@ yyreduce:
     {
       CREATE_EXPR_LIST((yyval.node), (yyvsp[-1].node));
     }
-#line 4732 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4732 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 188: /* expr_list4: assoc_pair  */
@@ -4742,7 +4742,7 @@ yyreduce:
       /* we keep track of the end of the chain in the left nodes */
       (yyval.node)->l.expr = (yyval.node);
     }
-#line 4746 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4746 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 189: /* expr_list4: expr_list4 ',' assoc_pair  */
@@ -4761,7 +4761,7 @@ yyreduce:
       (yyvsp[-2].node)->kind += 2;
       (yyval.node) = (yyvsp[-2].node);
     }
-#line 4765 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4765 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 190: /* assoc_pair: expr0 ':' expr0  */
@@ -4769,7 +4769,7 @@ yyreduce:
     {
       CREATE_TWO_VALUES((yyval.node), 0, (yyvsp[-2].node), (yyvsp[0].node));
     }
-#line 4773 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4773 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 191: /* lvalue: expr4  */
@@ -4791,6 +4791,7 @@ yyreduce:
           break;
         case NODE_TERNARY_OP:
           (yyval.node)->v.number = (yyval.node)->r.expr->v.number;
+          [[fallthrough]];
         case NODE_OPCODE_1:
         case NODE_UNARY_OP_1:
         case NODE_BINARY_OP:
@@ -4808,6 +4809,7 @@ yyreduce:
                   break;
                 case NODE_TERNARY_OP:
                   node->v.number = node->r.expr->v.number;
+                  [[fallthrough]];
                 case NODE_OPCODE_1:
                 case NODE_UNARY_OP_1:
                 case NODE_BINARY_OP:
@@ -4873,6 +4875,7 @@ yyreduce:
                     node = node->r.expr->r.expr;
                     continue;
                   }
+                  break;
                 default:
                   yyerror("Illegal lvalue");
                   flag = LV_ILLEGAL;
@@ -4886,19 +4889,19 @@ yyreduce:
           break;
       }
     }
-#line 4890 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4893 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 193: /* l_new_function_open: L_FUNCTION_OPEN efun_override  */
-#line 2327 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2330 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       (yyval.number) = ((yyvsp[0].number) << 8) | FP_EFUN;
     }
-#line 4898 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4901 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 195: /* expr4: L_DEFINED_NAME  */
-#line 2335 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2338 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       int i;
       if ((i = (yyvsp[0].ihe)->dn.local_num) != -1) {
@@ -4941,11 +4944,11 @@ yyreduce:
           yyerror(buf);
         }
     }
-#line 4945 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4948 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 196: /* expr4: L_IDENTIFIER  */
-#line 2378 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2381 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       char buf[256];
       char *end = EndOf(buf);
@@ -4962,30 +4965,30 @@ yyreduce:
       yyerror(buf);
       scratch_free((yyvsp[0].string));
     }
-#line 4966 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4969 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 197: /* expr4: L_PARAMETER  */
-#line 2395 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2398 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       CREATE_PARAMETER((yyval.node), TYPE_ANY, (yyvsp[0].number));
     }
-#line 4974 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4977 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 198: /* @11: %empty  */
-#line 2399 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2402 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       (yyval.contextp) = current_function_context;
       /* already flagged as an error */
       if (current_function_context)
         current_function_context = current_function_context->parent;
     }
-#line 4985 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 4988 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 199: /* expr4: '$' '(' @11 comma_expr ')'  */
-#line 2406 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2409 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       parse_node_t *node;
 
@@ -5008,11 +5011,11 @@ yyreduce:
         node->v.expr = (yyvsp[-1].node);
       }
     }
-#line 5012 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5015 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 200: /* expr4: expr4 L_ARROW identifier  */
-#line 2429 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2432 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       if ((yyvsp[-2].node)->type == TYPE_ANY) {
         int cmi;
@@ -5036,11 +5039,11 @@ yyreduce:
 
       scratch_free((yyvsp[0].string));
     }
-#line 5040 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5043 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 201: /* expr4: expr4 L_DOT identifier  */
-#line 2453 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2456 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       if ((yyvsp[-2].node)->type == TYPE_ANY) {
         int cmi;
@@ -5064,11 +5067,11 @@ yyreduce:
 
       scratch_free((yyvsp[0].string));
     }
-#line 5068 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5071 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 202: /* expr4: expr4 '[' comma_expr L_RANGE comma_expr ']'  */
-#line 2477 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2480 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
     if (!CONFIG_INT(__RC_OLD_RANGE_BEHAVIOR__)) {
       if (CONFIG_INT(__RC_WARN_OLD_RANGE_BEHAVIOR__)) {
@@ -5079,57 +5082,57 @@ yyreduce:
     }
       (yyval.node) = make_range_node(F_NN_RANGE, (yyvsp[-5].node), (yyvsp[-3].node), (yyvsp[-1].node));
     }
-#line 5083 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5086 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 203: /* expr4: expr4 '[' '<' comma_expr L_RANGE comma_expr ']'  */
-#line 2488 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2491 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       (yyval.node) = make_range_node(F_RN_RANGE, (yyvsp[-6].node), (yyvsp[-3].node), (yyvsp[-1].node));
     }
-#line 5091 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5094 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 204: /* expr4: expr4 '[' '<' comma_expr L_RANGE '<' comma_expr ']'  */
-#line 2492 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2495 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       if ((yyvsp[-1].node)->kind == NODE_NUMBER && (yyvsp[-1].node)->v.number <= 1)
         (yyval.node) = make_range_node(F_RE_RANGE, (yyvsp[-7].node), (yyvsp[-4].node), 0);
       else
         (yyval.node) = make_range_node(F_RR_RANGE, (yyvsp[-7].node), (yyvsp[-4].node), (yyvsp[-1].node));
     }
-#line 5102 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5105 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 205: /* expr4: expr4 '[' comma_expr L_RANGE '<' comma_expr ']'  */
-#line 2499 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2502 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       if ((yyvsp[-1].node)->kind == NODE_NUMBER && (yyvsp[-1].node)->v.number <= 1)
         (yyval.node) = make_range_node(F_NE_RANGE, (yyvsp[-6].node), (yyvsp[-4].node), 0);
       else
         (yyval.node) = make_range_node(F_NR_RANGE, (yyvsp[-6].node), (yyvsp[-4].node), (yyvsp[-1].node));
     }
-#line 5113 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5116 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 206: /* expr4: expr4 '[' comma_expr L_RANGE ']'  */
-#line 2506 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2509 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       (yyval.node) = make_range_node(F_NE_RANGE, (yyvsp[-4].node), (yyvsp[-2].node), 0);
     }
-#line 5121 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5124 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 207: /* expr4: expr4 '[' '<' comma_expr L_RANGE ']'  */
-#line 2510 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2513 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       (yyval.node) = make_range_node(F_RE_RANGE, (yyvsp[-5].node), (yyvsp[-2].node), 0);
     }
-#line 5129 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5132 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 208: /* expr4: expr4 '[' '<' comma_expr ']'  */
-#line 2514 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2517 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       if (IS_NODE((yyvsp[-4].node), NODE_CALL, F_AGGREGATE)
           && (yyvsp[-1].node)->kind == NODE_NUMBER) {
@@ -5150,6 +5153,7 @@ yyreduce:
         switch((yyvsp[-4].node)->type) {
           case TYPE_MAPPING:
             yyerror("Illegal index for mapping.");
+            [[fallthrough]];
           case TYPE_ANY:
             (yyval.node)->type = TYPE_ANY;
             break;
@@ -5174,11 +5178,11 @@ yyreduce:
         }
       } else (yyval.node)->type = TYPE_ANY;
     }
-#line 5178 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5182 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 209: /* expr4: expr4 '[' comma_expr ']'  */
-#line 2559 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2563 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       /* Something stupid like ({ 1, 2, 3 })[1]; we take the
        * time to optimize this because people who don't understand
@@ -5234,19 +5238,19 @@ yyreduce:
         }
       } else (yyval.node)->type = TYPE_ANY;
     }
-#line 5238 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5242 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 211: /* expr4: '(' comma_expr ')'  */
-#line 2616 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2620 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       (yyval.node) = (yyvsp[-1].node);
     }
-#line 5246 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5250 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 214: /* @12: %empty  */
-#line 2622 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2626 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       auto max_local_variables = CFG_INT(__MAX_LOCAL_VARIABLES__);
 
@@ -5267,11 +5271,11 @@ yyreduce:
       exact_types = TYPE_ANY;
       context = 0;
     }
-#line 5271 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5275 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 215: /* expr4: L_BASIC_TYPE @12 '(' argument ')' block  */
-#line 2643 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2647 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       if ((yyvsp[-2].argument).flags & ARG_IS_VARARGS) {
         yyerror("Anonymous varargs functions aren't implemented");
@@ -5307,11 +5311,11 @@ yyreduce:
       type_of_locals_ptr -= max_num_locals;
       reactivate_current_locals();
     }
-#line 5311 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5315 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 216: /* expr4: l_new_function_open ':' ')'  */
-#line 2679 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2683 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       if (CONFIG_INT(__RC_WOMBLES__)) {
         if(*(outp-2) != ':') {
@@ -5349,11 +5353,11 @@ yyreduce:
           break;
       }
     }
-#line 5353 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5357 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 217: /* expr4: l_new_function_open ',' expr_list2 ':' ')'  */
-#line 2717 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2721 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       if (CONFIG_INT(__RC_WOMBLES__)) {
         if(*(outp-2) != ':') {
@@ -5448,11 +5452,11 @@ yyreduce:
                       break;
       }
     }
-#line 5452 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5456 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 218: /* expr4: L_FUNCTION_OPEN comma_expr ':' ')'  */
-#line 2812 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2816 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       if (CONFIG_INT(__RC_WOMBLES__)) {
         if(*(outp-2) != ':') {
@@ -5475,11 +5479,11 @@ yyreduce:
         + (current_function_context->num_parameters << 8);
       pop_function_context();
     }
-#line 5479 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5483 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 219: /* expr4: L_MAPPING_OPEN expr_list3 ']' ')'  */
-#line 2835 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2839 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       if (CONFIG_INT(__RC_WOMBLES__)) {
         if(*(outp-2) != ']') {
@@ -5488,11 +5492,11 @@ yyreduce:
       }
       CREATE_CALL((yyval.node), F_AGGREGATE_ASSOC, TYPE_MAPPING, (yyvsp[-2].node));
     }
-#line 5492 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5496 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 220: /* expr4: L_ARRAY_OPEN expr_list '}' ')'  */
-#line 2844 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2848 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       if (CONFIG_INT(__RC_WOMBLES__)) {
         if(*(outp-2) != '}') {
@@ -5501,116 +5505,116 @@ yyreduce:
       }
       CREATE_CALL((yyval.node), F_AGGREGATE, TYPE_ANY | TYPE_MOD_ARRAY, (yyvsp[-2].node));
     }
-#line 5505 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5509 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 221: /* expr_or_block: block  */
-#line 2856 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2860 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       (yyval.node) = (yyvsp[0].decl).node;
     }
-#line 5513 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5517 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 222: /* expr_or_block: '(' comma_expr ')'  */
-#line 2860 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2864 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       (yyval.node) = insert_pop_value((yyvsp[-1].node));
     }
-#line 5521 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5525 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 223: /* @13: %empty  */
-#line 2867 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2871 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       (yyval.number) = context;
       context = SPECIAL_CONTEXT;
     }
-#line 5530 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5534 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 224: /* catch: L_CATCH @13 expr_or_block  */
-#line 2872 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2876 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       CREATE_CATCH((yyval.node), (yyvsp[0].node));
       context = (yyvsp[-1].number);
     }
-#line 5539 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5543 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 225: /* tree: L_TREE block  */
-#line 2880 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2884 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
 #ifdef DEBUG
       (yyval.node) = new_node_no_line();
       lpc_tree_form((yyvsp[0].decl).node, (yyval.node));
 #endif
     }
-#line 5550 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5554 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 226: /* tree: L_TREE '(' comma_expr ')'  */
-#line 2887 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2891 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
 #ifdef DEBUG
       (yyval.node) = new_node_no_line();
       lpc_tree_form((yyvsp[-1].node), (yyval.node));
 #endif
     }
-#line 5561 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5565 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 227: /* sscanf: L_SSCANF '(' expr0 ',' expr0 lvalue_list ')'  */
-#line 2897 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2901 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       int p = (yyvsp[-1].node)->v.number;
       CREATE_LVALUE_EFUN((yyval.node), TYPE_NUMBER, (yyvsp[-1].node));
       CREATE_BINARY_OP_1((yyval.node)->l.expr, F_SSCANF, 0, (yyvsp[-4].node), (yyvsp[-2].node), p);
     }
-#line 5571 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5575 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 228: /* parse_command: L_PARSE_COMMAND '(' expr0 ',' expr0 ',' expr0 lvalue_list ')'  */
-#line 2906 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2910 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       int p = (yyvsp[-1].node)->v.number;
       CREATE_LVALUE_EFUN((yyval.node), TYPE_NUMBER, (yyvsp[-1].node));
       CREATE_TERNARY_OP_1((yyval.node)->l.expr, F_PARSE_COMMAND, 0,
           (yyvsp[-6].node), (yyvsp[-4].node), (yyvsp[-2].node), p);
     }
-#line 5582 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5586 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 229: /* @14: %empty  */
-#line 2916 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2920 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       (yyval.number) = context;
       context = SPECIAL_CONTEXT;
     }
-#line 5591 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5595 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 230: /* time_expression: L_TIME_EXPRESSION @14 expr_or_block  */
-#line 2921 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2925 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       CREATE_TIME_EXPRESSION((yyval.node), (yyvsp[0].node));
       context = (yyvsp[-1].number);
     }
-#line 5600 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5604 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 231: /* lvalue_list: %empty  */
-#line 2929 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2933 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
             {
       (yyval.node) = new_node_no_line();
       (yyval.node)->r.expr = 0;
       (yyval.node)->v.number = 0;
     }
-#line 5610 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5614 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 232: /* lvalue_list: ',' lvalue lvalue_list  */
-#line 2935 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2939 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       parse_node_t *insert;
 
@@ -5621,103 +5625,103 @@ yyreduce:
       (yyvsp[0].node)->r.expr = insert;
       (yyval.node)->v.number++;
     }
-#line 5625 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5629 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 233: /* string: string_con2  */
-#line 2949 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2953 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       CREATE_STRING((yyval.node), (yyvsp[0].string));
       scratch_free((yyvsp[0].string));
     }
-#line 5634 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5638 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 235: /* string_con1: '(' string_con1 ')'  */
-#line 2958 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2962 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       (yyval.string) = (yyvsp[-1].string);
     }
-#line 5642 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5646 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 236: /* string_con1: string_con1 '+' string_con1  */
-#line 2962 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2966 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       (yyval.string) = scratch_join((yyvsp[-2].string), (yyvsp[0].string));
     }
-#line 5650 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5654 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 238: /* string_con2: string_con2 L_STRING  */
-#line 2970 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2974 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       (yyval.string) = scratch_join((yyvsp[-1].string), (yyvsp[0].string));
     }
-#line 5658 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5662 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 239: /* class_init: identifier ':' expr0  */
-#line 2977 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2981 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       (yyval.node) = new_node();
       (yyval.node)->l.expr = (parse_node_t *)(yyvsp[-2].string);
       (yyval.node)->v.expr = (yyvsp[0].node);
       (yyval.node)->r.expr = 0;
     }
-#line 5669 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5673 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 240: /* opt_class_init: %empty  */
-#line 2987 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2991 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
             {
       (yyval.node) = 0;
     }
-#line 5677 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5681 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 241: /* opt_class_init: opt_class_init ',' class_init  */
-#line 2991 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 2995 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       (yyval.node) = (yyvsp[0].node);
       (yyval.node)->r.expr = (yyvsp[-2].node);
     }
-#line 5686 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5690 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 242: /* @15: %empty  */
-#line 2999 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 3003 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       (yyval.number) = context;
       (yyvsp[0].number) = num_refs;
       context |= ARG_LIST;
     }
-#line 5696 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5700 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 243: /* function_call: efun_override '(' @15 expr_list ')'  */
-#line 3005 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 3009 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       context = (yyvsp[-2].number);
       (yyval.node) = validate_efun_call((yyvsp[-4].number),(yyvsp[-1].node));
       (yyval.node) = check_refs(num_refs - (yyvsp[-3].number), (yyvsp[-1].node), (yyval.node));
       num_refs = (yyvsp[-3].number);
     }
-#line 5707 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5711 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 244: /* @16: %empty  */
-#line 3012 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 3016 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       (yyval.number) = context;
       (yyvsp[0].number) = num_refs;
       context |= ARG_LIST;
     }
-#line 5717 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5721 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 245: /* function_call: L_NEW '(' @16 expr_list ')'  */
-#line 3018 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 3022 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       ident_hash_elem_t *ihe;
       int f;
@@ -5742,11 +5746,11 @@ yyreduce:
       (yyval.node) = check_refs(num_refs - (yyvsp[-3].number), (yyvsp[-1].node), (yyval.node));
       num_refs = (yyvsp[-3].number);
     }
-#line 5746 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5750 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 246: /* function_call: L_NEW '(' L_CLASS L_DEFINED_NAME opt_class_init ')'  */
-#line 3043 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 3047 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       parse_node_t *node;
 
@@ -5781,11 +5785,11 @@ yyreduce:
         }
       }
     }
-#line 5785 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5789 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 247: /* function_call: L_NEW '(' L_CLASS L_IDENTIFIER opt_class_init ')'  */
-#line 3078 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 3082 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       parse_node_t *node;
       char buf[256];
@@ -5803,21 +5807,21 @@ yyreduce:
         node = node->r.expr;
       }
     }
-#line 5807 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5811 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 248: /* @17: %empty  */
-#line 3096 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 3100 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       (yyval.number) = context;
       (yyvsp[0].number) = num_refs;
       context |= ARG_LIST;
     }
-#line 5817 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5821 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 249: /* function_call: L_DEFINED_NAME '(' @17 expr_list ')'  */
-#line 3102 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 3106 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       int f;
 
@@ -5871,21 +5875,21 @@ yyreduce:
       (yyval.node) = check_refs(num_refs - (yyvsp[-3].number), (yyvsp[-1].node), (yyval.node));
       num_refs = (yyvsp[-3].number);
     }
-#line 5875 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5879 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 250: /* @18: %empty  */
-#line 3156 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 3160 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       (yyval.number) = context;
       (yyvsp[0].number) = num_refs;
       context |= ARG_LIST;
     }
-#line 5885 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5889 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 251: /* function_call: function_name '(' @18 expr_list ')'  */
-#line 3162 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 3166 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       char *name = (yyvsp[-4].string);
 
@@ -5947,21 +5951,21 @@ yyreduce:
       num_refs = (yyvsp[-3].number);
       scratch_free(name);
     }
-#line 5951 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5955 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 252: /* @19: %empty  */
-#line 3224 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 3228 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       (yyval.number) = context;
       (yyvsp[0].number) = num_refs;
       context |= ARG_LIST;
     }
-#line 5961 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 5965 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 253: /* function_call: expr4 L_ARROW identifier '(' @19 expr_list ')'  */
-#line 3230 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 3234 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       ident_hash_elem_t *ihe;
       int f;
@@ -6006,21 +6010,21 @@ yyreduce:
       (yyval.node) = check_refs(num_refs - (yyvsp[-3].number), (yyvsp[-1].node), (yyval.node));
       num_refs = (yyvsp[-3].number);
     }
-#line 6010 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 6014 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 254: /* @20: %empty  */
-#line 3275 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 3279 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       (yyval.number) = context;
       (yyvsp[0].number) = num_refs;
       context |= ARG_LIST;
     }
-#line 6020 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 6024 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 255: /* function_call: '(' '*' comma_expr ')' '(' @20 expr_list ')'  */
-#line 3281 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 3285 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       parse_node_t *expr;
 
@@ -6042,11 +6046,11 @@ yyreduce:
       (yyval.node) = check_refs(num_refs - (yyvsp[-3].number), (yyvsp[-1].node), (yyval.node));
       num_refs = (yyvsp[-3].number);
     }
-#line 6046 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 6050 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 256: /* efun_override: L_EFUN L_COLON_COLON identifier  */
-#line 3306 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 3310 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       svalue_t *res;
       ident_hash_elem_t *ihe;
@@ -6066,11 +6070,11 @@ yyreduce:
       }
       scratch_free((yyvsp[0].string));
     }
-#line 6070 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 6074 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 257: /* efun_override: L_EFUN L_COLON_COLON L_NEW  */
-#line 3326 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 3330 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       svalue_t *res;
 
@@ -6083,11 +6087,11 @@ yyreduce:
         (yyval.number) = -1;
       } else (yyval.number) = new_efun;
     }
-#line 6087 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 6091 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 259: /* function_name: L_COLON_COLON identifier  */
-#line 3343 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 3347 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       int l = strlen((yyvsp[0].string)) + 1;
       char *p;
@@ -6101,11 +6105,11 @@ yyreduce:
         *(p+3) = *p;
       strncpy((yyval.string), ":::", 3);
     }
-#line 6105 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 6109 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 260: /* function_name: L_BASIC_TYPE L_COLON_COLON identifier  */
-#line 3357 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 3361 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       int z, l = strlen((yyvsp[0].string)) + 1;
       char *p;
@@ -6120,11 +6124,11 @@ yyreduce:
       (yyval.string)[z-2] = ':';
       (yyval.string)[z-1] = ':';
     }
-#line 6124 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 6128 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 261: /* function_name: identifier L_COLON_COLON identifier  */
-#line 3372 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 3376 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       int l = strlen((yyvsp[-2].string));
       /* "ob" and "name" -> ":ob::name" */
@@ -6136,11 +6140,11 @@ yyreduce:
       scratch_free((yyvsp[-2].string));
       scratch_free((yyvsp[0].string));
     }
-#line 6140 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 6144 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 262: /* cond: L_IF '(' comma_expr ')' statement optional_else_part  */
-#line 3387 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 3391 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       /* x != 0 -> x */
       if (IS_NODE((yyvsp[-3].node), NODE_BINARY_OP, F_NE)) {
@@ -6171,27 +6175,27 @@ yyreduce:
       }
       CREATE_IF((yyval.node), (yyvsp[-3].node), (yyvsp[-1].node), (yyvsp[0].node));
     }
-#line 6175 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 6179 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 263: /* optional_else_part: %empty  */
-#line 3421 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 3425 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       (yyval.node) = 0;
     }
-#line 6183 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 6187 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
   case 264: /* optional_else_part: L_ELSE statement  */
-#line 3425 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 3429 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
     {
       (yyval.node) = (yyvsp[0].node);
     }
-#line 6191 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 6195 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
     break;
 
 
-#line 6195 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.cc"
+#line 6199 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.cc"
 
         default: break;
       }
@@ -6426,5 +6430,5 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 3429 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
+#line 3433 "/home/mud/current/ds3.9/fluffos-socket-dev/src/compiler/internal/grammar.y"
 

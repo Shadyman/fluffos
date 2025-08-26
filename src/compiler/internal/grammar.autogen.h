@@ -35,8 +35,8 @@
    especially those whose name start with YY_ or yy_.  They are
    private implementation details that can be changed or removed.  */
 
-#ifndef YY_YY_HOME_MUD_CURRENT_DS3_9_FLUFFOS_SOCKET_DEV_BUILD_TEST_SRC_GRAMMAR_AUTOGEN_H_INCLUDED
-# define YY_YY_HOME_MUD_CURRENT_DS3_9_FLUFFOS_SOCKET_DEV_BUILD_TEST_SRC_GRAMMAR_AUTOGEN_H_INCLUDED
+#ifndef YY_YY_HOME_MUD_CURRENT_DS3_9_FLUFFOS_SOCKET_DEV_BUILD_SRC_GRAMMAR_AUTOGEN_H_INCLUDED
+# define YY_YY_HOME_MUD_CURRENT_DS3_9_FLUFFOS_SOCKET_DEV_BUILD_SRC_GRAMMAR_AUTOGEN_H_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 0
@@ -137,7 +137,7 @@ union YYSTYPE
     uint16_t save_exact_types;
   } func_block; /* 8 */
 
-#line 141 "/home/mud/current/ds3.9/fluffos-socket-dev/build-test/src/grammar.autogen.h"
+#line 141 "/home/mud/current/ds3.9/fluffos-socket-dev/build/src/grammar.autogen.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -152,4 +152,4 @@ extern YYSTYPE yylval;
 int yyparse (void);
 
 
-#endif /* !YY_YY_HOME_MUD_CURRENT_DS3_9_FLUFFOS_SOCKET_DEV_BUILD_TEST_SRC_GRAMMAR_AUTOGEN_H_INCLUDED  */
+#endif /* !YY_YY_HOME_MUD_CURRENT_DS3_9_FLUFFOS_SOCKET_DEV_BUILD_SRC_GRAMMAR_AUTOGEN_H_INCLUDED  */

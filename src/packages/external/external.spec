@@ -5,5 +5,6 @@ int external_start(int, string | string *, string | function, string | function,
 int external_spawn_process(int);
 int external_kill_process(int);
 int external_process_status(int);
-int external_write_process(int, string);
-mixed external_read_process(int, int);
+// TODO: These functions are declared but not implemented - disabled for now
+// int external_write_process(int, string);
+// mixed external_read_process(int, int);

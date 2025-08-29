@@ -669,3 +669,146 @@ extern "C" {
         GraphQLManager::getInstance()->broadcast_event(event, std::string(data));
     }
 }
+
+/*
+ * LPC efun implementations
+ */
+
+#ifdef F_GRAPHQL_EXECUTE_QUERY
+void f_graphql_execute_query() {
+    int num_args = st_num_arg;
+    svalue_t *args = sp - num_args + 1;
+    
+    if (num_args < 3) {
+        error("graphql_execute_query() requires 3 arguments");
+    }
+    
+    if (args[0].type != T_NUMBER || args[1].type != T_STRING || args[2].type != T_STRING) {
+        error("graphql_execute_query() invalid argument types");
+    }
+    
+    int socket_fd = args[0].u.number;
+    const char* query = args[1].u.string;
+    const char* variables = args[2].u.string;
+    
+    pop_n_elems(num_args);
+    
+    int result = graphql_execute_query(socket_fd, query, variables);
+    push_number(result);
+}
+#endif
+
+#ifdef F_GRAPHQL_SUBSCRIBE
+void f_graphql_subscribe() {
+    int num_args = st_num_arg;
+    svalue_t *args = sp - num_args + 1;
+    
+    if (num_args < 3) {
+        error("graphql_subscribe() requires 3 arguments");
+    }
+    
+    if (args[0].type != T_NUMBER || args[1].type != T_STRING || args[2].type != T_STRING) {
+        error("graphql_subscribe() invalid argument types");
+    }
+    
+    int socket_fd = args[0].u.number;
+    const char* subscription = args[1].u.string;
+    const char* variables = args[2].u.string;
+    
+    pop_n_elems(num_args);
+    
+    int result = graphql_subscribe(socket_fd, subscription, variables);
+    push_number(result);
+}
+#endif
+
+#ifdef F_GRAPHQL_SET_SCHEMA
+void f_graphql_set_schema() {
+    int num_args = st_num_arg;
+    svalue_t *args = sp - num_args + 1;
+    
+    if (num_args < 2) {
+        error("graphql_set_schema() requires 2 arguments");
+    }
+    
+    if (args[0].type != T_NUMBER || args[1].type != T_STRING) {
+        error("graphql_set_schema() invalid argument types");
+    }
+    
+    int socket_fd = args[0].u.number;
+    const char* schema = args[1].u.string;
+    
+    pop_n_elems(num_args);
+    
+    int result = graphql_set_schema(socket_fd, schema);
+    push_number(result);
+}
+#endif
+
+#ifdef F_GRAPHQL_BROADCAST_EVENT
+void f_graphql_broadcast_event() {
+    int num_args = st_num_arg;
+    svalue_t *args = sp - num_args + 1;
+    
+    if (num_args < 2) {
+        error("graphql_broadcast_event() requires 2 arguments");
+    }
+    
+    if (args[0].type != T_STRING || args[1].type != T_STRING) {
+        error("graphql_broadcast_event() invalid argument types");
+    }
+    
+    const char* event_type = args[0].u.string;
+    const char* data = args[1].u.string;
+    
+    pop_n_elems(num_args);
+    
+    graphql_broadcast_event(event_type, data);
+}
+#endif
+
+#ifdef F_GRAPHQL_BROADCAST_PLAYER_EVENT
+void f_graphql_broadcast_player_event() {
+    int num_args = st_num_arg;
+    svalue_t *args = sp - num_args + 1;
+    
+    if (num_args < 3) {
+        error("graphql_broadcast_player_event() requires 3 arguments");
+    }
+    
+    if (args[0].type != T_STRING || args[1].type != T_STRING || args[2].type != T_STRING) {
+        error("graphql_broadcast_player_event() invalid argument types");
+    }
+    
+    const char* player_id = args[0].u.string;
+    const char* event_type = args[1].u.string;
+    const char* data = args[2].u.string;
+    
+    pop_n_elems(num_args);
+    
+    graphql_broadcast_player_event(player_id, event_type, data);
+}
+#endif
+
+#ifdef F_GRAPHQL_BROADCAST_ROOM_EVENT
+void f_graphql_broadcast_room_event() {
+    int num_args = st_num_arg;
+    svalue_t *args = sp - num_args + 1;
+    
+    if (num_args < 3) {
+        error("graphql_broadcast_room_event() requires 3 arguments");
+    }
+    
+    if (args[0].type != T_STRING || args[1].type != T_STRING || args[2].type != T_STRING) {
+        error("graphql_broadcast_room_event() invalid argument types");
+    }
+    
+    const char* room_id = args[0].u.string;
+    const char* event_type = args[1].u.string;
+    const char* data = args[2].u.string;
+    
+    pop_n_elems(num_args);
+    
+    graphql_broadcast_room_event(room_id, event_type, data);
+}
+#endif

@@ -8,6 +8,10 @@ if(${PACKAGE_EXTERNAL})
         "socketpair.cc"         # Cross-platform socketpair implementation
         "process_manager.cc"    # Process lifecycle management
         "command_executor.cc"   # High-level command execution engine
+        "file_monitor.cc"       # File system monitoring with inotify integration (Phase 1)
+        "event_notifier.cc"     # Enhanced async notifications with eventfd integration (Phase 2)
+        "io_redirector.cc"      # I/O redirection and process communication (Phase 3)
+        "resource_manager.cc"   # Resource control and sandboxing (Phase 4)
     )
     
     # Define external package headers
@@ -15,6 +19,10 @@ if(${PACKAGE_EXTERNAL})
         "external.h"            # Main external package header
         "process_manager.h"     # Process management interface
         "command_executor.h"    # Command execution interface
+        "file_monitor.h"        # File monitoring interface (Phase 1: inotify support)
+        "event_notifier.h"      # Event notification interface (Phase 2: eventfd support)
+        "io_redirector.h"       # I/O redirection interface (Phase 3: I/O controls)
+        "resource_manager.h"    # Resource control interface (Phase 4: resource management)
     )
     
     # Create external package library

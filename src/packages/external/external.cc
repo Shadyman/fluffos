@@ -1,6 +1,10 @@
 #include "external.h"
 #include "process_manager.h"
 #include "command_executor.h"
+#include "file_monitor.h"
+#include "event_notifier.h"
+#include "io_redirector.h"
+#include "resource_manager.h"
 #include "base/package_api.h"
 #include "base/internal/log.h"
 #include "packages/sockets/socket_option_manager.h"
@@ -249,6 +253,11 @@ int ExternalSocketHandler::create_handler(enum socket_mode_extended mode, svalue
             mode_value.u.number = 1; // Async by default
             process_info->option_manager->set_option(EXTERNAL_ASYNC, &mode_value);
             break;
+            
+        default:
+            // Other socket modes not handled by external process package
+            error("Invalid socket mode for external process package: %d", static_cast<int>(mode));
+            return EESOCKET;
     }
     
     processes_[socket_fd] = std::move(process_info);
@@ -334,6 +343,15 @@ void ExternalSocketHandler::cleanup_handler(int socket_fd) {
     // Cleanup process through ProcessManager
     ProcessManager::instance().cleanup_process(socket_fd);
     
+    // Cleanup file monitoring for this socket
+    FileMonitorManager::cleanup_socket_monitors(socket_fd);
+    
+    // Cleanup enhanced async events for this socket
+    AsyncEventManager::cleanup_socket_events(socket_fd);
+    
+    // Cleanup I/O redirection for this socket (Phase 3)
+    IORedirector::instance().cleanup_redirection(socket_fd);
+    
     // Remove from our tracking
     processes_.erase(socket_fd);
     
@@ -380,11 +398,79 @@ bool ExternalSocketHandler::extract_process_options(int socket_fd, ExternalProce
     
     // Working directory, timeout, and buffer size extraction handled above
     
-    // Extract async mode
+    // Extract async mode (enhanced with eventfd in Phase 2)
     svalue_t async_value;
     if (info->option_manager->get_option(EXTERNAL_ASYNC, &async_value)) {
         if (async_value.type == T_NUMBER) {
-            info->async_mode = (async_value.u.number != 0);
+            bool enable_async = (async_value.u.number != 0);
+            info->async_mode = enable_async;
+            
+            // Enhanced async mode with eventfd integration
+            if (enable_async) {
+                if (AsyncEventManager::handle_async_option(socket_fd, true)) {
+                    debug(external_start, "Enhanced async mode with eventfd enabled for socket %d", socket_fd);
+                } else {
+                    debug(external_start, "Failed to enable enhanced async mode for socket %d, falling back to basic async", socket_fd);
+                }
+            }
+        }
+    }
+    
+    // Extract watch path for file monitoring
+    svalue_t watch_path_value;
+    if (info->option_manager->get_option(EXTERNAL_WATCH_PATH, &watch_path_value)) {
+        if (watch_path_value.type == T_STRING) {
+            std::string watch_path(watch_path_value.u.string);
+            if (FileMonitorManager::handle_watch_path_option(socket_fd, watch_path)) {
+                debug(external_start, "Added file monitoring for path '%s' on socket %d", 
+                      watch_path.c_str(), socket_fd);
+            } else {
+                debug(external_start, "Failed to add file monitoring for path '%s' on socket %d", 
+                      watch_path.c_str(), socket_fd);
+            }
+        }
+    }
+    
+    // Extract I/O redirection options (Phase 3: I/O Controls)
+    svalue_t stdin_mode_value;
+    if (info->option_manager->get_option(EXTERNAL_STDIN_MODE, &stdin_mode_value)) {
+        if (stdin_mode_value.type == T_STRING) {
+            std::string stdin_mode(stdin_mode_value.u.string);
+            if (IORedirectionManager::handle_stdin_mode_option(socket_fd, stdin_mode)) {
+                debug(external_start, "Configured stdin mode '%s' for socket %d", 
+                      stdin_mode.c_str(), socket_fd);
+            } else {
+                debug(external_start, "Failed to configure stdin mode '%s' for socket %d", 
+                      stdin_mode.c_str(), socket_fd);
+            }
+        }
+    }
+    
+    svalue_t stdout_mode_value;
+    if (info->option_manager->get_option(EXTERNAL_STDOUT_MODE, &stdout_mode_value)) {
+        if (stdout_mode_value.type == T_STRING) {
+            std::string stdout_mode(stdout_mode_value.u.string);
+            if (IORedirectionManager::handle_stdout_mode_option(socket_fd, stdout_mode)) {
+                debug(external_start, "Configured stdout mode '%s' for socket %d", 
+                      stdout_mode.c_str(), socket_fd);
+            } else {
+                debug(external_start, "Failed to configure stdout mode '%s' for socket %d", 
+                      stdout_mode.c_str(), socket_fd);
+            }
+        }
+    }
+    
+    svalue_t stderr_mode_value;
+    if (info->option_manager->get_option(EXTERNAL_STDERR_MODE, &stderr_mode_value)) {
+        if (stderr_mode_value.type == T_STRING) {
+            std::string stderr_mode(stderr_mode_value.u.string);
+            if (IORedirectionManager::handle_stderr_mode_option(socket_fd, stderr_mode)) {
+                debug(external_start, "Configured stderr mode '%s' for socket %d", 
+                      stderr_mode.c_str(), socket_fd);
+            } else {
+                debug(external_start, "Failed to configure stderr mode '%s' for socket %d", 
+                      stderr_mode.c_str(), socket_fd);
+            }
         }
     }
     
@@ -472,6 +558,10 @@ bool validate_external_async(const svalue_t* value) {
     return true; // Any integer value is valid (0=false, non-zero=true)
 }
 
+// Note: Phase-specific validation functions are defined in their respective files:
+// - validate_external_watch_path() in file_monitor.cc
+// - validate_external_*_mode() functions in io_redirector.cc
+
 /*
  * Package initialization and registration
  */
@@ -481,6 +571,21 @@ void init_external_socket_handlers() {
     if (initialized) return;
     
     debug(external_start, "Initializing external socket handlers");
+    
+    // Initialize file monitoring system
+    if (!init_file_monitor_system()) {
+        debug(external_start, "Warning: File monitoring system failed to initialize");
+    }
+    
+    // Initialize async event system (Phase 2: eventfd enhancement)
+    if (!init_async_event_system()) {
+        debug(external_start, "Warning: Async event system failed to initialize, falling back to basic async mode");
+    }
+    
+    // Initialize I/O redirection system (Phase 3: I/O controls)
+    if (!init_io_redirection_system()) {
+        debug(external_start, "Warning: I/O redirection system failed to initialize");
+    }
     
     // Register handlers for external modes
     // TODO: Implement socket mode registration when unified architecture is complete
@@ -504,6 +609,15 @@ void cleanup_external_socket_handlers() {
     
     // Cleanup all active processes
     ExternalSocketHandler::clear_all_processes();
+    
+    // Cleanup file monitoring system
+    cleanup_file_monitor_system();
+    
+    // Cleanup async event system
+    cleanup_async_event_system();
+    
+    // Cleanup I/O redirection system
+    cleanup_io_redirection_system();
     
     g_external_package_initialized = false;
     debug(external_start, "External socket handlers cleaned up");
@@ -602,8 +716,349 @@ void f_external_process_status() {
 #endif
 
 /*
+ * File monitoring EFun implementations
+ */
+
+#ifdef F_EXTERNAL_MONITOR_PATH
+void f_external_monitor_path() {
+    int num_args = st_num_arg;
+    svalue_t *args = sp - num_args + 1;
+    
+    if (num_args < 2) {
+        error("external_monitor_path() requires at least 2 arguments");
+    }
+    
+    if (args[0].type != T_NUMBER || args[1].type != T_STRING) {
+        error("external_monitor_path() invalid argument types");
+    }
+    
+    int socket_fd = args[0].u.number;
+    std::string path(args[1].u.string);
+    uint32_t events = 0;
+    
+    if (num_args >= 3 && args[2].type == T_NUMBER) {
+        events = args[2].u.number;
+    }
+    
+    pop_n_elems(num_args);
+    
+    int result = FileMonitorManager::external_monitor_path(socket_fd, path, events);
+    push_number(result);
+}
+#endif
+
+#ifdef F_EXTERNAL_STOP_MONITORING
+void f_external_stop_monitoring() {
+    int num_args = st_num_arg;
+    svalue_t *args = sp - num_args + 1;
+    
+    if (num_args < 2) {
+        error("external_stop_monitoring() requires 2 arguments");
+    }
+    
+    if (args[0].type != T_NUMBER || args[1].type != T_STRING) {
+        error("external_stop_monitoring() invalid argument types");
+    }
+    
+    int socket_fd = args[0].u.number;
+    std::string path(args[1].u.string);
+    
+    pop_n_elems(num_args);
+    
+    int result = FileMonitorManager::external_stop_monitoring(socket_fd, path);
+    push_number(result);
+}
+#endif
+
+#ifdef F_EXTERNAL_GET_FILE_EVENTS
+void f_external_get_file_events() {
+    int socket_fd = sp->u.number;
+    sp--;
+    
+    if (socket_fd < 0) {
+        push_undefined();
+        return;
+    }
+    
+    std::vector<FileEvent> events = FileMonitorManager::external_get_file_events(socket_fd);
+    
+    if (events.empty()) {
+        push_undefined();
+        return;
+    }
+    
+    // Convert events to LPC array
+    array_t *result_array = allocate_empty_array(events.size());
+    
+    for (size_t i = 0; i < events.size(); i++) {
+        const FileEvent& event = events[i];
+        
+        // Create mapping for each event
+        mapping_t *event_mapping = allocate_mapping(6);
+        
+        svalue_t path_val;
+        path_val.type = T_STRING;
+        path_val.u.string = make_shared_string(event.path.c_str());
+        
+        svalue_t name_val;
+        name_val.type = T_STRING;
+        name_val.u.string = make_shared_string(event.name.c_str());
+        
+        svalue_t type_val;
+        type_val.type = T_NUMBER;
+        type_val.u.number = static_cast<int>(event.event_type);
+        
+        svalue_t cookie_val;
+        cookie_val.type = T_NUMBER;
+        cookie_val.u.number = event.cookie;
+        
+        svalue_t dir_val;
+        dir_val.type = T_NUMBER;
+        dir_val.u.number = event.is_directory ? 1 : 0;
+        
+        svalue_t time_val;
+        time_val.type = T_NUMBER;
+        time_val.u.number = event.timestamp;
+        
+        // Add to mapping
+        add_mapping_string(event_mapping, "path", path_val.u.string);
+        add_mapping_string(event_mapping, "name", name_val.u.string);
+        add_mapping_string(event_mapping, "type", type_val.u.string);
+        add_mapping_pair(event_mapping, "cookie", cookie_val.u.number);
+        add_mapping_pair(event_mapping, "directory", dir_val.u.number);
+        add_mapping_pair(event_mapping, "timestamp", time_val.u.number);
+        
+        result_array->item[i].type = T_MAPPING;
+        result_array->item[i].u.map = event_mapping;
+    }
+    
+    push_refed_array(result_array);
+}
+#endif
+
+/*
+ * Phase 3: I/O redirection EFun implementations (previously disabled)
+ */
+
+#ifdef F_EXTERNAL_WRITE_PROCESS
+void f_external_write_process() {
+    int num_args = st_num_arg;
+    svalue_t *args = sp - num_args + 1;
+    
+    if (num_args < 2) {
+        error("external_write_process() requires 2 arguments");
+    }
+    
+    if (args[0].type != T_NUMBER || args[1].type != T_STRING) {
+        error("external_write_process() invalid argument types");
+    }
+    
+    int socket_fd = args[0].u.number;
+    std::string data(args[1].u.string);
+    
+    pop_n_elems(num_args);
+    
+    if (socket_fd < 0) {
+        push_number(-1);
+        return;
+    }
+    
+    IORedirector& redirector = IORedirector::instance();
+    IOResult result = redirector.write_to_stdin(socket_fd, data.c_str(), data.length());
+    
+    if (result.success) {
+        push_number(static_cast<int>(result.bytes_processed));
+    } else if (result.would_block) {
+        push_number(0);  // Would block, try again later
+    } else {
+        push_number(-1); // Error
+    }
+}
+#endif
+
+#ifdef F_EXTERNAL_READ_PROCESS
+void f_external_read_process() {
+    int num_args = st_num_arg;
+    svalue_t *args = sp - num_args + 1;
+    
+    if (num_args < 1) {
+        error("external_read_process() requires at least 1 argument");
+    }
+    
+    if (args[0].type != T_NUMBER) {
+        error("external_read_process() invalid argument type");
+    }
+    
+    int socket_fd = args[0].u.number;
+    int max_bytes = 4096; // Default buffer size
+    
+    if (num_args >= 2 && args[1].type == T_NUMBER) {
+        max_bytes = args[1].u.number;
+        if (max_bytes <= 0 || max_bytes > 65536) {
+            max_bytes = 4096; // Clamp to reasonable range
+        }
+    }
+    
+    pop_n_elems(num_args);
+    
+    if (socket_fd < 0) {
+        push_undefined();
+        return;
+    }
+    
+    // Allocate buffer for reading
+    char* buffer = new char[max_bytes];
+    
+    IORedirector& redirector = IORedirector::instance();
+    IOResult result = redirector.read_from_stdout(socket_fd, buffer, max_bytes);
+    
+    if (result.success && result.bytes_processed > 0) {
+        // Create LPC string from buffer
+        svalue_t result_val;
+        result_val.type = T_STRING;
+        result_val.u.string = make_shared_string(buffer);
+        
+        delete[] buffer;
+        push_svalue(&result_val);
+    } else if (result.would_block) {
+        delete[] buffer;
+        push_number(0);  // No data available, try again later
+    } else {
+        delete[] buffer;
+        push_undefined(); // Error or no data
+    }
+}
+#endif
+
+/*
+ * File event processing and delivery - called from main event loop
+ */
+void process_external_file_events() {
+    if (!g_external_package_initialized) {
+        return;
+    }
+    
+    FileMonitor& monitor = FileMonitor::instance();
+    if (!monitor.is_initialized()) {
+        return;
+    }
+    
+    // Process any pending inotify events
+    std::vector<FileEvent> events = monitor.process_events();
+    
+    if (!events.empty()) {
+        // Group events by socket for delivery
+        std::map<int, std::vector<FileEvent>> socket_events;
+        
+        for (const FileEvent& event : events) {
+            // Find which sockets are watching this path - this is a simplified approach
+            // In a full implementation, we'd maintain a reverse mapping
+            debug(external_start, "File event: %s (type=%d)", 
+                  event.path.c_str(), static_cast<int>(event.event_type));
+        }
+        
+        // Deliver events to sockets
+        for (const auto& pair : socket_events) {
+            FileMonitorManager::deliver_file_events(pair.first, pair.second);
+        }
+    }
+    
+    // Process enhanced async events (Phase 2: eventfd integration)
+    process_external_async_events();
+}
+
+/*
  * Windows-specific implementations (simplified for now)
  */
+
+#ifdef F_EXTERNAL_WAIT_FOR_EVENTS
+void f_external_wait_for_events() {
+    int num_args = st_num_arg;
+    svalue_t *args = sp - num_args + 1;
+    
+    if (num_args < 1) {
+        error("external_wait_for_events() requires at least 1 argument");
+    }
+    
+    if (args[0].type != T_NUMBER) {
+        error("external_wait_for_events() requires socket fd as first argument");
+    }
+    
+    int socket_fd = args[0].u.number;
+    int timeout_ms = (num_args > 1 && args[1].type == T_NUMBER) ? args[1].u.number : -1;
+    
+    pop_n_elems(num_args);
+    
+    int result = AsyncEventManager::external_wait_for_events(socket_fd, timeout_ms);
+    push_number(result);
+}
+#endif
+
+#ifdef F_EXTERNAL_GET_ASYNC_EVENTS
+void f_external_get_async_events() {
+    int socket_fd = sp->u.number;
+    sp--;
+    
+    if (socket_fd < 0) {
+        push_undefined();
+        return;
+    }
+    
+    auto events = AsyncEventManager::external_get_async_events(socket_fd);
+    
+    // Convert events to LPC array
+    array_t *event_array = allocate_empty_array(events.size());
+    for (size_t i = 0; i < events.size(); i++) {
+        // Create mapping for each event
+        mapping_t *event_map = allocate_mapping(4);
+        
+        // Convert event type enum to string
+        const char* type_str;
+        switch (events[i].event_type) {
+            case AsyncEventType::PROCESS_READY: type_str = "process_ready"; break;
+            case AsyncEventType::PROCESS_OUTPUT: type_str = "process_output"; break;
+            case AsyncEventType::PROCESS_ERROR: type_str = "process_error"; break;
+            case AsyncEventType::PROCESS_EXITED: type_str = "process_exited"; break;
+            case AsyncEventType::FILE_CHANGED: type_str = "file_changed"; break;
+            case AsyncEventType::CUSTOM_SIGNAL: type_str = "custom_signal"; break;
+            default: type_str = "unknown"; break;
+        }
+        
+        add_mapping_string(event_map, "type", type_str);
+        add_mapping_pair(event_map, "socket_fd", events[i].socket_fd);
+        add_mapping_pair(event_map, "event_value", static_cast<long>(events[i].event_value));
+        add_mapping_string(event_map, "data", events[i].data.c_str());
+        
+        event_array->item[i].type = T_MAPPING;
+        event_array->item[i].u.map = event_map;
+    }
+    
+    push_refed_array(event_array);
+}
+#endif
+
+#ifdef F_EXTERNAL_ENABLE_ASYNC_NOTIFICATIONS
+void f_external_enable_async_notifications() {
+    int num_args = st_num_arg;
+    svalue_t *args = sp - num_args + 1;
+    
+    if (num_args < 2) {
+        error("external_enable_async_notifications() requires 2 arguments");
+    }
+    
+    if (args[0].type != T_NUMBER || args[1].type != T_NUMBER) {
+        error("external_enable_async_notifications() requires socket_fd and enabled flag");
+    }
+    
+    int socket_fd = args[0].u.number;
+    int enabled = args[1].u.number;
+    
+    pop_n_elems(num_args);
+    
+    int result = AsyncEventManager::external_enable_async_notifications(socket_fd, enabled != 0);
+    push_number(result);
+}
+#endif
 
 #ifdef _WIN32
 // Include Windows socketpair implementation from socketpair.cc

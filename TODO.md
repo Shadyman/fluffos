@@ -8,6 +8,16 @@
 - **Missing Features**: EXTERNAL_WATCH_PATH (inotify), I/O controls (150-152), resource management (155-158)
 - **Timeline**: 3-4 development sessions estimated
 
+## Claude Code Hooks for C/C++ Build Automation ##
+- **IMPLEMENTATION REQUIRED**: Automated build monitoring for FluffOS C/C++ development
+- **Scope**: FluffOS driver development ONLY (not LPC mudlib files)
+- **Hook Type**: PostToolUse on Edit/MultiEdit for `.cc`, `.cpp`, `.c`, `.h` files in FluffOS source
+- **Command**: `/home/mud/current/ds3.9/.claude/tools/make-error-parser.py --cmake [target]`
+- **Benefits**: 80-90% token reduction, immediate compilation feedback, integrated error reporting
+- **Target Files**: `src/`, `packages/`, C/C++ driver source (NOT `/lib/` mudlib)
+- **Integration**: Use existing intelligent build monitoring system with MCP integration
+- **Timeline**: 1 development session to implement and test
+
 ## GraphQL Package Implementation ##
 - **IMPLEMENTATION REQUIRED**: GraphQL FluffOS interface layer missing
 - **Plan Location**: `/automation/docs/graphql_implementation_plan.md` 

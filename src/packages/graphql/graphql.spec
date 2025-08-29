@@ -8,14 +8,14 @@
 #ifdef PACKAGE_GRAPHQL
 
 // GraphQL server and client management
-int graphql_execute_query(int fd, string query, string variables);
-int graphql_subscribe(int fd, string subscription, string variables);
-int graphql_set_schema(int fd, string schema);
+int graphql_execute_query(int, string, string);
+int graphql_subscribe(int, string, string);
+int graphql_set_schema(int, string);
 
 // Event broadcasting for real-time subscriptions  
-void graphql_broadcast_event(string event_type, string data);
-void graphql_broadcast_player_event(string player_id, string event_type, string data);
-void graphql_broadcast_room_event(string room_id, string event_type, string data);
+void graphql_broadcast_event(string, string);
+void graphql_broadcast_player_event(string, string, string);
+void graphql_broadcast_room_event(string, string, string);
 
 // GraphQL socket type constants
 #define GRAPHQL_SERVER 400

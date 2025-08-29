@@ -1,4 +1,21 @@
 # URGENT #
+## Advanced Socket Modes Implementation ##
+- **IMPLEMENTATION REQUIRED**: Advanced external socket features missing
+- **Plan Location**: `/automation/docs/advanced_socket_modes_implementation_roadmap.md`
+- **Knowledge Base**: ID `5ff05dc5-e101-4238-a4b4-6df83cecdaf5` (driver_integration/advanced_socket_modes)
+- **Status**: Unified socket architecture 100% complete, advanced external features incomplete
+- **Discovery**: NOT separate socket modes, but enhancements within existing EXTERNAL_PROCESS framework
+- **Missing Features**: EXTERNAL_WATCH_PATH (inotify), I/O controls (150-152), resource management (155-158)
+- **Timeline**: 3-4 development sessions estimated
+
+## GraphQL Package Implementation ##
+- **IMPLEMENTATION REQUIRED**: GraphQL FluffOS interface layer missing
+- **Plan Location**: `/automation/docs/graphql_implementation_plan.md` 
+- **Status**: C++ backend complete, needs efun bridge functions
+- **Files to Create**: `src/packages/graphql/graphql_efuns.cc`
+- **Linking Errors**: 6 undefined f_graphql_* function references
+- **Timeline**: 2-3 development sessions estimated
+
 ## vm/internal/simul\_efun.cc ##
 - init\_simul\_efun
   possible overflow in strcat(buf, ".c") change to strncat!!!

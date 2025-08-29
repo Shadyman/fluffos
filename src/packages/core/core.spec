@@ -163,7 +163,7 @@ int crc32(string OR_BUFFER);
 
 mixed read_buffer(string | buffer, void | int, void | int);
 int write_buffer(string | buffer, int, string | buffer | int);
-int write_file(string, string, int default:0);
+int write_file(string, string, int default: 0);
 int rename(string, string);
 int write_bytes(string, int, string);
 
@@ -208,7 +208,7 @@ object query_snoop(object);
 object query_snooping(object);
 #endif
 void set_heart_beat(int);
-int query_heart_beat(object default:F__THIS_OBJECT);
+int query_heart_beat(object default: F__THIS_OBJECT);
 void set_hide(int);
 
 #ifndef NO_RESETS

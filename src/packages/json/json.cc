@@ -73,7 +73,8 @@ nlohmann::json svalue_to_standard_json(const svalue_t* sv) {
       // Convert LPC mappings to JSON objects
       nlohmann::json obj = nlohmann::json::object();
       // Iterate through the mapping's hash table
-      for (int i = 0; i < sv->u.map->table_size; i++) {
+      // NOTE: table_size is a mask (size - 1), so iterate 0 to table_size inclusive
+      for (int i = 0; i <= static_cast<int>(sv->u.map->table_size); i++) {
         // Walk the collision chain for this hash bucket
         for (auto* node = sv->u.map->table[i]; node; node = node->next) {
           auto key = &node->values[0];  // Mapping key

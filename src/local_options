@@ -37,7 +37,7 @@
 /****************************************************************************
  *                           MISCELLANEOUS                                  *
  ****************************************************************************/
-#define DEFAULT_PRAGMAS PRAGMA_ERROR_CONTEXT + PRAGMA_OPTIMIZE
+#define DEFAULT_PRAGMAS PRAGMA_ERROR_CONTEXT + PRAGMA_OPTIMIZE + PRAGMA_WARNINGS
 #define SAVE_EXTENSION ".o"
 #define PRIVS
 #undef NO_SHADOWS
@@ -61,11 +61,15 @@
 // configs for PACKAGE_COMPRESS
 #define SAVE_GZ_EXTENSION ".o.gz"
 
-// configs for PACKAGE_UIDS
-#define AUTO_SETEUID
-#undef AUTO_TRUST_BACKBONE
-
 // configs for PACKAGE_PARSE
 #define PARSE_DEBUG /* Only take effect in DEBUG build */
+
+/****************************************************************************
+ *                           VIRTUAL FILESYSTEM                             *
+ ****************************************************************************/
+// Enable virtual filesystem applies (valid_dir, valid_filesize, valid_stat)
+// When enabled, master.c can intercept get_dir(), file_size(), and stat()
+// to provide virtual directory listings from database or other sources.
+#define VIRTUAL_FILESYSTEM
 
 #endif /* _LOCAL_OPTIONS_H_ */

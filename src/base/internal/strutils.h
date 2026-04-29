@@ -192,6 +192,15 @@ int32_t u8_strncpy(uint8_t *, const uint8_t *, const int32_t);
 size_t u8_truncate(const uint8_t *, size_t);
 // Return display width for string piece, len could be -1 for NULL terminated string.
 size_t u8_width(const char *src, int len);
+
+// Flags for u8_visible_width / visible_width efun.
+constexpr int VW_DEFAULT = 0;  // skip pinkfish %^...%^, ANSI \e[...m, OSC \e]...(\e\\|BEL)
+constexpr int VW_MXP = 1;      // also skip MXP <...> markup
+
+// Return display width treating decoration sequences as zero-width.
+// Always-on (unlike u8_width's gated ANSI skip): caller is asking for visible
+// width by definition, so escapes and pinkfish tokens never count as columns.
+size_t u8_visible_width(const char *src, int len, int flags = VW_DEFAULT);
 void u8_truncate_below_width(const char *src, size_t len, size_t max_width, bool break_for_line,
                              bool always_break_before_newline, size_t *out_len, size_t *out_width);
 std::string u8_sanitize(std::string_view src);

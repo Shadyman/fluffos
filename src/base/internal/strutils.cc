@@ -514,6 +514,115 @@ size_t u8_width(const char *src, int len) {
   return total;
 }
 
+// Visible width: like u8_width but always skips pinkfish %^...%^, ANSI CSI SGR
+// \e[...m, and OSC \e]...(\e\\|BEL). When VW_MXP is in flags, also skips
+// MXP <...> markup. Used by the visible_width() efun and by mudlib code that
+// needs to measure displayed column width independent of in-band decoration.
+size_t u8_visible_width(const char *src, int len, int flags) {
+  size_t total = 0;
+  int32_t src_offset = 0;
+
+  UChar32 c = 0;
+  UChar32 prev = 0;
+
+  if (len == 0) return 0;
+  for (;;) {
+    prev = c;
+    U8_NEXT(src, src_offset, len, c);
+
+    if (c < 0) c = 0xfffd;
+    if (c == 0) break;
+    if (c == 0x200d || prev == 0x200d) {  // ZWJ: skip combined codepoint
+      continue;
+    }
+
+    // Pinkfish: %^...%^ -- token boundary between two %^ pairs.
+    if (c == '%') {
+      if ((len < 0 || src_offset < len) && src[src_offset] == '^') {
+        // consume second '^'
+        src_offset++;
+        // scan to closing %^
+        while (len < 0 || src_offset < len) {
+          if (src[src_offset] == '\0' && len < 0) break;
+          if (src[src_offset] == '%' &&
+              (len < 0 || src_offset + 1 < len) &&
+              src[src_offset + 1] == '^') {
+            src_offset += 2;
+            break;
+          }
+          src_offset++;
+        }
+        continue;
+      }
+    }
+
+    // ANSI CSI SGR: \e[...m
+    if (c == 0x1B) {
+      if ((len < 0 || src_offset < len) && src[src_offset] == '[') {
+        const auto *p = src + src_offset + 1;
+        const auto *end = (len > 0) ? src + len : nullptr;
+        while (p != end && (isdigit(static_cast<unsigned char>(*p)) || *p == ';')) {
+          if (len < 0 && *p == '\0') break;
+          p++;
+        }
+        if (p != end && *p == 'm') {
+          p++;
+          src_offset = p - src;
+          continue;
+        }
+      }
+      // OSC: \e]...(\e\\ | BEL)
+      if ((len < 0 || src_offset < len) && src[src_offset] == ']') {
+        const auto *p = src + src_offset + 1;
+        const auto *end = (len > 0) ? src + len : nullptr;
+        while (p != end) {
+          if (len < 0 && *p == '\0') break;
+          if (static_cast<unsigned char>(*p) == 0x07) {
+            p++;
+            break;
+          }
+          if (*p == '\033' && (p + 1) != end) {
+            if (len < 0 && *(p + 1) == '\0') break;
+            if (*(p + 1) == '\\') {
+              p += 2;
+              break;
+            }
+          }
+          p++;
+        }
+        src_offset = p - src;
+        continue;
+      }
+    }
+
+    // MXP: <...> -- only when VW_MXP flag set.
+    if ((flags & VW_MXP) && c == '<') {
+      while (len < 0 || src_offset < len) {
+        if (src[src_offset] == '\0' && len < 0) break;
+        if (src[src_offset] == '>') {
+          src_offset++;
+          break;
+        }
+        src_offset++;
+      }
+      continue;
+    }
+
+    auto width = widechar_wcwidth(c);
+    if (width > 0) {
+      total += width;
+    } else if (width == widechar_widened_in_9) {
+      total += 2;
+    } else if (width == widechar_private_use) {
+      total += 1;
+    } else if (width == widechar_ambiguous) {
+      total += 1;
+    }
+    if (len > 0 && src_offset >= len) break;
+  }
+  return total;
+}
+
 std::vector<std::string_view> u8_egc_split(const char *src, int32_t slen) {
   std::vector<std::string_view> result;
   result.reserve(16);

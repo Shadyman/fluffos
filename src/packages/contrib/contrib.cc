@@ -811,6 +811,28 @@ void f_terminal_colour() {
           max_buflen = (buflen > max_buflen ? buflen : max_buflen);
           buflen = 0;
         } else {
+          /* Skip OSC escape sequences (zero visible width).
+           * OSC opens with ESC ']' and closes with ESC '\\' or BEL.
+           * The opening ESC byte was counted by buflen++ above; we add
+           * the remaining OSC body bytes to buflen but never to col. */
+          if (c == '\033' && z + 1 < lens[i] && p[z + 1] == ']') {
+            int osc_z = z + 1;  /* point to ']' */
+            while (osc_z < lens[i]) {
+              if (p[osc_z] == '\007') {
+                osc_z++;
+                break;
+              }
+              if (p[osc_z] == '\033' && osc_z + 1 < lens[i] &&
+                  p[osc_z + 1] == '\\') {
+                osc_z += 2;
+                break;
+              }
+              osc_z++;
+            }
+            buflen += (osc_z - z - 1);
+            z = osc_z - 1;  /* outer for-loop z++ moves to osc_z */
+            continue;
+          }
           if (col > start || (c != ' ' && c != '\t')) {
             col++;
           } else {
@@ -928,6 +950,30 @@ void f_terminal_colour() {
           strncpy(colouratstartword, curcolour, MAX_COLOUR_STRING - 1);
           colourstartlen = curcolourlen;
         } else {
+          /* Skip OSC escape sequences (zero visible width). ESC was already
+           * written to pt and buflen++ above; copy the rest of the OSC body
+           * verbatim, advance buflen for each byte, but never increment col. */
+          if (c == '\033' && k + 1 < lens[i] && p[k + 1] == ']') {
+            int kk = k + 1;
+            while (kk < lens[i]) {
+              *pt++ = p[kk];
+              buflen++;
+              if (p[kk] == '\007') {
+                kk++;
+                break;
+              }
+              if (p[kk] == '\033' && kk + 1 < lens[i] && p[kk + 1] == '\\') {
+                kk++;
+                *pt++ = p[kk];
+                buflen++;
+                kk++;
+                break;
+              }
+              kk++;
+            }
+            k = kk - 1;  /* outer for-loop k++ moves past last OSC byte */
+            continue;
+          }
           if (col > start || (c != ' ' && c != '\t')) {
             col++;
           } else {

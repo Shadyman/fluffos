@@ -356,6 +356,13 @@ mixed* dump_trace();
 // Get display width of given string
 int strwidth(string);
 
+// Get visible display width of a string, treating pinkfish %^...%^, ANSI CSI
+// SGR \e[...m, and OSC \e]...(\e\\|BEL) sequences as zero-width. When the
+// optional flags arg includes VW_MXP (1), MXP <...> markup is also skipped.
+// Mudlib should #include <visible_width.h> for the VW_DEFAULT and VW_MXP
+// constants.
+int visible_width(string, void | int);
+
 // start to collect tracing data
 void trace_start(string, int default: 10);
 // stop to collect tracing data right away.

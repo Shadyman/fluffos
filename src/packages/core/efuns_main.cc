@@ -3455,3 +3455,16 @@ void f_strwidth() {
   push_number(width);
 }
 #endif
+
+#ifdef F_VISIBLE_WIDTH
+void f_visible_width() {
+  int flags = VW_DEFAULT;
+  if (st_num_arg >= 2) {
+    flags = (sp--)->u.number;
+  }
+  auto width = u8_visible_width(sp->u.string, -1, flags);
+
+  pop_stack();
+  push_number(width);
+}
+#endif

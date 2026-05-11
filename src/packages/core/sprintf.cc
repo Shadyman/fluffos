@@ -694,7 +694,9 @@ static int add_table(cst **table) {
     // Check if this is over width
     {
       size_t slen = done;
-      size_t swidth = u8_width(tab_di, done);
+      size_t swidth = CONFIG_INT(__RC_SPRINTF_ADD_JUSTFIED_IGNORE_PINKFISH__)
+                          ? u8_visible_width(tab_di, done)
+                          : u8_width(tab_di, done);
       if (swidth > tab->size) {
         u8_truncate_below_width(tab_di, slen, tab->size, false, false, &slen, &swidth);
       }
@@ -1212,6 +1214,8 @@ char *string_print_formatted(const char *format_str, int argc, svalue_t *argv) {
             size_t swidth;
             if (pres) {
               u8_truncate_below_width(carg->u.string, slen, pres, false, false, &slen, &swidth);
+            } else if (CONFIG_INT(__RC_SPRINTF_ADD_JUSTFIED_IGNORE_PINKFISH__)) {
+              swidth = u8_visible_width(carg->u.string, -1);
             } else {
               swidth = u8_width(carg->u.string, -1);
             }

@@ -1102,6 +1102,19 @@ static char *SQLite3_errormsg(dbconn_t *c) {
  * Postgres support
  */
 #ifdef USE_POSTGRES
+
+/* PostgreSQL type OIDs used by Postgres_fetch for typed dispatch.
+ * Source: src/include/catalog/pg_type_d.h in the PostgreSQL source tree;
+ * stable since 9.x. Hardcoded here because pg_type_d.h ships in the
+ * server-dev package which is not a standard libpq build dependency. */
+#define BOOLOID    16
+#define INT8OID    20
+#define INT2OID    21
+#define INT4OID    23
+#define FLOAT4OID  700
+#define FLOAT8OID  701
+#define NUMERICOID 1700
+
 static void Postgres_cleanup(dbconn_t *c) { c->postgres.res = 0; }
 
 static char *Postgres_errormsg(dbconn_t *c) {
@@ -1182,10 +1195,40 @@ static array_t *Postgres_fetch(dbconn_t *c, int row) {
     for (i = 0; i < num_fields; i++) {
       if (PQgetisnull(c->postgres.res, row, i)) {
         v->item[i] = const0u;
-      } else {
-        v->item[i].type = T_STRING;
-        v->item[i].subtype = STRING_MALLOC;
-        v->item[i].u.string = string_copy(PQgetvalue(c->postgres.res, row, i), "postgres_fetch");
+        continue;
+      }
+      /* Dispatch on the column's PG type to produce native LPC values
+       * instead of forcing every cell to T_STRING. Mirrors the MySQL_fetch
+       * and SQLite3_fetch backends in this same file. JSON, JSONB,
+       * TIMESTAMP, BYTEA, UUID, etc. all fall through to the default
+       * T_STRING case — callers decode those themselves (json_decode,
+       * sscanf, etc.). */
+      Oid type_oid = PQftype(c->postgres.res, i);
+      const char *val = PQgetvalue(c->postgres.res, row, i);
+      switch (type_oid) {
+        case BOOLOID:
+          v->item[i].type = T_NUMBER;
+          v->item[i].subtype = 0;
+          v->item[i].u.number = (val && val[0] == 't') ? 1 : 0;
+          break;
+        case INT2OID:
+        case INT4OID:
+        case INT8OID:
+          v->item[i].type = T_NUMBER;
+          v->item[i].subtype = 0;
+          v->item[i].u.number = strtoll(val, nullptr, 10);
+          break;
+        case FLOAT4OID:
+        case FLOAT8OID:
+        case NUMERICOID:
+          v->item[i].type = T_REAL;
+          v->item[i].u.real = strtod(val, nullptr);
+          break;
+        default:
+          v->item[i].type = T_STRING;
+          v->item[i].subtype = STRING_MALLOC;
+          v->item[i].u.string = string_copy(val, "postgres_fetch");
+          break;
       }
     }
   }

@@ -1,4 +1,5 @@
 #include "base/package_api.h"
+#include "base/internal/strutils.h"  // u8_width — terminal_colour wrap is display-width aware
 
 #include <sys/stat.h>  // for struct stat
 
@@ -528,6 +529,34 @@ static int at_end(int i, int imax, int z, const int *lens) {
   return 1;
 }
 
+/*
+ * tc_col_advance: display-column width of the codepoint starting at p[z],
+ * for terminal_colour()'s word-wrap accounting. Writes to *skip the number
+ * of ADDITIONAL bytes belonging to this codepoint (advance the loop index by
+ * 1 + *skip to step past it). Returns 0 for UTF-8 continuation bytes and
+ * zero-width marks, 1 for ASCII / single-width Unicode (box-drawing chars),
+ * 2 for CJK double-width. The wrap counter `col` must advance by THIS, not by
+ * byte count — otherwise a 3-byte box char (═) over-counts ~3x and the line
+ * re-flows, shattering Unicode frame borders. Byte counters (j/buflen) stay
+ * byte-based; only `col` is display-width.
+ */
+static int tc_col_advance(unsigned char c, const char *p, int z, int len, int *skip) {
+  *skip = 0;
+  if ((c & 0xC0) == 0x80) return 0;  /* continuation byte: no new codepoint */
+  if (c < 0x80) return 1;            /* ASCII fast-path */
+  int seq_len;
+  if ((c & 0xE0) == 0xC0) seq_len = 2;
+  else if ((c & 0xF0) == 0xE0) seq_len = 3;
+  else if ((c & 0xF8) == 0xF0) seq_len = 4;
+  else return 1;                     /* malformed lead byte: width 1, consume 1 */
+  int avail = len - z;
+  int tail = (avail < seq_len) ? avail - 1 : seq_len - 1;
+  *skip = (tail < 0) ? 0 : tail;
+  int measure_len = (avail >= seq_len) ? seq_len : avail;
+  int w = (int)u8_width(p + z, measure_len);
+  return (w > 0) ? w : 0;
+}
+
 void f_terminal_colour() {
   auto max_string_length = CONFIG_INT(__MAX_STRING_LENGTH__);
 
@@ -833,11 +862,17 @@ void f_terminal_colour() {
             z = osc_z - 1;  /* outer for-loop z++ moves to osc_z */
             continue;
           }
-          if (col > start || (c != ' ' && c != '\t')) {
-            col++;
-          } else {
-            j--;
-            buflen--;
+          {
+            int utf8_skip = 0;
+            int cw = tc_col_advance((unsigned char)c, p, z, lens[i], &utf8_skip);
+            buflen += utf8_skip;  /* tail bytes: byte-based counters only */
+            z += utf8_skip;
+            if (col > start || (c != ' ' && c != '\t')) {
+              col += cw;  /* advance by DISPLAY width, not byte count */
+            } else {
+              j -= (1 + utf8_skip);
+              buflen -= (1 + utf8_skip);
+            }
           }
 
           if (col > start && c == '\t') {
@@ -849,7 +884,7 @@ void f_terminal_colour() {
             strncpy(colouratstartword, curcolour, MAX_COLOUR_STRING - 1);
             colourstartlen = curcolourlen;
           }
-          if (col == wrap + 1) {
+          if (col >= wrap + 1) {  /* >= not ==: a double-width char can overshoot */
             if (space) {
               if (fillout) {
                 j += wrap - space;
@@ -974,11 +1009,20 @@ void f_terminal_colour() {
             k = kk - 1;  /* outer for-loop k++ moves past last OSC byte */
             continue;
           }
-          if (col > start || (c != ' ' && c != '\t')) {
-            col++;
-          } else {
-            pt--;
-            buflen--;
+          {
+            int utf8_skip = 0;
+            int cw = tc_col_advance((unsigned char)c, p, k, lens[i], &utf8_skip);
+            for (int t = 1; t <= utf8_skip; t++) {  /* copy tail bytes to pt */
+              *pt++ = p[k + t];
+              buflen++;
+            }
+            k += utf8_skip;
+            if (col > start || (c != ' ' && c != '\t')) {
+              col += cw;  /* advance by DISPLAY width, not byte count */
+            } else {
+              pt -= (1 + utf8_skip);
+              buflen -= (1 + utf8_skip);
+            }
           }
 
           if (col > start && c == '\t') {
@@ -991,7 +1035,7 @@ void f_terminal_colour() {
             strncpy(colouratstartword, curcolour, MAX_COLOUR_STRING - 1);
             colourstartlen = curcolourlen;
           }
-          if (col == wrap + 1) {
+          if (col >= wrap + 1) {  /* >= not ==: a double-width char can overshoot */
             if (space) {
               endpad = wrap - space;
               col -= space;

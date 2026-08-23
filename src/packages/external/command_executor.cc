@@ -414,6 +414,40 @@ size_t CommandExecutor::get_active_commands() const {
 }
 
 /*
+ * Configuration
+ *
+ * Both of these were DECLARED in command_executor.h (139-140) with a backing
+ * member (default_security_, line 166) and never defined. The getter's only
+ * caller is CommandBuilder's constructor, and CommandBuilder has no users
+ * anywhere in the tree -- so with LTO and optimisation the unused constructor is
+ * eliminated before the linker ever demands the symbol, and the hole stays
+ * invisible. It surfaces the moment you build -O0:
+ *
+ *   undefined reference to `CommandExecutor::get_default_security_context() const'
+ *
+ * The setter has the identical defect; it simply has no callers at all, so
+ * nothing has asked for it yet. Defining both, rather than only the one that
+ * broke the build, so the pair cannot fail this way again.
+ *
+ * These are the obvious implementations rather than placeholders: the member
+ * already exists, and SecurityContext's default constructor (external.h:110)
+ * fails SAFE -- enable_sandbox(true), drop_privileges(true), and bounded
+ * memory/cpu/process/fd limits.
+ *
+ * ⚠️ One thing NOT settled here: allowed_commands defaults to EMPTY, and whether
+ * an empty allowlist means "permit nothing" or "permit everything" is decided by
+ * whatever consumes this context -- not by this default. Nothing consumes it
+ * today. Resolve that before wiring CommandBuilder up to anything real.
+ */
+void CommandExecutor::set_default_security_context(const SecurityContext& security) {
+    default_security_ = security;
+}
+
+SecurityContext CommandExecutor::get_default_security_context() const {
+    return default_security_;
+}
+
+/*
  * CommandBuilder implementation
  */
 

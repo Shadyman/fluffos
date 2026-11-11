@@ -325,7 +325,7 @@ void f_copy() {
 /* flag and extra info by Beek */
 #ifdef F_FUNCTIONS
 void f_functions() {
-  int i, j, num, ind;
+  int i, j, num, ind, mods;
   array_t *vec, *subvec;
   function_t *funp;
   program_t *prog;
@@ -359,6 +359,10 @@ void f_functions() {
       ind = prog->function_flags[ind] & ~FUNC_ALIAS;
     }
 
+    /* Access modifiers as seen from this object, after any inherit-level
+     * modifiers ("private inherit" etc.) have been applied. */
+    mods = prog->function_flags[ind] & DECL_MODS;
+
     while (prog->function_flags[ind] & FUNC_INHERITED) {
       low = 0;
       high = prog->num_inherited - 1;
@@ -374,6 +378,9 @@ void f_functions() {
       ind -= prog->inherit[low].function_index_offset;
       prog = prog->inherit[low].prog;
     }
+
+    /* varargs is a property of the definition itself. */
+    mods |= prog->function_flags[ind] & FUNC_VARARGS;
 
     ind -= prog->last_inherited;
 
@@ -397,7 +404,11 @@ void f_functions() {
       subvec->item[1].subtype = 0;
       subvec->item[1].u.number = funp->num_arg;
 
-      auto *p = get_type_name(buf, end, funp->type);
+      auto *p = buf;
+      if (flag & 4) {
+        p = get_type_modifiers(p, end, mods);
+      }
+      p = get_type_name(p, end, funp->type);
       *(p - 1) = '\0';  // get rid of last space
       subvec->item[2].type = T_STRING;
       subvec->item[2].subtype = STRING_SHARED;

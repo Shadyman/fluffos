@@ -44,6 +44,14 @@ title: contrib / functions.pre
     Flag: 3
     Like Flag 1, but excludes inherited functions.
 
+    Flag: 4
+    Combined with Flag 1 or 3, the return type string is prefixed with the
+    function's declaration modifiers, in the same form variables() reports
+    them, for example "private varargs int" or "protected nomask void".
+    Access modifiers are reported as seen from <ob>, so a function reached
+    through a "private inherit" shows the inherit's modifier. "varargs" is
+    reported from the defining program. Without Flag 1 or 3 it has no effect.
+
 ### SEE ALSO
 
     variables(3)
